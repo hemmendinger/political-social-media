@@ -1,0 +1,15 @@
+# derived / local
+data/truths.sqlite
+data/truths.sqlite-journal
+data/raw/
+output/reports/*.csv
+# environments
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.log
+# editors / os
+.DS_Store
+Thumbs.db
+.~lock.*#
