@@ -16,11 +16,12 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional
 
 from scripts import parsers, store
-from scripts.common import Context, HttpError, TransportError
+from scripts.common import parse_iso_utc, Context, HttpError, TransportError
 from scripts.merge import merge_partial
 from scripts.parsers import ParseError
 
 ACCOUNT_ID = "107780257626128497"
+REPROBE_MINUTES = 6 * 60  # re-check a blocked network every 6 h
 STATUSES_URL = "https://truthsocial.com/api/v1/accounts/%s/statuses?limit=20&exclude_replies=false" % ACCOUNT_ID
 STATUS_URL_FMT = "https://truthsocial.com/api/v1/statuses/%s"
 
@@ -81,6 +82,20 @@ def run(ctx: Context, max_pages: int = 5, max_verify: int = 3) -> Dict[str, Any]
     start_requests = ctx.http.request_count
     src = _source_state(ctx)
     src["last_run_at"] = started_at
+
+    # Once the API is known to be blocked from this network (GitHub runners get a Cloudflare 403), re-probe only
+    # every REPROBE_MINUTES instead of burning the retry budget and ~1 minute of pacing on every run.
+    last_probe = src.get("last_probe_at")
+    if src.get("reachable") is False and last_probe:
+        age_min = (ctx.clock.now() - parse_iso_utc(last_probe)).total_seconds() / 60.0
+        if age_min < REPROBE_MINUTES:
+            row = _build_row(
+                ctx, started_at, requests=0, counts=_new_run_counts(),
+                notes="skipped: unreachable at last probe %s" % last_probe,
+            )
+            store.append_run(ctx.data_root, row)
+            store.save_state(ctx.data_root, ctx.state)
+            return row
 
     probe_resp = None
     probe_status: Optional[int] = None

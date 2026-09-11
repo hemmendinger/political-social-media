@@ -244,3 +244,22 @@ def test_page_with_only_known_ids_is_still_merged_before_stopping(tmp_path):
         assert rec["last_verified_live_at"] == "2026-09-11T12:00:00Z"
         assert "api" in rec["seen_sources"]
     assert len(store.load_engagement(tmp_path)) == 20
+
+
+def test_recently_unreachable_api_is_skipped_without_requests(tmp_path):
+    state = {"version": 1, "sources": {"api": {"reachable": False, "last_probe_at": "2026-09-11T10:00:00Z"}}}
+    transport = FakeTransport({})  # any request would fail the test with "no route"
+    ctx = make_ctx(tmp_path, transport, state=state)
+    row = capi.run(ctx)
+    assert row["ok"] is True
+    assert row["requests"] == 0
+    assert row["notes"].startswith("skipped: unreachable")
+
+
+def test_unreachable_api_is_reprobed_after_six_hours(tmp_path):
+    state = {"version": 1, "sources": {"api": {"reachable": False, "last_probe_at": "2026-09-11T02:00:00Z"}}}
+    transport = FakeTransport({STATUSES_URL: Response(403, {}, b"blocked")})
+    ctx = make_ctx(tmp_path, transport, state=state)
+    row = capi.run(ctx)
+    assert row["notes"] == "unreachable: 403"
+    assert store.load_state(tmp_path)["sources"]["api"]["last_probe_at"] == "2026-09-11T12:00:00Z"

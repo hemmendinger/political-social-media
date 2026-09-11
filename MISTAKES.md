@@ -47,3 +47,7 @@ Honest, dated log. Build errors first, then data anomalies on the source side.
 - **Our `present` count exceeds the API's `statuses_count` by ~340** (36,898 vs 36,554 on 2026-09-11): the archives keep
   posts deleted before March 2026 that nothing has flagged, and the API count excludes them. Tracked as a stat; warned
   only beyond 1%.
+- **The Truth Social API is unreachable from GitHub Actions runners** (Cloudflare 403 on the first cloud run,
+  2026-09-11, both stdlib urllib and the curl_cffi fallback). It answers from the desktop. Consequence: the cloud record is
+  complete for posts and deletions (trumpstruth + CNN), while engagement snapshots and live verification only happen when
+  the desktop runs a collection. The api collector now re-probes a blocked network every 6 h instead of every run.

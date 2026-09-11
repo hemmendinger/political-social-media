@@ -14,7 +14,7 @@ Sources and their roles (verified 2026-09-11; details in `docs/SPEC.md`):
 
 | Source | Role | Notes |
 |---|---|---|
-| Truth Social API (`truthsocial.com/api/v1/...`) | ground truth for existence, richest fields, engagement snapshots | unauthenticated; ~6 requests/min; may be unreachable from GitHub runners (the job logs a probe result every run) |
+| Truth Social API (`truthsocial.com/api/v1/...`) | ground truth for existence, richest fields, engagement snapshots | unauthenticated; ~6 requests/min; **blocked from GitHub runners** (Cloudflare 403), reachable from the desktop; the cloud job re-probes every 6 h |
 | trumpstruth.org | new posts every run, **the deletion record** (removal timestamps), kinds, mirrored media | project of Defending Democracy Together; crawled politely (1 request per 1.5 s) |
 | CNN-hosted Stiles archive (`ix.cnn.io/data/truth-social/truth_archive.json`) | bulk history, gap filler, engagement counts | CC0; refreshed every 5 min; cumulative; excludes replies; de-duplicates reposts |
 
