@@ -52,6 +52,7 @@ data/posts/   YYYY-MM.jsonl, one current record per post (source of truth)
 data/deletions.jsonl, data/engagement/, data/runs/, data/state.json
 output/       posts.csv, checks.json, metrics.json, reports/
 docs/SPEC.md  module contract
+docs/OPERATIONS.md  maintainer guide: what runs when, why each source and check exists, playbook for red runs
 MISTAKES.md   dated log of build errors and data anomalies
 ```
 
