@@ -256,17 +256,22 @@ def run_checks(
                     "trumpstruth_total_drift:local_total=%d,trumpstruth_total=%d,diff=%d" % (local_total, total_expected, diff)
                 )
 
-    # --- soft: single-source posts older than 24h ---
-    single_source_old = sorted(
+    # --- soft: recent posts (24 h .. 30 days old) seen by exactly one source ---
+    # Older single-source posts are expected by design (historical reposts exist only in the CNN archive), so the
+    # window keeps this check about source outages, not history.
+    single_source_recent = sorted(
         r["ts_id"] for r in all_records
         if isinstance(r.get("seen_sources"), list) and len(r["seen_sources"]) == 1
         and isinstance(r.get("created_at_utc"), str)
-        and _age(now_dt, r["created_at_utc"]) > timedelta(hours=24)
+        and timedelta(hours=24) < _age(now_dt, r["created_at_utc"]) <= timedelta(days=30)
     )
-    stats["single_source_old_posts"] = {"count": len(single_source_old), "sample_ids": single_source_old[:_SAMPLE_LIMIT]}
-    if single_source_old:
+    stats["single_source_recent_posts"] = {
+        "count": len(single_source_recent), "sample_ids": single_source_recent[:_SAMPLE_LIMIT]
+    }
+    if single_source_recent:
         soft.append(
-            "single_source_old_posts:%d (e.g. %s)" % (len(single_source_old), ", ".join(single_source_old[:_SAMPLE_LIMIT]))
+            "single_source_recent_posts:%d (e.g. %s)"
+            % (len(single_source_recent), ", ".join(single_source_recent[:_SAMPLE_LIMIT]))
         )
 
     # --- soft: newest post older than 12h ---
@@ -275,7 +280,7 @@ def run_checks(
     if newest_created_at and _age(now_dt, newest_created_at) > timedelta(hours=12):
         soft.append("stale_newest_post:%s" % newest_created_at)
 
-    # --- soft: spike days (count > 3x trailing 28-day median) ---
+    # --- soft: spike days (count > 3x trailing 28-day median and at least 20 posts) ---
     spike_days = _spike_days(all_records)
     stats["spike_days"] = spike_days
     if spike_days:
@@ -317,7 +322,11 @@ def _age(now_dt: datetime, iso: str) -> timedelta:
         return timedelta(0)
 
 
-def _spike_days(records: Sequence[Dict[str, Any]], trailing_days: int = 28, factor: float = 3.0) -> List[Dict[str, Any]]:
+def _spike_days(
+    records: Sequence[Dict[str, Any]], trailing_days: int = 28, factor: float = 3.0, min_count: int = 20
+) -> List[Dict[str, Any]]:
+    # A day is a spike only when it is both a multiple of the trailing median AND large in absolute terms;
+    # without the floor every early-2022 day (median near zero) would be flagged forever.
     counts: Dict[str, int] = defaultdict(int)
     for r in records:
         et_date = r.get("et_date")
@@ -337,7 +346,7 @@ def _spike_days(records: Sequence[Dict[str, Any]], trailing_days: int = 28, fact
         if count > 0:
             trailing = [counts.get((d - timedelta(days=n)).isoformat(), 0) for n in range(1, trailing_days + 1)]
             median = statistics.median(trailing) if trailing else 0
-            if median > 0 and count > factor * median:
+            if median > 0 and count > factor * median and count >= min_count:
                 spikes.append({"et_date": key, "count": count, "trailing_median": median})
         d += one_day
     return spikes

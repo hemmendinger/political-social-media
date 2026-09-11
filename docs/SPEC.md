@@ -283,8 +283,9 @@ each record in its correct month file; files sorted; timestamps well-formed; `cr
 deletion events reference known posts and are unique on (ts_id, source); engagement rows reference known posts; no two
 engagement rows for one post within 60 min; `field_sources` valid; a run row exists for `run_id` when given.
 Soft: `deleted_lower <= deleted_upper`; `present` count vs `api_statuses_count` (tolerance 50); `present + deleted` vs the
-trumpstruth total (tolerance 50); posts seen by exactly one source and older than 24 h (count + sample); newest post older
-than 12 h; any day whose count exceeds 3× the trailing 28-day median; `cnn_ambiguous_handles` = count (and up to 10 sample
+trumpstruth total (tolerance 50); posts between 24 h and 30 days old seen by exactly one source (count + sample; older single-source posts are
+expected, see TODO.md); newest post older than 12 h; any day with at least 20 posts whose count exceeds 3× the trailing
+28-day median; `cnn_ambiguous_handles` = count (and up to 10 sample
 ids) of reblogs whose `field_sources["reblog_of_acct"]` is `cnn` and whose `content_text` starts with a word character
 (the glued `RT @handle` boundary problem, see TODO.md). CLI exit 2 on hard failures.
 

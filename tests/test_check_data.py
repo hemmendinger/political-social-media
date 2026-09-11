@@ -202,11 +202,17 @@ def test_soft_statuses_count_drift_beyond_tolerance(tmp_path):
     assert any(h.startswith("present_count_drift") for h in result["soft"])
 
 
-def test_soft_single_source_old_posts(tmp_path):
+def test_soft_single_source_recent_posts(tmp_path):
     _valid_dataset(tmp_path)
     result = cd.run_checks(tmp_path, now=NOW)
-    assert result["stats"]["single_source_old_posts"]["count"] == 3
-    assert any(h.startswith("single_source_old_posts:") for h in result["soft"])
+    assert result["stats"]["single_source_recent_posts"]["count"] == 3
+    assert any(h.startswith("single_source_recent_posts:") for h in result["soft"])
+
+
+def test_single_source_posts_older_than_30_days_are_not_flagged(tmp_path):
+    store.save_posts(tmp_path, [make_record("100000000000000009", "2026-06-01T00:00:00Z")])
+    result = cd.run_checks(tmp_path, now=NOW)
+    assert result["stats"]["single_source_recent_posts"]["count"] == 0
 
 
 def test_soft_stale_newest_post(tmp_path):
@@ -224,14 +230,14 @@ def test_soft_spike_day(tmp_path):
         records.append(make_record("1%017d" % n, "%sT12:00:00Z" % d.isoformat()))
         n += 1
     spike_date = start + timedelta(days=28)
-    for i in range(5):
-        records.append(make_record("1%017d" % n, "%sT12:%02d:00Z" % (spike_date.isoformat(), i * 5)))
+    for i in range(25):  # 25 posts: above the 20-post floor and 25x the trailing median of 1
+        records.append(make_record("1%017d" % n, "%sT12:%02d:00Z" % (spike_date.isoformat(), i * 2)))
         n += 1
     store.save_posts(tmp_path, records)
     result = cd.run_checks(tmp_path, now="2026-09-11T12:00:00Z")
     assert result["ok"] is True
     spikes = result["stats"]["spike_days"]
-    assert any(s["et_date"] == spike_date.isoformat() and s["count"] == 5 for s in spikes)
+    assert any(s["et_date"] == spike_date.isoformat() and s["count"] == 25 for s in spikes)
     assert any(h.startswith("spike_days:") for h in result["soft"])
 
 
@@ -276,3 +282,19 @@ def test_cli_exits_2_on_hard_failure(tmp_path):
     assert code == 2
     data = json.loads(output.read_text(encoding="utf-8"))
     assert data["ok"] is False
+
+
+def test_spike_day_below_the_absolute_floor_is_not_flagged(tmp_path):
+    records = []
+    start = date(2026, 7, 1)
+    n = 1
+    for i in range(28):
+        records.append(make_record("1%017d" % n, "%sT12:00:00Z" % (start + timedelta(days=i)).isoformat()))
+        n += 1
+    spike_date = start + timedelta(days=28)
+    for i in range(6):  # 6x the median but only 6 posts
+        records.append(make_record("1%017d" % n, "%sT12:%02d:00Z" % (spike_date.isoformat(), i * 5)))
+        n += 1
+    store.save_posts(tmp_path, records)
+    result = cd.run_checks(tmp_path, now="2026-09-11T12:00:00Z")
+    assert result["stats"]["spike_days"] == []
