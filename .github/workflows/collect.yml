@@ -2,7 +2,7 @@ name: collect
 
 on:
   schedule:
-    - cron: '*/30 * * * *'
+    - cron: '7,37 * * * *'  # off-peak minutes: GitHub delays or drops schedules that land on :00/:30
   workflow_dispatch:
   push:
     paths:
