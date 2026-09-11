@@ -447,7 +447,8 @@ def test_bounds_max_min_merge_is_order_independent():
     s2 = merge_partial(s1, trumpstruth_partial, source="trumpstruth", observed_at="2026-09-02T00:05:00Z", run_id="b2").record
 
     assert (r2["deleted_lower"], r2["deleted_upper"]) == (s2["deleted_lower"], s2["deleted_upper"])
-    assert r2["deleted_lower"] == "2026-09-02T00:00:00Z"
+    # lower = latest liveness evidence: the api sighting (creation time is earlier); the capture date is ignored
+    assert r2["deleted_lower"] == max("2026-09-01T00:00:00Z", existing0["created_at_utc"])
     assert r2["deleted_upper"] == "2026-09-02T12:00:00Z"
     # deleted_source is legitimately order-dependent (first signal wins)
     assert r2["deleted_source"] == "trumpstruth"
@@ -457,22 +458,38 @@ def test_bounds_max_min_merge_is_order_independent():
 def test_bounds_null_safe_with_no_prior_signals():
     r0 = _base(source="trumpstruth")
     result = merge_partial(r0, {"ts_id": TID, "removed": True}, source="trumpstruth", observed_at="2026-09-02T00:00:00Z", run_id="r1")
-    assert result.record["deleted_lower"] is None
+    assert result.record["deleted_lower"] == r0["created_at_utc"]  # creation is the only liveness evidence
     assert result.record["deleted_upper"] is None
     assert "inverted_bounds:{}".format(TID) not in result.anomalies
 
 
 def test_inverted_bounds_anomaly():
-    r0 = _base(source="api", observed_at="2026-09-01T00:00:00Z")
-    step1 = merge_partial(r0, {"ts_id": TID, "api_404": True}, source="api", observed_at="2026-09-01T00:00:00Z", run_id="r1").record
-    assert step1["deleted_upper"] == "2026-09-01T00:00:00Z"
+    # verified alive by the api on Sep 5, yet trumpstruth says it was confirmed removed on Sep 1
+    r0 = _base(source="api", observed_at="2026-09-05T00:00:00Z")
     result = merge_partial(
-        step1, {"ts_id": TID, "removed": True, "trumpstruth_captured_at": "2026-09-05T00:00:00Z"},
+        r0, {"ts_id": TID, "removed": True, "trumpstruth_removed_at": "2026-09-01T00:00:00Z"},
         source="trumpstruth", observed_at="2026-09-05T00:05:00Z", run_id="r2",
     )
     assert result.record["deleted_lower"] == "2026-09-05T00:00:00Z"
     assert result.record["deleted_upper"] == "2026-09-01T00:00:00Z"
     assert "inverted_bounds:{}".format(TID) in result.anomalies
+
+
+def test_capture_date_never_raises_the_lower_bound():
+    # trumpstruth re-processes removed pages, so a Capture Date after the removal must not count as liveness
+    r0 = merge_partial(
+        None, {"ts_id": TID, "created_at_utc": "2026-03-01T00:00:00Z", "kind": "original", "content_html": "<p>x</p>"},
+        source="cnn", observed_at="2026-03-01T00:00:00Z", run_id="seed",
+    ).record
+    result = merge_partial(
+        r0, {"ts_id": TID, "removed": True, "trumpstruth_captured_at": "2026-09-05T00:00:00Z",
+             "trumpstruth_removed_at": "2026-04-02T07:14:00Z"},
+        source="trumpstruth", observed_at="2026-09-11T00:00:00Z", run_id="r1",
+    )
+    assert result.record["deleted_lower"] == "2026-03-01T00:00:00Z"
+    assert result.record["deleted_upper"] == "2026-04-02T07:14:00Z"
+    assert result.record["trumpstruth_captured_at"] == "2026-09-05T00:00:00Z"
+    assert "inverted_bounds:{}".format(TID) not in result.anomalies
 
 
 def test_deleted_source_set_once():

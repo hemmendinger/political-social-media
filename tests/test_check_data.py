@@ -254,7 +254,7 @@ def test_soft_cnn_ambiguous_handles(tmp_path):
     result = cd.run_checks(tmp_path, now=NOW)
     assert result["ok"] is True
     assert result["stats"]["cnn_ambiguous_handles"] == {"count": 1, "sample_ids": ["100000000000000009"]}
-    assert any(h.startswith("cnn_ambiguous_handles:") for h in result["soft"])
+    assert not any(h.startswith("cnn_ambiguous_handles:") for h in result["soft"])  # stats only, not an anomaly
 
 
 # ---------------------------------------------------------------------------

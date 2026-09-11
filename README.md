@@ -74,7 +74,7 @@ MISTAKES.md   dated log of build errors and data anomalies
 - **Known blind spots.** Posts deleted faster than the sources poll (minutes) can be missed by every source. The CNN archive
   de-duplicates reposts (on 2026-09-08 it kept 1 of 4 deleted self-reposts) and excludes replies, and it glues the `RT @handle`
   prefix to the text so handles parsed from it can be wrong when no better source knows the post. trumpstruth removal times
-  are upper bounds on the deletion moment. trumpstruth also archives the reposted author's original post as its own entry;
+  are upper bounds on the deletion moment, and its removal tracking only reaches back to March 2026. trumpstruth also archives the reposted author's original post as its own entry;
   the collectors keep only statuses authored by realDonaldTrump.
 
 ## Integrity

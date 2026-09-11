@@ -15,7 +15,7 @@ import logging
 import re
 import statistics
 from collections import Counter, defaultdict
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
@@ -238,7 +238,9 @@ def run_checks(
         stats["present_vs_api_statuses_count"] = {
             "present": present_count, "api_statuses_count": api_statuses_count, "diff": diff,
         }
-        if diff > 50:
+        # Structural differences (unflagged historical deletions, replies) keep a few hundred posts of drift until the
+        # deferred API backfill; warn only beyond 1% (or 50 posts for small datasets).
+        if diff > max(50, api_statuses_count // 100):
             soft.append(
                 "present_count_drift:present=%d,api_statuses_count=%d,diff=%d" % (present_count, api_statuses_count, diff)
             )
@@ -281,7 +283,7 @@ def run_checks(
         soft.append("stale_newest_post:%s" % newest_created_at)
 
     # --- soft: spike days (count > 3x trailing 28-day median and at least 20 posts) ---
-    spike_days = _spike_days(all_records)
+    spike_days = _spike_days(all_records, since=(now_dt - timedelta(days=60)).date())
     stats["spike_days"] = spike_days
     if spike_days:
         soft.append("spike_days:%s" % ", ".join("%s(%d)" % (d["et_date"], d["count"]) for d in spike_days))
@@ -296,10 +298,7 @@ def run_checks(
         and _WORD_START_RE.match(r["content_text"])
     )
     stats["cnn_ambiguous_handles"] = {"count": len(ambiguous_ids), "sample_ids": ambiguous_ids[:_SAMPLE_LIMIT]}
-    if ambiguous_ids:
-        soft.append(
-            "cnn_ambiguous_handles:%d (e.g. %s)" % (len(ambiguous_ids), ", ".join(ambiguous_ids[:_SAMPLE_LIMIT]))
-        )
+    # Reported in stats only: this is a known, slowly shrinking backlog (TODO.md item 1), not a per-run anomaly.
 
     # --- stats: general counts ---
     stats["by_status"] = dict(Counter(r.get("status") for r in all_records))
@@ -323,7 +322,8 @@ def _age(now_dt: datetime, iso: str) -> timedelta:
 
 
 def _spike_days(
-    records: Sequence[Dict[str, Any]], trailing_days: int = 28, factor: float = 3.0, min_count: int = 20
+    records: Sequence[Dict[str, Any]], trailing_days: int = 28, factor: float = 3.0, min_count: int = 20,
+    since: Optional[date] = None,
 ) -> List[Dict[str, Any]]:
     # A day is a spike only when it is both a multiple of the trailing median AND large in absolute terms;
     # without the floor every early-2022 day (median near zero) would be flagged forever.
@@ -343,7 +343,7 @@ def _spike_days(
     while d <= last:
         key = d.isoformat()
         count = counts.get(key, 0)
-        if count > 0:
+        if count > 0 and (since is None or d >= since):  # only recent days are actionable
             trailing = [counts.get((d - timedelta(days=n)).isoformat(), 0) for n in range(1, trailing_days + 1)]
             median = statistics.median(trailing) if trailing else 0
             if median > 0 and count > factor * median and count >= min_count:

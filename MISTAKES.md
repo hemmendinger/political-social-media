@@ -16,6 +16,11 @@ Honest, dated log. Build errors first, then data anomalies on the source side.
   Rule: multi-line scripts and documents go to a file via the editor tool and are then executed; keep inline shell
   commands free of stray apostrophes.
 
+- **2026-09-11** I assumed trumpstruth's "Capture Date" on a removed post was the moment it was found gone and used it as
+  the "last known alive" bound. After the backfill, 93 of 98 deletions had a lower bound months after their removal:
+  trumpstruth re-processes removed pages (all carried September capture dates). Fixed: the lower bound from trumpstruth is
+  the creation time only; the 98 deletions were regenerated through the corrected code.
+
 ## Data anomalies (source side)
 
 - **CNN archive de-duplicates reposts.** Of the four self-reposts Trump posted and deleted on 2026-09-08 (ids
@@ -35,3 +40,10 @@ Honest, dated log. Build errors first, then data anomalies on the source side.
   range is required). The feed caps dated queries at 10 items.
 - **Truth Social API `statuses_count` (36,549 on 2026-09-11) differs from the archives** (CNN 36,236; trumpstruth 37,105).
   Expected: deletions, replies, and the other-account entries above. Tracked as a soft check with tolerance.
+- **trumpstruth.org removal tracking starts in March 2026.** The full removed-only search over 2022-01-01..2026-09-11
+  returned 98 posts, all removed between 2026-03 and 2026-09 (6 / 44 / 16 / 8 / 14 / 6 / 4 per month). Deletions before
+  March 2026 are unknown to every free source; the deferred API backfill (present in archives but missing from the live
+  account) is the only way to recover them.
+- **Our `present` count exceeds the API's `statuses_count` by ~340** (36,898 vs 36,554 on 2026-09-11): the archives keep
+  posts deleted before March 2026 that nothing has flagged, and the API count excludes them. Tracked as a stat; warned
+  only beyond 1%.

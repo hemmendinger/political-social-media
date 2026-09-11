@@ -306,7 +306,9 @@ def _apply_deletion_signal(
     lower_candidates = [
         record.get("last_verified_live_at"),
         partial.get("last_verified_live_at"),
-        partial.get("trumpstruth_captured_at"),
+        # trumpstruth Capture Date is only their last processing time (removed pages get re-processed too),
+        # so it is never evidence of the post being alive; creation time is the safe floor from that source.
+        record.get("created_at_utc") or partial.get("created_at_utc"),
     ]
     lower_candidates = [normalize_iso(v) for v in lower_candidates if v]
     incoming_lower = max(lower_candidates) if lower_candidates else None

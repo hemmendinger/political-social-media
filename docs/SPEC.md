@@ -169,8 +169,8 @@ stores reposted authors' originals as their own entries (e.g. 41515 = MichaelCoh
 `parse_status_page(html) -> dict`: `trumpstruth_id` from `og:url`, everything in 6.1 for the main status, plus the details
 table (`status-details-table__key` / `status-details-table__value`): `TRUTH Social status ID` → ts_id, `Original Post Date` →
 created_at_utc (for a reblog page this is the repost time; the header time is the reblogged post's time → reblog_of_created_at),
-`Capture Date` → trumpstruth_captured_at (trumpstruth's last processing time: a later re-check for live posts, the removal
-confirmation for removed posts), `Removed from platform` → `removed: bool` and `trumpstruth_removed_at` = the minute-precision
+`Capture Date` → trumpstruth_captured_at (their last processing time for the page; removed pages are re-processed too, so it
+is NOT evidence the post was alive and never feeds a deletion bound), `Removed from platform` → `removed: bool` and `trumpstruth_removed_at` = the minute-precision
 value parsed from the `confirmed removed <ET text>` part, replaced by the Capture Date's precise `<time datetime>` when that
 falls within the same minute. The reblog marker class is `status__reblog-indicator`.
 The deletion banner has class `alert--deletion`. Kind: `reblog` when the page carries the `ReTruthed` indicator or links a
@@ -229,8 +229,8 @@ with fields `record`, `changed: bool`, `is_new: bool`, `deletion_event: Optional
 7. `status`: `present` → `deleted` when the partial carries a deletion signal (`removed=True` from trumpstruth, or
    `api_404=True` from the API). `deleted` → `present` only when the source is `api` and the partial is a live status object;
    report anomaly `resurrected:<ts_id>`.
-8. Deletion bounds: incoming `lower` = the latest non-null of `last_verified_live_at` and (trumpstruth case)
-   `trumpstruth_captured_at`; incoming `upper` = `trumpstruth_removed_at` (trumpstruth) or `observed_at` (api404).
+8. Deletion bounds: incoming `lower` = the latest non-null of `last_verified_live_at` and `created_at_utc` (never
+   `trumpstruth_captured_at`, see 6.2); incoming `upper` = `trumpstruth_removed_at` (trumpstruth) or `observed_at` (api404).
    Merge: `deleted_lower = max(existing, incoming)`, `deleted_upper = min(existing, incoming)`, null-safe.
    If `deleted_lower > deleted_upper` → anomaly `inverted_bounds:<ts_id>` (keep the values). `deleted_source` = the source that
    first set `deleted` (never changes). Emit `deletion_event` once per (ts_id, source) — the caller passes the set of
@@ -282,10 +282,10 @@ written to `output/checks.json` by the CLI. Hard: schema/types per §2; `ts_id` 
 each record in its correct month file; files sorted; timestamps well-formed; `created_at_utc <= deleted_upper` when both set;
 deletion events reference known posts and are unique on (ts_id, source); engagement rows reference known posts; no two
 engagement rows for one post within 60 min; `field_sources` valid; a run row exists for `run_id` when given.
-Soft: `deleted_lower <= deleted_upper`; `present` count vs `api_statuses_count` (tolerance 50); `present + deleted` vs the
+Soft: `deleted_lower <= deleted_upper`; `present` count vs `api_statuses_count` (tolerance max(50, 1%)); `present + deleted` vs the
 trumpstruth total (tolerance 50); posts between 24 h and 30 days old seen by exactly one source (count + sample; older single-source posts are
-expected, see TODO.md); newest post older than 12 h; any day with at least 20 posts whose count exceeds 3× the trailing
-28-day median; `cnn_ambiguous_handles` = count (and up to 10 sample
+expected, see TODO.md); newest post older than 12 h; any day in the last 60 days with at least 20 posts whose count exceeds 3× the trailing
+28-day median; stats-only `cnn_ambiguous_handles` = count (and up to 10 sample
 ids) of reblogs whose `field_sources["reblog_of_acct"]` is `cnn` and whose `content_text` starts with a word character
 (the glued `RT @handle` boundary problem, see TODO.md). CLI exit 2 on hard failures.
 

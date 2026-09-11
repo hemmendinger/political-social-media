@@ -322,10 +322,11 @@ def parse_status_page(html: str) -> Dict[str, Any]:
     it is, correctly, just an ordinary original post.
 
     ``trumpstruth_captured_at`` (from the "Capture Date" row) is trumpstruth's last processing time for this
-    page, not specifically a removal check: for a still-live post it is simply the most recent re-crawl, and
-    it keeps advancing on later recaptures; for a removed post it happens to coincide with the moment
-    trumpstruth confirmed the removal (that recapture is what discovered the post was gone), which is why
-    ``trumpstruth_removed_at`` below cross-checks against it.
+    page and nothing more: live posts get re-crawled, and removed pages get re-processed too (observed
+    2026-09-11: pages removed in April carried September capture dates). It is therefore never evidence that
+    the post was alive at that time and must not feed a deletion bound. ``trumpstruth_removed_at`` below is
+    upgraded to the capture timestamp only when both fall within the same minute (the capture that discovered
+    the removal), otherwise the minute-precision removal text stands.
     """
     og_m = _OG_URL_RE.search(html)
     if not og_m:

@@ -40,10 +40,13 @@ new reposts are complete. Historically, reposts come from the CNN archive only (
 same target). Options: a slow sequential crawl of trumpstruth ids 1..41,700 (about 17 hours at 1.5 s per page, resumable),
 or the deferred full API backfill, which resolves the same gap with richer fields.
 
-### 3. Historical posts are presumed live, not verified
+### 3. Historical posts are presumed live, not verified; deletions before March 2026 are unknown
 
 Until the deferred API backfill runs, posts known only from the archives carry `status = present` without
-`last_verified_live_at`. Analyses of deletions before 2026-09-11 rely entirely on trumpstruth's removed flags.
+`last_verified_live_at`. trumpstruth's removal tracking only reaches back to March 2026 (98 removed posts in total as of
+2026-09-11), and our `present` count exceeds the live account's `statuses_count` by roughly 340, which is the size of the
+unflagged historical deletions plus structural differences. The API backfill resolves this: any archived post the live
+account no longer returns is a deletion (with unknown timing).
 
 ## Deferred features
 
