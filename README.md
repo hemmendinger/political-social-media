@@ -63,8 +63,8 @@ MISTAKES.md   dated log of build errors and data anomalies
 - **Times** are stored in UTC (`...Z`). Analysis columns (`et_date`, `et_hour`, `et_dow`, `created_at_et`) are
   America/New_York. Day boundaries are Eastern. For a reblog, `created_at_utc` is when Trump reposted;
   `reblog_of_created_at` is the reposted post's own time.
-- **Deletion is an interval, not a point.** `deleted_lower` = last moment the post was known to exist (our last live sighting,
-  or trumpstruth's capture time); `deleted_upper` = first moment it was confirmed gone (trumpstruth's confirmed-removed time,
+- **Deletion is an interval, not a point.** `deleted_lower` = last moment the post was known to exist (our last live API sighting,
+  else its creation time; trumpstruth's capture date is never used because removed pages get re-processed); `deleted_upper` = first moment it was confirmed gone (trumpstruth's confirmed-removed time,
   or our API 404). Lifetime analyses must use both bounds. `deleted_source` names the signal that first confirmed it.
 - **Status** is `present` or `deleted`. `present` posts seen only in archives (before polling began) are presumed live, not
   individually verified; `last_verified_live_at` is set only by the API. `deleted -> present` happens only if the API returns
