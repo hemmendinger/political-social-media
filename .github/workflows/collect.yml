@@ -4,6 +4,9 @@ on:
   schedule:
     - cron: '*/30 * * * *'
   workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/collect.yml'  # a change to this file also runs it once (first run, manual re-runs)
 
 permissions:
   contents: write
