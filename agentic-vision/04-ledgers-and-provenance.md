@@ -99,6 +99,7 @@ errors, notes}`. Vision adds, all optional so old lines still validate:
 | `error` | `{type, message, url, status, sha256, head, phase}` when `ok=false`; the message is not truncated, the URL is the request that failed, `head` is the first 2 KB of the body, `phase` is where in the leg it happened (`listing`, `resolve:41699`, `removed_search:2026-08-30..2026-09-13:page2`, `removed_status:41644`, `cnn:download`, `api:probe`, `api:verify:<ts_id>`) |
 | `sweep` | the removed-search window this leg covered, `{start_date, end_date, pages, results}`; `v_coverage` derives the observable-lifetime limit from it (B-029) |
 | `budget` | `{host: {limit, used}}`; a truncation entry when a limit was hit (B-032) |
+| `cost` | `{requests, requests_by_host, bytes_in, slept_s, wall_s, files_written, bytes_written}` measured, plus `estimate` from `--plan` when one was made (B-055, B-058) |
 | `raw_dir` | `data/raw/<run_id>/` when captures were kept |
 | `truncated` | caps that applied (`ids_per_run=200`) |
 

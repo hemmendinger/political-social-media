@@ -21,6 +21,7 @@ Goal: an agent can orient in three commands, nothing computed is lost, and the d
 | B-030, B-042 | incident records committed `if: always()`; `checks.json` carries `run_id` and `checked_at` | S |
 | B-036 | `lifetime_lo_min` / `lifetime_hi_min`, bound basis and precision columns, `detection_floor_min` in coverage; the weekly report labels the bound | S |
 | B-051, B-054 | repair-state invariants (a half-finished repair fails a hard check); split the ambiguous-handle stat (1,157 self-reposts versus 15 glued handles) | S |
+| B-055, B-056 | cost block on every run record; compact `checks.json` and `state.json` | S |
 | B-013, B-028, B-015 | fixture manifest; ignore `data/.lock`; persist `max_trumpstruth_id` per id | S |
 | C1 to C33 | the doc corrections in `11-doc-deltas.md` section 1 (the restructurings wait for phase 2) | S |
 | D-007, D-008, D-009, D-013 | decide (recommendations in `knowledge-seed/decisions.md`); they gate B-025, B-003/B-004, B-012, and the pandas removal | maintainer |
@@ -53,6 +54,7 @@ Goal: any red run can be reproduced offline and any repair is one command with a
 | B-031, B-032, B-033, B-034 | error envelope with leg phase; request budgets and undercollection guards; union merge, rebase abort, JSON lock; fingerprints on every fetch | S to M each |
 | B-041 | `utc_date`, `utc_seam`, `metrics.window()` with both bounds | S |
 | B-050, B-052, B-053 | `forget_deletion` / `forget_source`; `repair undo` and `ts pause`; carry-forward across `redo-history` | S each |
+| B-057, B-058 | touched-month writes and one load per run; `ts collect --plan` with the policy table | S, M |
 | B-011 | share the collector helpers (do it while touching all three merge loops) | S |
 
 Acceptance:
@@ -106,6 +108,7 @@ Goal: close the historical gaps the sources allow, from the desktop, as declared
 | B-005, B-006, B-007, B-008 | dashboard from `status.json`; media mirroring and transcripts through the sub-resource hook; Factba.se spot checks | M each |
 | B-010 (D-006) | desktop Python upgrade; drop the 3.9 constraint and the matrix job | S |
 | B-040 | watchdog workflow filing the doctor verdict as an issue | S |
+| B-059 | growth guard and forecast | S |
 | retire the old entry points | `python -m scripts.<x>` prints a one-line pointer to the verb, then is removed | S |
 
 Acceptance: `coverage.presumed_live_count == 0`, `v_confidence.cnn_dedup_risk` count 0, and the four

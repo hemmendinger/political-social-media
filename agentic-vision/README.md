@@ -34,7 +34,7 @@ Supporting artifacts, all concrete enough to copy into place:
 - `templates/` — `AGENTS.md` (the door), `STATUS.md` (the rendered situation), and the decision, lesson,
   and dossier templates.
 - `knowledge-seed/` — the knowledge layer already populated from what the repository knows today: three
-  source dossiers, a 71-item structured backlog (migrating `TODO.md`, the dead-code review, and the
+  source dossiers, a 76-item structured backlog (migrating `TODO.md`, the dead-code review, and the
   2026-09-12 audit findings), 18 decisions (7 accepted, 11 proposed with recommendations), and 8 lessons.
 
 ## What was found along the way

@@ -138,8 +138,9 @@ threshold, ids_sample, descriptor}`. Writes `output/checks.json`. No network. Ab
 
 ### Collection (layers 0 to 4)
 
-**`ts collect [--sources trumpstruth,cnn,api] [--backfill] [--force-cnn] [--dry-run] [--live] [--capture] [--removed-days N] [--max-ids N] [--budget host=N]`**
-The existing orchestrator. Adds: `--dry-run` runs every leg against the network (subject to profile) but
+**`ts collect [--sources trumpstruth,cnn,api] [--backfill] [--force-cnn] [--plan] [--dry-run] [--live] [--capture] [--removed-days N] [--max-ids N] [--budget host=N]`**
+The existing orchestrator. Adds: `--plan` prints, with zero requests, which legs would run or skip and why
+(from the policy table and the state), when each is next due, and an estimated cost range (B-058); `--dry-run` runs every leg against the network (subject to profile) but
 writes nothing under `data/`; instead it writes the would-be changes to `output/plans/collect-<run_id>.json`
 (records new and changed, events, anomalies) so an agent can inspect a collection before it lands.
 `--capture` saves every response under `data/raw/<run_id>/` (on by default in `cloud`; the workflow uploads

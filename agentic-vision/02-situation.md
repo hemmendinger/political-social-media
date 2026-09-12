@@ -84,7 +84,7 @@ The bot's message today: `collect: +4 posts, +0 deletions, checks ok`. The proto
 compatible and adds structure:
 
 ```
-collect: +4 posts, +0 deletions, checks ok        <- unchanged first line, grep-stable
+collect: +4 posts, +0 deletions, checks ok | health yellow | 8 req 15 s   <- first line: the old prefix stays grep-stable; health and cost make `git log --oneline` tier 0
 
 run: 20260912T045806Z-7e76 profile=cloud health=yellow
 legs: trumpstruth ok 7req +4/6 | cnn ok 1req +0/4 | api skipped(profile)
@@ -98,10 +98,13 @@ changes), `parser:`, `merge:`, `check:`, `view:`, `situation:`, `knowledge:`, `r
 
 ## 5. History for trends
 
-`output/history/checks-YYYY-MM-DD.jsonl` receives one line per run: `{run_id, generated_at, stats}`. It is
-the cheapest possible time series (about 2 KB per run, 100 KB per day), committed by the bot, and it is what
-`drift.trend_7d` and the mission sparklines are computed from. Files older than 90 days are folded into a
-monthly summary by `ts build` (a backlog item, not phase 1).
+Git already holds every past `checks.json`, so trends can be read from history with `git log --format=%H:%ct
+-- output/checks.json` and `git show <sha>:output/checks.json`, at zero growth. That works only where the
+clone is deep enough (the cloud checkout fetches 50 commits, about a day at nominal cadence; a sandbox clone
+may be shallower), so `situation.py` reads git when it can and otherwise `output/history/checks-YYYY-MM-DD.jsonl`,
+a compact line per run `{run_id, generated_at, stats}` (about 2 KB per run) committed by the bot. Files older
+than 90 days are folded into a monthly summary by `ts build`. `drift.trend_7d`, the cadence ratio, and the
+mission sparklines come from whichever series is available, and `status.json` says which.
 
 ## 6. Where `status.json` is produced in the run
 

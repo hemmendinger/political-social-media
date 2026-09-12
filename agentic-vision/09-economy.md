@@ -49,14 +49,17 @@ Each of these is a one-line change or a profile rule, and together they remove m
 | `MAX_IDS_PER_RUN` and `removed_days`, `max_pages`, `max_verify` exposed as verb flags with the constants as defaults | an id re-walk on the desktop takes one run at a larger cap instead of 209 cron runs (about 21 CI hours) | S | `ts collect --max-ids` |
 | Fail fast on a guaranteed 403: `max_attempts=1` for the probe request | the 36 s becomes 12 s even where probing is kept | S | `collect_api` |
 | Search removals since 2022-01-01 on every run (D-017) instead of the last 14 days | recovers about a third of future deletions for 0 to 4 extra requests per run (98 results fit in one page of 100 today; `processed_removed_ids` prevents re-fetching status pages) | S | `collect_trumpstruth.run(removed_days=...)` |
+| Compact `checks.json` (`months_present` as `{first, last, count, gaps}`) and render integer lists in `state.json` on one line | about 800 tokens off every cold read of the two files an agent opens first (B-056) | S | `check_data`, `store.save_state` |
+| Rewrite only the month files a run touched, and load the store once (B-057) | a 200-id walk stops performing up to 20 full 55-file rewrites (about 25 s); the run's diff touches only what changed | S | `store.save_posts(months=...)`, `Context.posts()` |
+| `ts collect --plan`: a zero-request preview from a policy table (B-058) | an agent knows what a run will do and roughly cost before spending anything; skip rules become data with a `next_due` | M | `scripts/policy.py` |
 | Per-leg request budgets (B-032) | a semantic change at the source cannot run a leg into the 25-minute timeout every run with no trace; the truncation is a recorded number | S | `Http` |
 
 ## 4. Repository growth: what to stop committing (D-010)
 
 | File | Today | Proposal |
 |---|---|---|
-| `output/posts.csv` (12.7 MB) | committed on every run that changes anything; each commit adds a new blob (git delta-compresses, but a 12.7 MB text file with one changed line still costs a scan per checkout and grows the pack) | stop committing; `ts build --csv` writes it on demand; publish a weekly copy as a release asset from the desktop if downstream users want a URL |
-| `output/metrics.json` | rewritten every run; its 7-day window slides, so the diff is never empty | keep, but write only the `window` block per run and let `ts report` compute trailing on demand; or accept the 38 KB and stop worrying (it is the smallest of the three) |
+| `output/posts.csv` (12.7 MB) | committed on every run that changes anything; each commit adds a new blob (git delta-compresses, but a 12.7 MB text file with one changed line still costs a scan per checkout and grows the pack) | stop committing; `ts build --csv` writes it on demand (0.4 s); if a download URL is wanted, commit a 90-day `posts-recent.csv` (about 2,000 rows, 0.7 MB) instead |
+| `output/metrics.json` | rewritten every run; its 7-day window slides, so the diff is never empty | split: `metrics-window.json` (about 4 KB) every run, `metrics-trailing.json` once a day at the ET day boundary |
 | `data/engagement/*.csv` | one row per post per hour for every post under 14 days old, from CNN | one baseline row at first sight plus one row per day for posts under 14 days, plus one at 14 days; the api leg from the desktop keeps the hourly rule because it is the only source of fresh counts |
 | `output/history/checks-*.jsonl` (new) | not yet | about 2 KB per run, the cheapest possible time series for trends; fold monthly |
 | `data/raw/` | never written | written in the cloud, never committed, uploaded as an artifact only on a non-green run |
@@ -66,13 +69,25 @@ engagement rows) to under 200 KB.
 
 ## 5. The cost line and the budget
 
+Cost is measured in the units it is budgeted in and stored where the counts already are. `Http` counts
+requests by host and bytes in; the clock exposes seconds slept; the store counts files and bytes written.
+Every run record gains `cost: {requests, requests_by_host, bytes_in, slept_s, wall_s, files_written,
+bytes_written}` (B-055) and every verb envelope carries the same block, so the 36 s the blocked api leg
+spends sleeping is visible as `slept_s: 36` instead of being inferred from the pacing constants. A run also
+reports `accuracy_per_request`: beliefs changed (new records, deletions found, records verified) divided by
+requests, per leg, which is the number that says where requests are worth spending.
+
 Every verb prints a cost line (`cost: 7 requests (trumpstruth 6, cnn 1), 14.2 s (9.0 s sleeping), 4 files`),
-and the envelope carries it as data (`schemas/verb-envelope.schema.json`). Two habits follow:
+and the envelope carries it as data (`schemas/verb-envelope.schema.json`). Three habits follow:
 
 - **Estimate before, measure after.** A repair plan prints its estimated requests and seconds (from the
   pacing constants and the count of ids), and the intervention record stores the measured values. The
   backlog's `cost` block is filled from these measurements, not guesses (the backfill was documented as
   30 minutes in the README, 15 in OPERATIONS, and measured at 12.5).
+- **Plan before you spend.** `ts collect --plan` reads the policy table and the state and prints, with zero
+  requests, which legs would run or skip and why, when each is next due, and an estimated cost range; the
+  run record stores the estimate beside the measurement and a soft check fires when they diverge by more
+  than three times (B-058).
 - **Choose the cheapest sufficient action.** `ts doctor` and the playbooks name the cheapest verb first:
   regenerate one deletion (about 7 requests) before redoing the removed phase (105 requests, 159 s) before
   the full backfill (477 requests, 747 s); `ts check --only` before `ts check`; `ts verify --quick` before
@@ -88,7 +103,19 @@ stays large, the cheapest remedy is a second trigger (`repository_dispatch` from
 a free external cron service) rather than tighter code; that is a backlog item with its own measurement,
 not an assumption.
 
-## 7. What not to optimize
+## 7. The verification ladder
+
+Four rungs, each with a fixed cost, and a rule for which rung a change class needs (`06-simulation-and-verification.md`
+section 4 has the checklist):
+
+| Rung | Command | Cost | Sufficient for |
+|---|---|---|---|
+| quick | `ts verify --quick` (coherence tests, changed-module tests, smoke replay) | 0 requests, under 30 s | docs, knowledge, a check descriptor, a metric |
+| replay | `ts replay <bundle>` | 0 requests, under 20 s per bundle | a parser, the merge, a collector, a repair plan |
+| plan | `ts collect --plan`, `ts repair <plan>` (no `--apply`) | 0 requests, seconds | anything that would spend requests or rewrite data |
+| live | `ts collect --live` on a scratch root, from the profile that can reach the source | requests, minutes | a new source, a fixture recapture; never as a feedback loop for a parser fix |
+
+## 8. What not to optimize
 
 - The test suite (1.8 s) and `build_db` (under 4 s) are already cheap; do not add caching there.
 - The 1.5 s trumpstruth pacing and the 12 s API pacing are courtesy and rate-limit compliance, not waste.

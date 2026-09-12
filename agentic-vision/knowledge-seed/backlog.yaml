@@ -1105,6 +1105,123 @@ items:
     opened: 2026-09-12
     closed: null
 
+  - id: B-055
+    title: Cost block on every run record
+    area: economy
+    priority: P0
+    status: open
+    phase: 0
+    problem: A run record carries only a total request count; nothing says that the api leg's 36 s were pure sleep,
+      how many bytes came in, or what was written.
+    acceptance: run records carry cost{requests, requests_by_host, bytes_in, slept_s, wall_s, files_written, bytes_written};
+      Http counts by host and bytes; the clock exposes slept seconds; the verb envelope reuses the same block
+    cost:
+      build: S
+      requests: null
+      wall: null
+      profile: any
+    blocked_by: []
+    evidence:
+    - scripts/common.py:345-431
+    - 'data/runs/2026-09.jsonl (api leg: 4 req, 36 s)'
+    decision: null
+    opened: 2026-09-12
+    closed: null
+  - id: B-056
+    title: Compact the token-hostile artifacts an agent reads first
+    area: economy
+    priority: P1
+    status: open
+    phase: 0
+    problem: 55 of checks.json's 134 lines are a months_present array; 98 of state.json's 129 lines are processed_removed_ids
+      one integer per line. About 800 tokens of filler in the two files an agent opens first.
+    acceptance: months_present becomes {first, last, count, gaps}; integer lists in state.json render on one line
+      (indent stays 2 for objects); a cold read of both files is under 60 lines
+    cost:
+      build: S
+      requests: null
+      wall: null
+      profile: any
+    blocked_by: []
+    evidence:
+    - output/checks.json:78-134
+    - data/state.json:30-128
+    decision: null
+    opened: 2026-09-12
+    closed: null
+  - id: B-057
+    title: Touched-month writes and one posts load per run
+    area: economy
+    priority: P1
+    status: open
+    phase: 1
+    problem: save_posts rewrites all 55 month files on every checkpoint (a 200-id walk performs up to 20 full rewrites,
+      about 25 s) and the store is loaded three to four times per run.
+    acceptance: Context.posts() loads once; store.save_posts(root, records, months=...) rewrites only changed partitions;
+      the run's diff touches only the months it changed
+    cost:
+      build: S
+      requests: null
+      wall: null
+      profile: any
+    blocked_by:
+    - B-026
+    evidence:
+    - scripts/store.py:90-117
+    - scripts/collect_trumpstruth.py:115-131
+    decision: null
+    opened: 2026-09-12
+    closed: null
+  - id: B-058
+    title: 'ts collect --plan: a zero-request preview from a source policy table'
+    area: verbs
+    priority: P1
+    status: open
+    phase: 1
+    problem: Skip rules, caps, cadences, and pacing are constants spread over four modules; an agent cannot predict
+      what a run will do or cost without reading them.
+    acceptance: scripts/policy.py holds SOURCE_POLICY (allowed profiles, interval and due time, pacing, caps per profile,
+      removed-search rule); ts collect --plan prints per leg run/skip, reason, next_due, and an estimated cost range
+      with zero requests; the run record stores the estimate beside the measured cost and a soft check fires when
+      they diverge by more than 3x
+    cost:
+      build: M
+      requests: null
+      wall: null
+      profile: any
+    blocked_by:
+    - B-101
+    - B-055
+    evidence:
+    - scripts/collect_trumpstruth.py:39-42
+    - scripts/collect_archive.py:21
+    - scripts/collect_api.py:24,80
+    decision: null
+    opened: 2026-09-12
+    closed: null
+  - id: B-059
+    title: Growth guard and forecast in status
+    area: economy
+    priority: P3
+    status: open
+    phase: 3
+    problem: Nothing reports bytes per day per tracked file or warns before a partition gets expensive.
+    acceptance: check_data adds a sizes stat (tracked MB, largest partition, engagement MB) and a soft growth check
+      (posts partition over 8 MB, engagement partition over 5 MB, 7-day mean growth over 300 KB/day); status shows
+      a 12-month forecast
+    cost:
+      build: S
+      requests: null
+      wall: null
+      profile: any
+    blocked_by:
+    - B-103
+    evidence:
+    - 09-economy.md section 4
+    decision: null
+    opened: 2026-09-12
+    closed: null
+
 # ---- the vision's own work items (10-migration-plan.md) ----
 
   - id: B-101
@@ -1339,7 +1456,7 @@ items:
     status: blocked
     phase: 2
     problem: 12.7 MB rewritten per run; no time series for trends.
-    acceptance: "posts.csv untracked and generated on demand; output/history exists; repository growth under 200 KB per day"
+    acceptance: "posts.csv untracked and generated on demand (ts build --csv; a 90-day posts-recent.csv of about 0.7 MB if a download URL is wanted); metrics-window.json every run and metrics-trailing.json once a day; repository growth under 200 KB per day"
     cost: {build: S, requests: null, wall: null, profile: any}
     blocked_by: ["D-010"]
     evidence: ["09-economy.md section 4"]
