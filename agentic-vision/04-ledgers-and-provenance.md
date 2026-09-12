@@ -114,7 +114,8 @@ errors, notes}`. Vision adds, all optional so old lines still validate:
 
 ## 5. Raw capture (layer 0)
 
-`Context.raw_dir` exists and is unused. The vision wires it: when set, `Http.get` writes each response as
+`Context.raw_dir` exists and is unused. The vision wires it through a `CapturingTransport` that wraps the real
+transport and, after each response, writes the body and one index line: when set, `Http.get` writes each response as
 `<raw_dir>/<n>-<host>-<slug>.<ext>` plus one `index.jsonl` line `{n, url, status, headers, file, at}`. Policy:
 
 - `cloud`: on for every run (about 1 MB per run; trumpstruth pages are 100 to 300 KB), kept in the runner's

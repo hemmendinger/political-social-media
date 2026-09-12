@@ -34,8 +34,8 @@ Supporting artifacts, all concrete enough to copy into place:
 - `templates/` — `AGENTS.md` (the door), `STATUS.md` (the rendered situation), and the decision, lesson,
   and dossier templates.
 - `knowledge-seed/` — the knowledge layer already populated from what the repository knows today: three
-  source dossiers with 25 addressable quirks, a 90-item structured backlog (JSON, because the stdlib-only pipeline reads it) (migrating `TODO.md`, the dead-code review, and the
-  2026-09-12 audit findings), 20 decisions (7 accepted, 13 proposed with recommendations), and 9 lessons.
+  source dossiers with 25 addressable quirks, a 94-item structured backlog (JSON, because the stdlib-only pipeline reads it) (migrating `TODO.md`, the dead-code review, and the
+  2026-09-12 audit findings), 20 decisions (7 accepted, 13 proposed with recommendations), and 10 lessons.
 
 ## What was found along the way
 
@@ -58,6 +58,9 @@ The audit behind this design surfaced things worth knowing even if none of the v
 - Knowledge is filed by document type, not by subject: the same CNN quirk appears in five files, no lesson
   names its test, decisions live outside the repository, and the one audit was never acted on. (`07`, B-060
   to B-064)
+- The sequential id walk records the highest id that returned 200 as its cursor, so a status page that
+  fails after retries is skipped forever and a whole-walk outage jumps the cursor past the range. Found by
+  the first offline replay, which is the point of having one. (`06` section 1, B-074, L-010)
 - The desktop's two API runs, the only fresh engagement counts ever taken, wrote zero rows: the throttle
   compared against CNN rows written minutes earlier. Every entry point defaults to the real data root and the
   real network, with no notion of where it runs. (`08` section 3b, B-072, B-066)

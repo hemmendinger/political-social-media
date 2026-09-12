@@ -23,6 +23,7 @@ Goal: an agent can orient in three commands, nothing computed is lost, and the d
 | B-036 | `lifetime_lo_min` / `lifetime_hi_min`, bound basis and precision columns, `detection_floor_min` in coverage; the weekly report labels the bound | S |
 | B-051, B-054 | repair-state invariants (a half-finished repair fails a hard check); split the ambiguous-handle stat (1,157 self-reposts versus 15 glued handles) | S |
 | B-055, B-056 | cost block on every run record; compact `checks.json` and `state.json` | S |
+| B-074 | `pending_ids` for ids that fail mid-walk; the mark never advances past one (a silent-loss bug found by replay) | S |
 | B-013, B-028, B-015 | fixture manifest; ignore `data/.lock`; persist `max_trumpstruth_id` per id | S |
 | C1 to C33 | the doc corrections in `11-doc-deltas.md` section 1 (the restructurings wait for phase 2) | S |
 | D-007, D-008, D-009, D-013 | decide (recommendations in `knowledge-seed/decisions.md`); they gate B-025, B-003/B-004, B-012, and the pandas removal | maintainer |
@@ -59,6 +60,7 @@ Goal: any red run can be reproduced offline and any repair is one command with a
 | B-063, B-064, B-065 | knowledge trailers and the fix receipt; `measurements.jsonl`; structured `facts` on run records | S each |
 | B-067, B-068, B-069 | `ts commit` as the only path to `main`; `data-guard.yml` and `CODEOWNERS`; `ts lease` and the local JSON lock | M, S, S |
 | B-070, B-071, B-072 | the observation ledger for the desktop hand-off; `state.json` split per source; per-(post, source) engagement throttle | M, S, S |
+| B-075, B-077 | `BundleIncomplete` harness faults; scratch subsets and root-to-root diffs | S each |
 | B-011 | share the collector helpers (do it while touching all three merge loops) | S |
 
 Acceptance:
@@ -91,6 +93,7 @@ Goal: the system remembers in the right places, analyses carry their caveats, an
 | B-035, B-037, B-038 | `ts ask` with the question registry and answer envelope; engagement snapshot semantics; epistemic golden cases | M |
 | B-046, B-047, B-048 | metric registry with SQL parity; strict observations in tests and replay; `ts scaffold` | M, S, M |
 | B-073 | the two-clone coordination harness | M |
+| B-076 | the determinism contract test | S |
 | B-039 | module headers and the generated module map | S |
 
 Acceptance:

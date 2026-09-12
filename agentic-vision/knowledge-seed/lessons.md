@@ -1,7 +1,7 @@
 # Lesson index (seed for knowledge/lessons/)
 
 One line per lesson; each becomes an `L-nnn-<slug>.md` from `templates/lesson.md` with `encoded_in`
-pointing at the test that prevents a recurrence. L-001 to L-004 migrate `MISTAKES.md`; L-005 to L-009 are from the
+pointing at the test that prevents a recurrence. L-001 to L-004 migrate `MISTAKES.md`; L-005 to L-010 are from the
 2026-09-12 audit.
 
 | Id | Date | Component | Source | What went wrong | Rule | Encoded in |
@@ -15,3 +15,4 @@ pointing at the test that prevents a recurrence. L-001 to L-004 migrate `MISTAKE
 | L-007 | 2026-09-12 | build_db | none | `lifetime_min` was an upper bound exposed under a point name, and every deletion lower bound equals its creation time, so "deleted within an hour" returned a structural zero that read as evidence | a derived number states which bound it is, in its name or its dictionary entry; a count over an interval is three numbers or an interval, never one | to be written with B-036 (`tests/test_epistemics.py`) |
 | L-008 | 2026-09-12 | check_data | cnn | The `cnn_ambiguous_handles` stat conflated 1,157 exact-prefix self-reposts with 15 glued other-handle rows; TODO.md planned hundreds of lookups for a 15-row problem | measure a backlog against the data before planning its fix; a check's definition is part of the problem statement | to be written with B-054 (`tests/test_check_data.py`) |
 | L-009 | 2026-09-12 | store | api | The engagement throttle compared against the latest row from any source, so the two desktop API legs (the only fresh counts ever taken) wrote 0 rows after a CNN import 14 and 41 minutes earlier | throttles and de-duplication are per (post, source); a source's unique contribution must never be suppressed by another source's row | to be written with B-072 (`tests/test_store.py`) |
+| L-010 | 2026-09-12 | collect_trumpstruth | trumpstruth | The sequential walk records the highest id that returned 200 as its high-water mark, so an id that fails after retries is skipped forever and a whole-walk outage jumps the mark past the range; found by an offline replay, not by production | a cursor may only advance past work that succeeded or was confirmed absent; failures go to a retry list that the next run drains first | to be written with B-074 (bundle `red-walk-blip`) |

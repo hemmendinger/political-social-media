@@ -92,6 +92,7 @@ authentication. Coverage starts 2022-02-14 (the first post).
 |---|---|---|
 | Markup change | leg `ok=false`, `error.type=ParseError` naming the parser; or `yield_below_min` anomaly | `ts doctor` says `markup_drift`; `ts capture` the URL as a new fixture; adjust the parser; keep the old fixture test if the old markup can recur |
 | Site slow or down | `error.type=HttpError|TransportError` after 4 attempts | `ts doctor` says `source_down`; nothing to do unless it persists across runs |
+| A 5xx or connection blip on one status page during the walk | nothing today: the id is skipped and the mark advances past it (B-074, L-010); in the vision an anomaly `walk_retry` and a `pending_ids` entry | let the next run drain `pending_ids`; if it keeps failing, `ts repair rewalk-ids --from N --to N` |
 | Silent under-collection | green legs with `new=0` for many runs while the account is active | `ts doctor --live` compares the live listing's max id with `max_trumpstruth_id` |
 | Site removes a post we hold | appears in the removed search only if the post's creation date is inside the search window (see the creation-date quirk); status page merged as removed | expected; a deletion event and an interval |
 | Removal semantics change (search returns live posts as removed, or stops honoring `removed=only`) | many removed-search hits whose status page has no `Removed from platform` row | the vision's `removed_search_mismatch` anomaly (B-032); never mark an id processed unless the page confirmed removal |

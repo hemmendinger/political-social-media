@@ -103,10 +103,11 @@ is behind the bot's last run (`checkout` block), so a sandbox agent knows whethe
 `knowledge/decisions/`. Writes nothing unless `--refresh`. No network. Under 3 s.
 `result` = the `status.json` object (schema `schemas/status.schema.json`).
 
-**`ts diff [--since RUN_ID|SHA|ISO]`**
+**`ts diff [--since RUN_ID|SHA|ISO] [--roots A B]`**
 What changed: new records, changed records (by field, with the source that changed them), deletions found,
 anomalies, interventions, and check transitions (a check that started or stopped firing). Default: since the
-previous run. Reads ledgers and `git`. No network. Under 5 s.
+previous run. With `--roots`, the same report between two data roots (a scratch rehearsal against the real
+data). Reads ledgers and `git`. No network. Under 5 s.
 `result` = `{since, until, records: {new: [...], changed: [{ts_id, fields: {...}}]}, deletions: [...],
 anomalies: {by_kind: {...}}, interventions: [...], checks: {started: [...], stopped: [...]}}`.
 
@@ -261,10 +262,10 @@ refuses, so a half-finished extension cannot be pushed. `--dry-run` lists the fi
 **`ts help [verb]`**
 Generated from the registry: purpose, flags, reads, writes, network, cost, next.
 
-**`ts scratch [--from data]`**
+**`ts scratch [--ids <ts_id,...> | --months 2026-09]`**
 Copy `data/` to a temporary directory outside the repository and print the `--data-root` flag to use with
-it. The sandbox guard rails point at this verb whenever a verb would write the real `data/`. Pure file copy,
-about 60 MB, under 2 s.
+it; with `--ids` or `--months`, copy only the month files, filtered ledger lines, and state the rehearsal
+touches (B-077). The sandbox profile uses it automatically. Pure file copy, about 60 MB in full, under 2 s.
 
 ## 5. The first sixty seconds (Law 3)
 

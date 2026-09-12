@@ -1,5 +1,5 @@
 {
-  "_comment": "knowledge/backlog.json (seed). Read by ts status and ts note, so it is JSON, not YAML: the pipeline is stdlib-only. Each item follows schemas/backlog-item.schema.json plus an optional phase from 10-migration-plan.md. B-001..B-010 migrate TODO.md; B-011..B-013 migrate docs/dead-code-review.md; B-014..B-073 are findings of the 2026-09-12 audit and lens analyses; B-101.. are the vision's own work items. Closing an item is an observation when acceptance_expr evaluates true against checks.json.",
+  "_comment": "knowledge/backlog.json (seed). Read by ts status and ts note, so it is JSON, not YAML: the pipeline is stdlib-only. Each item follows schemas/backlog-item.schema.json plus an optional phase from 10-migration-plan.md. B-001..B-010 migrate TODO.md; B-011..B-013 migrate docs/dead-code-review.md; B-014..B-077 are findings of the 2026-09-12 audit and lens analyses; B-101.. are the vision's own work items. Closing an item is an observation when acceptance_expr evaluates true against checks.json.",
   "items": [
     {
       "id": "B-001",
@@ -1882,6 +1882,107 @@
       },
       "evidence": [
         "08-roles-and-coordination.md section 3"
+      ]
+    },
+    {
+      "status": "open",
+      "blocked_by": [],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null,
+      "id": "B-074",
+      "title": "A transient error during the sequential id walk skips the id forever",
+      "area": "coverage",
+      "priority": "P0",
+      "phase": 0,
+      "problem": "_fetch_status_page_safe catches every exception (an HttpError after four attempts included) and the loop moves on; at the end max_trumpstruth_id is set to the highest id that returned 200, or to the listing maximum if none did. A 5xx or a connection blip on one status page silently loses that post (a repost's only source of its own id); a whole-walk outage jumps the mark past every id in the range. Found by replaying 500 x4 on 41686 then 200 on 41687.",
+      "acceptance": "ids that fail for a non-404 reason go to state.trumpstruth.pending_ids and are retried first on the next run (bounded, with a give-up count that becomes an anomaly); max_trumpstruth_id never advances past a pending id; the bundle red-walk-blip proves 41686 is fetched on the next run",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "evidence": [
+        "scripts/collect_trumpstruth.py:212-244,249-257",
+        "lens:simulation replay"
+      ]
+    },
+    {
+      "status": "open",
+      "blocked_by": [
+        "B-107"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null,
+      "id": "B-075",
+      "title": "Harness faults louder than source faults: BundleIncomplete",
+      "area": "simulation",
+      "priority": "P1",
+      "phase": 1,
+      "problem": "FakeTransport raises AssertionError for an unmatched URL and the collectors' catch-all except swallows it, so an incomplete bundle produces a green replay with fewer records instead of a clear failure.",
+      "acceptance": "FakeTransport raises BundleIncomplete (a BaseException) with the URL and the routes tried; run_all writes a failure record with notes bundle_incomplete:<url> and re-raises; ts replay exits 3 and names the missing route",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "evidence": [
+        "scripts/common.py:328,340",
+        "scripts/collect_trumpstruth.py:255-256"
+      ]
+    },
+    {
+      "status": "open",
+      "blocked_by": [
+        "B-107"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null,
+      "id": "B-076",
+      "title": "Determinism contract as a coherence test",
+      "area": "simulation",
+      "priority": "P2",
+      "phase": 2,
+      "problem": "Replay depends on no module reading the wall clock, randomness, the environment, or the network outside Context; nothing enforces it, and the removed-search window and the CNN skip are clock-derived in non-obvious places.",
+      "acceptance": "tests/test_determinism.py walks scripts/*.py with ast and fails on datetime.now, utcnow, date.today, time.time, secrets.*, random.*, and on urllib.request or curl_cffi imports outside scripts/common.py (allowlist: SystemClock, new_run_id, acquire_lock, validate_backfill); replay injects run_id and the bundle manifest lists every clock-derived URL",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "evidence": [
+        "scripts/collect_trumpstruth.py:337-341,371",
+        "scripts/collect_archive.py (skip window)"
+      ]
+    },
+    {
+      "status": "open",
+      "blocked_by": [
+        "B-102"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null,
+      "id": "B-077",
+      "title": "Scratch subsets and root-to-root diffs for rehearsal",
+      "area": "verbs",
+      "priority": "P2",
+      "phase": 1,
+      "problem": "Rehearsing a repair on all 57 MB is slow to inspect; a rehearsal needs only the month files, ledger lines, and state the target ids touch, and a diff between two roots.",
+      "acceptance": "ts scratch --ids <ts_id,...> | --months 2026-09 copies only the relevant month files, filtered ledger lines, and state; ts diff --roots A B prints records new/removed/changed by field, events added/removed, state keys changed",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "evidence": [
+        "lens:simulation"
       ]
     },
     {

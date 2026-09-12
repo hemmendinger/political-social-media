@@ -49,6 +49,14 @@ the cost the fake clock recorded (the sum of `sleep` calls is the wall time the 
 `--update-golden` rewrites `golden/` after a deliberate behavior change; the diff is then reviewed in the
 pull request like any other change.
 
+Two rules make a replay trustworthy. **A harness fault is louder than a source fault**: `FakeTransport`
+raises `BundleIncomplete`, a `BaseException`, for a missing route or an exhausted list, naming the URL and the
+routes tried, so the collectors' catch-all `except Exception` cannot turn an incomplete bundle into a green run
+with fewer records (B-075); `run_all` writes the failure record and re-raises, and `ts replay` exits 3. And
+**the first replay found a bug**: with 500 four times on status 41686 and 200 on 41687, the walk sets
+`max_trumpstruth_id` to 41687 and never fetches 41686 again (B-074, L-010), which is exactly the class of
+silent loss a production run cannot reveal.
+
 Bundles to ship in phase 1 (each small, under 2 MB):
 
 | Bundle | Proves |
@@ -59,6 +67,7 @@ Bundles to ship in phase 1 (each small, under 2 MB):
 | `retruthed-listing` | the ReTruthed target-card quirk and sequential resolution of a repost's own id |
 | `red-parse-error` | a listing with the container class renamed: the run fails, the run record carries the error, `ts doctor` says `markup_drift` |
 | `backfill-tail` | the last two listing pages of a backfill and the removed search over 2022 |
+| `red-walk-blip` | a 5xx on one status page mid-walk; the id lands in `pending_ids` and is fetched on the next run (B-074) |
 
 ## 2. From a red run to a bundle
 
@@ -109,7 +118,11 @@ Fixed order, stop at first failure, print what ran and what it cost:
 
 ## 5. Determinism rules that make replay possible
 
-Already true and to be kept as a coherence test where cheap:
+Already mostly true, and enforced by `tests/test_determinism.py` (B-076): an AST walk over `scripts/*.py`
+fails on `datetime.now`, `utcnow`, `date.today`, `time.time`, `secrets.*`, `random.*`, and on `urllib.request`
+or `curl_cffi` imports outside `scripts/common.py`, with an allowlist for `SystemClock`, `new_run_id`,
+`acquire_lock`, and `validate_backfill`. The bundle manifest lists every clock-derived URL (the removed-search
+window, the CNN skip decision) so an author knows what `clock_start` pins.
 
 - No module reads the wall clock or the network except through `Context.clock` and `Context.http`.
 - `new_run_id` takes the clock; the random suffix is replaced in replay by a fixed one from the manifest.
