@@ -17,7 +17,7 @@ the next agent will look.**
 | 0 | `00-principles.md` | definitions of agent-intuitive, agent-ergonomic, agent-accretive; sixteen design laws; anti-patterns | first |
 | 1 | `01-system-model.md` | the tower of ten abstractions; the one vocabulary; how layers link; the module map | first |
 | 2 | `02-situation.md` | `status.json` and `STATUS.md`; the commit-message protocol; trends | designing what an agent reads first |
-| 3 | `03-verbs.md` | the dispatcher, the envelope, profiles and guard rails, twenty-one verbs | designing what an agent can do |
+| 3 | `03-verbs.md` | the dispatcher, the envelope, profiles and guard rails, twenty-two verbs | designing what an agent can do |
 | 4 | `04-ledgers-and-provenance.md` | the anomaly leak and its fix; interventions; raw capture; `ts explain` | the accretive half of the data layer |
 | 5 | `05-invariants-and-schema.md` | schemas as the contract; registries for sources, checks, metrics, verbs, questions; migrations; bounds, confidence, coverage, caveats, questions; coherence and property tests; generated blocks | the correctness half |
 | 6 | `06-simulation-and-verification.md` | replay bundles; from a red run to a bundle; canaries; `ts verify` | before touching a parser |
@@ -35,7 +35,7 @@ Supporting artifacts, all concrete enough to copy into place:
   and dossier templates.
 - `knowledge-seed/` — the knowledge layer already populated from what the repository knows today: three
   source dossiers with 25 addressable quirks, a 94-item structured backlog (JSON, because the stdlib-only pipeline reads it) (migrating `TODO.md`, the dead-code review, and the
-  2026-09-12 audit findings), 20 decisions (7 accepted, 13 proposed with recommendations), and 10 lessons.
+  2026-09-12 audit findings), 22 decisions (7 accepted, 15 proposed with recommendations), and 10 lessons.
 
 ## What was found along the way
 

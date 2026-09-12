@@ -357,7 +357,7 @@
       "status": "open",
       "phase": 0,
       "problem": "MergeResult.anomalies (disagreements, created_at disagreements, inverted bounds, resurrections) is returned to every collector and read by none. README and OPERATIONS claim they are logged in run notes. The only evidence of where sources contradict each other is lost every run.\n",
-      "acceptance": "data/anomalies.jsonl receives every anomaly; the run record carries an anomalies count; README corrected (C2)",
+      "acceptance": "data/anomalies.jsonl receives every anomaly as a structured event built by the same helpers as the strings (the strings stay for the tests), deduplicated on (ts_id, field, sha256(kept), sha256(dropped)); the run record carries an anomalies count; inverted_bounds is renamed inverted_deletion_bounds; README corrected (C2)",
       "cost": {
         "build": "S",
         "requests": null,
@@ -733,12 +733,12 @@
       "problem": "trumpstruth's /search date filter applies to the post's creation date, not its removal date (the 2026-01-01..09-11 window returned 88 of the 98 removals known from the 2022 window). The incremental collector searches only the last 14 days, so a removal of any post older than 14 days is never seen. 35 of the 98 deletions on record were older than 14 days at removal; going forward about a third of deletions would be missed and lifetime series would be right-censored at 14 days.\n",
       "options": [
         {
-          "name": "search since 2022-01-01 on every run while total removals stay under about 500",
+          "name": "full window since 2022-01-01 on every run while the previous total fits in one page of 100 (identical cost to today)",
           "cost": "S",
           "note": "1 page today (98 results per 100-row page); processed_removed_ids prevents re-fetching status pages; record the sweep window on the run record"
         },
         {
-          "name": "14-day daily plus a full sweep on Sundays",
+          "name": "otherwise 14 days daily plus the full window weekly",
           "cost": "S",
           "note": "cheaper as the removal count grows into several pages"
         }
@@ -845,7 +845,7 @@
       "status": "open",
       "phase": 1,
       "problem": "A desktop run and a cloud run that both append to deletions.jsonl or runs/*.jsonl guarantee a rebase conflict; the retry loop has no git rebase --abort, so all three attempts fail. data/.lock holds a bare pid, is not gitignored, and a held lock exits like a collector failure.\n",
-      "acceptance": ".gitattributes marks the append-only ledgers merge=union; the workflow aborts a failed rebase before retrying and records a push_race incident; the lock is JSON with pid liveness and is gitignored",
+      "acceptance": ".gitattributes marks the append-only ledgers merge=union only where a hard check catches a duplicate line (duplicate_deletion_event, engagement_too_close, new duplicate_run_row); posts and state keep the default driver; the workflow aborts a failed rebase before retrying and records a push_race incident; the lock is JSON with pid liveness and is gitignored",
       "cost": {
         "build": "S",
         "requests": null,
@@ -1309,7 +1309,7 @@
       "status": "open",
       "phase": 0,
       "problem": "A half-finished repair passes every hard check today (event removed but record still deleted; record reset but event kept; deleted with a null upper bound).",
-      "acceptance": "hard deleted_without_event, present_with_deletion_fields, deleted_without_upper; soft deletion_bounds_drifted_from_event; each with a descriptor and a bundle that fails on the half-state",
+      "acceptance": "hard deleted_without_event and deleted_without_upper; soft present_with_deletion_fields (a resurrection keeps the fields as evidence, D-020) and deletion_bounds_drifted_from_event; each with a descriptor and a bundle that fails on the half-state",
       "cost": {
         "build": "S",
         "requests": null,
@@ -1694,7 +1694,7 @@
       "priority": "P0",
       "phase": 0,
       "problem": "Every entry point defaults to the real data root and the real network, and nothing knows where it runs; a sandbox agent following the README would crawl trumpstruth and rewrite data/.",
-      "acceptance": "profiles.json at the repo root declares hosts, api, write_data, commit, repair, and data_root per profile; the dispatcher resolves the profile before parsing arguments and prints it; in sandbox the default data root is a scratch copy under $TMPDIR keyed by HEAD and the transport is an empty FakeTransport, so a refusal names the exact URL; --data-root ./data in sandbox is refused (exit 3)",
+      "acceptance": "profiles.json at the repo root declares hosts, api, write_data, commit, repair, and data_root per profile; the dispatcher resolves the profile before parsing arguments and prints it; in sandbox the default data root is a scratch copy under $TMPDIR keyed by HEAD and the transport is an empty FakeTransport, so a refusal names the exact URL; --data-root ./data in sandbox is refused (exit 3); the desktop marker lives outside the tree (never under data/, which the bot's git add data would commit) or TS_PROFILE",
       "cost": {
         "build": "S",
         "requests": null,
@@ -2017,7 +2017,7 @@
       "status": "open",
       "phase": 0,
       "problem": "Seven entry points with their own flags; no structured output; no cost line.",
-      "acceptance": "every existing command has a ts verb; --json validates against the envelope schema; ts help is generated",
+      "acceptance": "every existing command has a ts verb; --json validates against the envelope schema; ts help is generated; ts whoami prints the resolved profile, its source, the capability row, the data root, and lock and lease state",
       "cost": {
         "build": "M",
         "requests": null,
@@ -2088,7 +2088,7 @@
       "status": "open",
       "phase": 0,
       "problem": "The record shape lives in four places; checks carry no meaning or playbook.",
-      "acceptance": "schemas/ validated in tests; every check has a descriptor; the record table in SPEC section 2 and the check tables in OPERATIONS section 4 are generated blocks that match",
+      "acceptance": "check registry with descriptors; checks.json v2 with run_id and checked_at; schemas/ validated by a stdlib validator with a coherence test that RECORD_FIELDS equals the schema; deriving the merge lists from x-merge lands with B-043",
       "cost": {
         "build": "M",
         "requests": null,

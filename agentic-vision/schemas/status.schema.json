@@ -255,6 +255,18 @@
         },
         "schema_version": {
           "type": "integer"
+        },
+        "history_source": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "history",
+            "git",
+            null
+          ],
+          "description": "Which time series the trends came from."
         }
       }
     },

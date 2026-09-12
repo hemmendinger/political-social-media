@@ -14,7 +14,7 @@ Goal: an agent can orient in three commands, nothing computed is lost, and the d
 | B-014 | `data/anomalies.jsonl` + `store.append_anomaly` + `anomalies` count on run records; the three merge loops append; correct README/OPERATIONS (C2) | S |
 | B-101, B-066 | profiles resolved before argument parsing and printed on every invocation; `profiles.json` as the tracked capability manifest; `cloud` skips the api leg; `sandbox` defaults to a scratch root and an empty transport | S |
 | B-102 | `scripts/ts.py` dispatcher wrapping the existing functions; envelope; cost line; `help`; verbs `status check build query report collect`; old entry points untouched | M |
-| B-105 | `schemas/` at the root (from `agentic-vision/schemas/`); stdlib validator; `_validate_record_schema` reads the schema; check registry with descriptors; `checks.json` v2 (`firing` objects added, strings kept) | M |
+| B-105 | check registry with descriptors and `checks.json` v2 (`run_id`, `checked_at`, `firing` objects added, strings kept); `schemas/` at the root with a stdlib validator and a coherence test that `RECORD_FIELDS` equals the schema (deriving the merge lists from `x-merge` waits for phase 1 with the source registry, B-043) | M |
 | B-103 | `scripts/situation.py`: `output/status.json` and `STATUS.md` after exports; `output/history/status-YYYY-MM.jsonl`; bot commits `STATUS.md` | M |
 | B-104 | `AGENTS.md` from `templates/AGENTS.md`, `CLAUDE.md` = `@AGENTS.md` | S |
 | B-112, B-060, B-061, B-062 | populate `knowledge/` from `knowledge-seed/` (dossiers with quirk ids, decisions, lessons with two-way test markers, `backlog.json`, the two audits with dispositions); retire `TODO.md`, `MISTAKES.md`, `docs/dead-code-review.md` to pointers | S |
@@ -31,6 +31,7 @@ Goal: an agent can orient in three commands, nothing computed is lost, and the d
 Acceptance (run from a clean clone):
 ```
 cat AGENTS.md                              # under 120 lines
+python -m scripts.ts whoami                # profile=sandbox, a scratch data root
 python -m scripts.ts status --json | python -c "import json,sys; s=json.load(sys.stdin); print(s['result']['health']['verdict'])"
 python -m scripts.ts check --json | grep -c '"firing"'
 tail -1 data/anomalies.jsonl               # exists after one collect (or the smoke bundle)
@@ -121,6 +122,27 @@ Goal: close the historical gaps the sources allow, from the desktop, as declared
 
 Acceptance: `coverage.presumed_live_count == 0`, `v_confidence.cnn_dedup_risk` count 0, and the four
 mission numbers in `STATUS.md` show the change.
+
+## 4b. Decisions the maintainer must make (they gate items above)
+
+Each is a proposed record in `knowledge-seed/decisions.md` with a recommendation; `STATUS.md` will list
+them under Pending until decided.
+
+| Decision | Question | Gates |
+|---|---|---|
+| D-007 | CNN cadence: keep 2 h (about 256 MB/day ingress, 230 KB/day of tracked engagement rows) or daily | B-025, B-116 |
+| D-008 | api collector: desktop-only by profile (the only path to the historical deletion backfill and fresh engagement) or delete | B-003, B-004, B-101 |
+| D-010 | untrack `output/posts.csv` now; is there a downstream consumer of its URL that needs a 90-day CSV or a release asset | B-116 |
+| D-013 | drop pandas from `requirements.txt` (imported by nothing) | phase 0 |
+| D-014 | when one leg fails, commit the successful legs plus the incident, or keep all-or-nothing | B-030, B-117 |
+| D-016 | record winning overwrites of non-empty values in the anomaly ledger, not only the losing side | B-014 |
+| D-017 | removed-search window: full since 2022 while it fits in one page, else 14 days daily plus a weekly sweep | B-029 |
+| D-018, D-019 | split `state.json` per source; the desktop appends observations instead of rewriting month files | B-070, B-071 |
+| D-020 | resurrection keeps the deletion fields as evidence with a soft check, or clears them and relies on the anomaly event | B-051 |
+| D-021 | `raw_api` storage: inline (about 2.3 KB per record, about 86 MB after a full API backfill), deleted records only, or under `data/raw/api/<ts_id>.json` with a hash on the record | B-003 |
+| B-022 | empty-list semantics: is `[]` from the api "cleared" or "unknown" | the merge property tests |
+| D-012 | branch protection on `main` and a `CODEOWNERS` owner for `data/` | B-068 |
+| D-000 | what the external approved plan contained that still governs; if lost, record that SPEC plus this directory now govern | phase 0 |
 
 ## 5. Ordering inside a phase
 

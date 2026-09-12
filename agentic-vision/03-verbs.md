@@ -64,8 +64,9 @@ Rules:
 ## 3. Profiles and guard rails (Law 11)
 
 A profile is where the verb runs and what it may do. Detection happens before argument parsing: `TS_PROFILE`
-if set; else `cloud` when `GITHUB_ACTIONS` is set; else `desktop` when the marker file `data/.profile-desktop`
-exists (the maintainer creates it once); else `sandbox`. The detected profile is printed on every invocation.
+if set; else `cloud` when `GITHUB_ACTIONS` is set; else `desktop` when the marker file exists **outside the tree**
+(`~/.config/political-social-media/profile` on POSIX, `%APPDATA%\political-social-media\profile` on Windows;
+never under `data/`, because the bot's `git add data` would commit it); else `sandbox`. The detected profile is printed on every invocation.
 Capabilities are declared once, in a tracked manifest `profiles.json` at the repo root (hosts, `api`,
 `write_data`, `commit`, `repair`, `data_root` per profile; B-066); the table below is its rendering, and the
 dispatcher enforces it, so no verb carries its own profile branches. In `sandbox` the default data root is a
@@ -96,7 +97,7 @@ Guard rails are refusals with a clear message and exit 3, never silent downgrade
 
 ## 4. The vocabulary
 
-Twenty-one verbs. Grouped by the layer they operate on (see `01-system-model.md`). Each entry: purpose,
+Twenty-two verbs. Grouped by the layer they operate on (see `01-system-model.md`). Each entry: purpose,
 reads, writes, network, cost, and the shape of `result`.
 
 ### Situation (layer 7)
@@ -133,7 +134,8 @@ newest post but sources healthy and on schedule), `silent_undercollection` (gree
 trumpstruth's listing shows newer ids than `max_trumpstruth_id`; needs `--live`), `healthy`. The diagnoses are an
 ordered table of rules over `status.json` (`scripts/doctor.py`: `Rule(name, when(status) -> evidence | None,
 confidence, next, playbook)`), so the first matching rule is also the panel's `next`, and the table is tested
-with synthetic status objects. It reads `data/incidents/` first (`04-ledgers-and-provenance.md` section 3b),
+with synthetic status objects. Each class's playbook is data (`knowledge/playbooks/incidents.json`), and
+OPERATIONS section 5 is generated from it. It reads `data/incidents/` first (`04-ledgers-and-provenance.md` section 3b),
 so a failed cloud run is diagnosable from the repository alone.
 No network unless `--live`. Under 5 s.
 `result` = `{diagnosis, confidence, evidence: [...], next: [...], playbook: "..."}`.
@@ -175,12 +177,14 @@ shows LEASED with the holder and expiry. The way to hold the bot during a long d
 backfill instead of racing it on `state.json` (B-069). Coordination state other actors must see lives in git
 with an expiry; the local lock (JSON, pid liveness, gitignored) is only this machine's.
 
-**`ts commit [--run RUN_ID] [--dry-run]`**
+**`ts commit [--run RUN_ID] [--incidents-only] [--dry-run]`**
 The single path by which data reaches `main` (B-067): refuses in `sandbox`; refuses when anything outside
 `data/`, `output/`, `STATUS.md` is staged or a forbidden file (`.lock`, `raw/`, `*.sqlite`, a scratch path) is
 included; runs `check`; commits data only with the structured message; `git pull --rebase` with `git rebase
 --abort` between the three attempts; pushes; on the third failure writes a `push_race` incident and pushes
-that alone. The workflow's commit step and `--commit` on `collect` and `repair` call it.
+that alone. `--incidents-only` stages only `data/incidents/`, `output/status.json`, and `STATUS.md`, which
+is what a hard-check failure commits (D-005 still holds: `data/posts` never reaches `main` from a failed
+run). The workflow's commit step and `--commit` on `collect` and `repair` call it.
 
 **`ts capture <url> --as tests/fixtures/<name> --source S --parser scripts.parsers:fn --proves "<one line>"`**
 Fetch one page through the paced client, save it as a fixture, and append the manifest entry (`file, url,
@@ -266,6 +270,11 @@ registry entry, the collector and parser stubs, the test stub, the fixture slot 
 stub, and regenerates the generated blocks; `scaffold field video_transcript --merge scalar --sources
 trumpstruth` also writes the migration. Every stub carries a `# scaffold: fill me` marker that `ts verify`
 refuses, so a half-finished extension cannot be pushed. `--dry-run` lists the files.
+
+**`ts whoami`**
+Print the resolved profile and how it was resolved (`TS_PROFILE`, `GITHUB_ACTIONS`, the marker file, or the
+default), the capability row from `profiles.json`, the data root in effect, and the lock and lease state.
+The first command in a session that is unsure where it is. No requests, under 50 ms.
 
 **`ts help [verb]`**
 Generated from the registry: purpose, flags, reads, writes, network, cost, next.

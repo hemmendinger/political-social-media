@@ -52,7 +52,7 @@ union-mergeable, or owned by one actor:
 
 | File | Rule | Mechanism |
 |---|---|---|
-| `deletions.jsonl`, `runs/*.jsonl`, `engagement/*.csv`, `anomalies.jsonl`, `interventions.jsonl`, `observations/**` | append-only, order irrelevant, uniqueness enforced by `check_data` | `.gitattributes merge=union` (B-033) |
+| `deletions.jsonl`, `runs/*.jsonl`, `engagement/*.csv`, `anomalies.jsonl`, `interventions.jsonl`, `observations/**` | append-only, order irrelevant; union only where a hard check catches a duplicate line (`duplicate_deletion_event`, `engagement_too_close`, the new `duplicate_run_row`; anomalies and observations are idempotent by construction) | `.gitattributes merge=union` (B-033); `posts/*.jsonl` and the state files keep the default driver so a real double collection conflicts loudly instead of merging silently |
 | `incidents/*.json` | one writer per file | `-merge` |
 | `posts/*.jsonl` | rewritten only by `collect` in `cloud` and by applied repairs | the desktop never rewrites them: its api leg appends **observations** (`data/observations/api/YYYY-MM.jsonl`, one idempotent line per sighting with the partial and the engagement counts) and the next `collect` anywhere folds unapplied observations through `merge_partial`; folding twice is a no-op (B-070, D-019) |
 | `state.json` | one file, three actors' memory, rewritten every run | split per source, `data/state/<source>.json` (B-071, D-018) |

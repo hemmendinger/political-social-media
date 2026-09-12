@@ -135,7 +135,8 @@ New checks the vision adds, all soft or stat:
 | `other_account_ratio` | soft | more than 20% of sequentially resolved ids skipped as other accounts in one run (a parse failure of `account` looks like this) |
 | `incident_unresolved` | soft | an incident record exists for a run newer than the last successful run (B-030) |
 | `deleted_without_event` | hard | `status = deleted` with no line in `deletions.jsonl`: a half-finished repair (B-051) |
-| `present_with_deletion_fields` | hard | `status = present` with any of `deleted_lower`, `deleted_upper`, `deleted_source`, `trumpstruth_removed_at` set: a forgotten `forget_deletion` (B-051) |
+| `present_with_deletion_fields` | soft | `status = present` with any of `deleted_lower`, `deleted_upper`, `deleted_source`, `trumpstruth_removed_at` set: either a forgotten `forget_deletion` or a resurrection, which by design keeps the deletion fields as evidence (D-020); soft, so a resurrected record does not block the commit (B-051) |
+| `duplicate_run_row` | hard | the same `(run_id, source)` twice in `runs/*.jsonl`; the guard that makes `merge=union` on that ledger safe (B-033) |
 | `deleted_without_upper` | hard | `status = deleted` and `deleted_upper` null (B-051) |
 | `deletion_bounds_drifted_from_event` | soft | the record's interval no longer matches its first event; expected as bounds tighten, but a large drift is a repair to review (B-051) |
 | `schema_behind` | hard | `state.json.schema_version` is behind the code's `x-schema-version`; playbook `ts repair migrate --apply` (B-044) |
@@ -183,7 +184,6 @@ One row per post, flags derived from the record, plus an evidence grade:
 | `guessed_handle` | `kind = 'reblog' AND field_sources.reblog_of_acct = 'cnn' AND content_text starts with a word character` | `reblog_of_acct` may be wrong; first word of text may be missing |
 | `cnn_dedup_risk` | `kind = 'reblog' AND seen_sources = ['cnn']` (5,491 of 5,575 reblogs, all with `reblog_of_id` null) | repeated reposts of one target are collapsed; siblings may be missing |
 | `reply_unobservable` | `api` not in `seen_sources` | neither trumpstruth nor cnn can see replies; `kind = 'reply'` has never occurred (0 of 37,002) |
-| `before_removal_horizon` | `created_at_utc < '2026-03-06' AND status = 'present'` | a deletion before the observed start of removal tracking would be unknown |
 | `wide_interval` | `deletion_window_min > 1440` | lifetime analyses must use both bounds |
 | `engagement_baseline_only` | exactly one engagement row, observed more than 14 days after creation | counts are a late snapshot |
 | `utc_seam` | `utc_date != et_date` | the record's UTC month file and its Eastern day disagree |
@@ -195,7 +195,9 @@ What each source and each signal could have seen, generated at build time from t
 by hand. Per source: `history_start`, `history_end`, `records`, `polling_since` (earliest ok run record),
 `last_ok_at`, `api_verified`. Per signal: `removal_tracking_since` as `{declared: 2026-03-01,
 observed_min: 2026-03-06T04:02Z}`; `removal_search` as `{window_days, lookback_semantics: "post creation
-date", last_full_sweep}` (from the `sweep` field on run records, `04-ledgers-and-provenance.md`);
+date", last_full_sweep}` (from the `sweep` field on run records, `04-ledgers-and-provenance.md`; the
+policy in D-017 is the full window since 2022-01-01 on every run while the previous full search's total fits
+in one page of 100, which is today's cost exactly, else 14 days daily plus the full window weekly);
 `detection_floor_min` (76, the minimum interval width in `deletions.jsonl`); `removal_time_precision`
 (share of minute-precision values); `engagement` as `{policy, tracked_rows, late_baseline_rows}`;
 `reply_observable` (false unless the api leg ran inside the window). Every windowed answer consults it.
@@ -205,7 +207,10 @@ date", last_full_sweep}` (from the `sweep` field on run records, `04-ledgers-and
 `scripts/caveats.py` holds a registry `Caveat(flag, scope, text, fn)` with `scope` `record` (a
 `v_confidence` flag counted over the rows aggregated) or `window` (`removal_horizon`,
 `deletion_lookback_gap`, `detection_floor`, `reply_unobservable_window`, `api_not_polled_in_window`,
-`utc_seam`, computed from coverage and the window bounds). Every function in `scripts/metrics.py` returns
+`utc_seam`, computed from coverage and the window bounds). The removal horizon is a window caveat and not a
+record flag on purpose: trumpstruth's tracking started with removals in March 2026 (earliest observed
+`removed_at` 2026-03-06), and posts created in 2025 were still caught, so a creation-date flag would
+mislabel them. Every function in `scripts/metrics.py` returns
 its data plus `caveats: [{flag, scope, count | value, of, text}]`, including zero counts. `weekly.py` renders
 the list under each table in place of the single static paragraph it prints today; `metrics.json` carries
 them.

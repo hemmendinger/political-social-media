@@ -10,8 +10,8 @@ linked from here.
 
 ```
 cat STATUS.md                         # health, freshness, drift, firing checks, pending work, what changed
+python -m scripts.ts whoami           # where you are and what you may do (profile, data root, lock, lease)
 python -m scripts.ts doctor           # only if STATUS is not green: the cause and the next verb
-python -m scripts.ts help             # the verbs, with cost and side effects
 ```
 
 ## The rules that bind you here
@@ -41,7 +41,7 @@ python -m scripts.ts help             # the verbs, with cost and side effects
 | Profile | Detected by | Network | Writes `data/` | Commits `main` |
 |---|---|---|---|---|
 | `cloud` | `GITHUB_ACTIONS` | trumpstruth, cnn (api is blocked: Cloudflare 403) | yes | the bot's commit step only |
-| `desktop` | `data/.profile-desktop` | all, including the api at ~6 req/min | yes | `--commit` on `collect` and `repair` |
+| `desktop` | a marker file outside the tree (`~/.config/political-social-media/profile`), or `TS_PROFILE` | all, including the api at ~6 req/min | yes | `ts commit` (via `--commit` on `collect` and `repair`) |
 | `sandbox` | otherwise | only with `--live` | a scratch root by default (`ts scratch`); `./data` refused | never; push a branch, open a pull request |
 
 <!-- generated:rules source=knowledge/lessons,knowledge/decisions -->
@@ -57,7 +57,7 @@ python -m scripts.ts help             # the verbs, with cost and side effects
 
 ## Verbs
 
-`status` `diff` `doctor` `explain <ts_id>` `check` `collect` `capture` `repair <plan>` `build` `query`
+`whoami` `status` `diff` `doctor` `explain <ts_id>` `check` `collect` `capture` `repair <plan>` `build` `query`
 `ask <question>` `report` `dictionary` `verify` `replay <bundle>` `note` `scaffold` `lease` `commit` `scratch` `help` — one line each in `ts help`; full
 specifications in `docs/agentic-vision/03-verbs.md`.
 

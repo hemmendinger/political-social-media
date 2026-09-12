@@ -36,8 +36,12 @@ for a in result.anomalies:
 counts["anomalies"] += len(result.anomalies)
 ```
 
-`anomaly_event` parses the legacy string into `kind`, `field`, `kept`, `dropped` and keeps the string in
-`detail`, so old formats stay greppable and `merge.py` does not change. Two page-level kinds are added at the
+`MergeResult.anomalies` (the strings, pinned by `tests/test_merge.py`) stays untouched; the same helpers
+that build a string also build a structured `anomaly_events` entry (`kind`, `field`, `kept`, `dropped`,
+`detail` = the string), so nothing is parsed back from prose. Collectors append events deduplicated on
+`(ts_id, field, sha256(kept), sha256(dropped))`, so a re-observation of the same contradiction on every run
+does not grow the ledger. One identifier is renamed in code: `inverted_bounds` becomes
+`inverted_deletion_bounds`, the name the check already uses, so one string is greppable across both ledgers. Two page-level kinds are added at the
 collector level: `other_account` (today only a count in `notes`) and `yield_below_min` (today an exception
 with no record of what the page contained).
 

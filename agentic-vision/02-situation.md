@@ -26,7 +26,7 @@ Schema: `schemas/status.schema.json`. Top-level sections, in reading order:
 
 | Section | Content | Source |
 |---|---|---|
-| `meta` | `generated_at`, `run_id`, `profile`, `commit`, `schema_version` | the run |
+| `meta` | `generated_at`, `run_id`, `profile`, `commit`, `schema_version`, `history_source` (`history` file or `git`) | the run |
 | `health` | `verdict` (`green`, `yellow`, `red`) and `reasons[]`: red = a hard check fired, an incident record is newer than the last successful run, or the last run had a leg with `ok=false` for a source that was not expected to fail; yellow = a soft check outside its expected background, freshness past threshold, or schedule delivery under 50%; green otherwise | checks.json, incidents, run records, descriptors |
 | `cadence` | `runs_expected_24h` (from the cron), `runs_actual_24h` (run records), `ratio`; GitHub delivered 2 of about 16 slots on the first day (B-024) | run records |
 | `checkout` | `head`, `branch`, `data_dirty` (uncommitted changes under `data/`), `untracked[]`, `status_stale` (a run record newer than `meta.generated_at`, or `checks.json.run_id` not the newest run), `behind_bot_commits`, `behind_bot_minutes`, `bot_last_run`, `fetched` (whether `git fetch` ran; profiles without network report the local ref), so the panel says which tree it describes and refuses to diagnose one it does not | git, run records |
