@@ -29,10 +29,10 @@ Schema: `schemas/status.schema.json`. Top-level sections, in reading order:
 | `meta` | `generated_at`, `run_id`, `profile`, `commit`, `schema_version` | the run |
 | `health` | `verdict` (`green`, `yellow`, `red`) and `reasons[]`: red = a hard check fired, an incident record is newer than the last successful run, or the last run had a leg with `ok=false` for a source that was not expected to fail; yellow = a soft check outside its expected background, freshness past threshold, or schedule delivery under 50%; green otherwise | checks.json, incidents, run records, descriptors |
 | `cadence` | `runs_expected_24h` (from the cron), `runs_actual_24h` (run records), `ratio`; GitHub delivered 2 of about 16 slots on the first day (B-024) | run records |
-| `checkout` | `head`, `behind_bot_commits`, `behind_bot_minutes`, `bot_last_run` from `git` (after `git fetch` where the profile allows it), so a sandbox agent knows it is looking at stale data before editing anything the bot owns | git |
+| `checkout` | `head`, `branch`, `data_dirty` (uncommitted changes under `data/`), `untracked[]`, `status_stale` (a run record newer than `meta.generated_at`, or `checks.json.run_id` not the newest run), `behind_bot_commits`, `behind_bot_minutes`, `bot_last_run`, `fetched` (whether `git fetch` ran; profiles without network report the local ref), so the panel says which tree it describes and refuses to diagnose one it does not | git, run records |
 | `mission` | the four mission numbers with their previous value (last run) and 30-day trend | ledgers |
 | `freshness` | `newest_post_at`, `age_min`; per source: `last_ok_at`, `age_min`, `last_leg` (`ok`, `requests`, `new`, `updated`, `notes`), `expected` (whether this source is expected to work in this profile) | run records, state.json |
-| `drift` | each coverage stat with `value`, `threshold`, `expected_background`, `trend_7d` | checks.json stats over the last 7 days (kept in `output/history/checks-YYYY-MM-DD.jsonl`, one line per run) |
+| `drift` | each coverage stat with `value`, `reference`, `reference_at` (how old the API count or trumpstruth total is), `threshold`, `expected_background`, `trend_7d`, `verdict`: a number without all of these is not rendered | checks.json stats and the history lines |
 | `checks` | `hard[]`, `soft[]`, each `{name, value, threshold, reading, playbook, since_firing}` | checks.json + descriptors |
 | `anomalies_24h` | counts by kind and the top three `ts_id`s per kind | anomalies.jsonl |
 | `pending` | `backlog_p0[]`, `interventions_open[]` (status planned or applied but not verified), `decisions_open[]`, `incidents_open[]` (incident records newer than the last successful run) | knowledge/, data/incidents/ |
@@ -84,13 +84,23 @@ The bot's message today: `collect: +4 posts, +0 deletions, checks ok`. The proto
 compatible and adds structure:
 
 ```
-collect: +4 posts, +0 deletions, checks ok | health yellow | 8 req 15 s   <- first line: the old prefix stays grep-stable; health and cost make `git log --oneline` tier 0
+collect: +4 posts, +0 deletions, checks ok | yellow | 8 req 15 s   <- the old prefix stays grep-stable; health and cost make `git log --oneline` tier 0
 
-run: 20260912T045806Z-7e76 profile=cloud health=yellow
-legs: trumpstruth ok 7req +4/6 | cnn ok 1req +0/4 | api skipped(profile)
-checks: soft single_source_recent_posts=53 spike_days=2
-anomalies: 0
+trumpstruth ok 7 req +4/6 max_id 41698 | cnn ok 1 req +0/4 | api skipped profile=cloud
+soft: single_source_recent_posts=53 spike_days=2
+
+Run-Id: 20260912T045806Z-7e76
+Profile: cloud
+Health: yellow
+Cost: requests=8 seconds=15 slept=9
+Checks: soft=2 hard=0
+Anomalies: 0
 ```
+
+The message is produced by `situation.commit_message(status)` and written to the summary file; the workflow
+commits with `git commit -F` instead of `-m`. The footer lines are git trailers, so
+`git log --format='%(trailers:key=Health,valueonly)'` reads the health timeline and
+`git log --grep='Run-Id: <id>'` finds a run's commit without opening the ledgers.
 
 Human and agent commits use a prefix vocabulary that matches the layers: `verb:` (dispatcher or verb
 changes), `parser:`, `merge:`, `check:`, `view:`, `situation:`, `knowledge:`, `repair: <intervention id>`,
@@ -101,13 +111,14 @@ the merge, a collector, or a check lacks them (B-063); `AGENTS.md` asks for the 
 
 ## 5. History for trends
 
-Git already holds every past `checks.json`, so trends can be read from history with `git log --format=%H:%ct
--- output/checks.json` and `git show <sha>:output/checks.json`, at zero growth. That works only where the
-clone is deep enough (the cloud checkout fetches 50 commits, about a day at nominal cadence; a sandbox clone
-may be shallower), so `situation.py` reads git when it can and otherwise `output/history/checks-YYYY-MM-DD.jsonl`,
-a compact line per run `{run_id, generated_at, stats}` (about 2 KB per run) committed by the bot. Files older
-than 90 days are folded into a monthly summary by `ts build`. `drift.trend_7d`, the cadence ratio, and the
-mission sparklines come from whichever series is available, and `status.json` says which.
+`situation.build` appends one compact line (about 350 bytes) per run to `output/history/status-YYYY-MM.jsonl`:
+`{run_id, at, profile, health, exit_code, posts, present, deleted, deletion_events, engagement_rows, drift_api,
+drift_ref_at, single_source_recent, ambiguous, newest_post_at, firing: [...], cost}`. It is the time series
+behind `trend_7d`, `since_firing`, and the cadence ratio, and it works in a shallow clone. Git also holds
+every past `checks.json` (`git log --format=%H:%ct -- output/checks.json`, `git show <sha>:output/checks.json`)
+but only where the clone is deep enough (the cloud checkout fetches 50 commits, about a day at nominal
+cadence), so the history file is primary and git is the fallback for anything older than the files kept
+(12 months, then folded into a yearly summary by `ts build`).
 
 ## 6. Where `status.json` is produced in the run
 

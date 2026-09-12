@@ -15,7 +15,7 @@ Goal: an agent can orient in three commands, nothing computed is lost, and the d
 | B-101, B-066 | profiles resolved before argument parsing and printed on every invocation; `profiles.json` as the tracked capability manifest; `cloud` skips the api leg; `sandbox` defaults to a scratch root and an empty transport | S |
 | B-102 | `scripts/ts.py` dispatcher wrapping the existing functions; envelope; cost line; `help`; verbs `status check build query report collect`; old entry points untouched | M |
 | B-105 | `schemas/` at the root (from `agentic-vision/schemas/`); stdlib validator; `_validate_record_schema` reads the schema; check registry with descriptors; `checks.json` v2 (`firing` objects added, strings kept) | M |
-| B-103 | `scripts/situation.py`: `output/status.json` and `STATUS.md` after exports; `output/history/checks-*.jsonl`; bot commits `STATUS.md` | M |
+| B-103 | `scripts/situation.py`: `output/status.json` and `STATUS.md` after exports; `output/history/status-YYYY-MM.jsonl`; bot commits `STATUS.md` | M |
 | B-104 | `AGENTS.md` from `templates/AGENTS.md`, `CLAUDE.md` = `@AGENTS.md` | S |
 | B-112, B-060, B-061, B-062 | populate `knowledge/` from `knowledge-seed/` (dossiers with quirk ids, decisions, lessons with two-way test markers, `backlog.json`, the two audits with dispositions); retire `TODO.md`, `MISTAKES.md`, `docs/dead-code-review.md` to pointers | S |
 | B-029 (D-017) | widen the removed search (since 2022-01-01 while under about 500 removals) and record the `sweep` on the run record; the cheapest accuracy win in the plan | S |

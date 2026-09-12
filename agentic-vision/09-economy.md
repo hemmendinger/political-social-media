@@ -61,7 +61,7 @@ Each of these is a one-line change or a profile rule, and together they remove m
 | `output/posts.csv` (12.7 MB) | committed on every run that changes anything; each commit adds a new blob (git delta-compresses, but a 12.7 MB text file with one changed line still costs a scan per checkout and grows the pack) | stop committing; `ts build --csv` writes it on demand (0.4 s); if a download URL is wanted, commit a 90-day `posts-recent.csv` (about 2,000 rows, 0.7 MB) instead |
 | `output/metrics.json` | rewritten every run; its 7-day window slides, so the diff is never empty | split: `metrics-window.json` (about 4 KB) every run, `metrics-trailing.json` once a day at the ET day boundary |
 | `data/engagement/*.csv` | one row per post per hour for every post under 14 days old, from CNN | one baseline row at first sight plus one row per day for posts under 14 days, plus one at 14 days; the api leg from the desktop keeps the hourly rule because it is the only source of fresh counts |
-| `output/history/checks-*.jsonl` (new) | not yet | about 2 KB per run, the cheapest possible time series for trends; fold monthly |
+| `output/history/status-YYYY-MM.jsonl` (new) | not yet | about 350 bytes per run, the time series behind trends, cadence, and `since_firing`; works in a shallow clone; folded yearly |
 | `data/raw/` | never written | written in the cloud, never committed, uploaded as an artifact only on a non-green run |
 
 Expected effect: repository growth per day falls from roughly 1 to 3 MB (dominated by posts.csv blobs and

@@ -19,11 +19,16 @@ Every verb is registered with a descriptor:
 Verb(
     name="check",
     purpose="Run the integrity checks against data/ and write output/checks.json",
-    reads=["data/"], writes=["output/checks.json"], network=False,
-    cost="~2 s, 0 requests", supports_dry_run=False,
-    next=["ts status", "ts doctor"],
+    reads=("data/",), writes=("output/checks.json",), network=(),   # hosts it may contact
+    irreversible=False,           # appends a ledger, rewrites data/, or pushes
+    dry_run="n/a",                # "n/a" | "scratch" (run on a copy and diff) | "plan" (zero-request plan file)
+    cost="~2 s, 0 requests",
+    next=("ts status", "ts doctor"),
 )
 ```
+
+The dispatcher refuses an `irreversible` verb in a profile whose manifest does not allow it, and runs a
+`dry_run="plan"` verb's plan first unless `--apply` is given.
 
 `ts help` is generated from the registry, so the verb list in this document and the dispatcher cannot
 disagree (a coherence test compares them, see `05-invariants-and-schema.md`).
@@ -125,9 +130,11 @@ TransportError; says whether it persisted across runs), `hard_check` (names the 
 `removal_semantics` (removed-search hits whose pages are not removed), `api_blocked_expected`,
 `schedule_dropped` (green runs but `runs_actual_24h` far below `runs_expected_24h`), `quiet_account` (stale
 newest post but sources healthy and on schedule), `silent_undercollection` (green runs, zero new posts, but
-trumpstruth's listing shows newer ids than `max_trumpstruth_id`; needs `--live`), `healthy`. It reads
-`data/incidents/` first (`04-ledgers-and-provenance.md` section 3), so a failed cloud run is diagnosable from
-the repository alone.
+trumpstruth's listing shows newer ids than `max_trumpstruth_id`; needs `--live`), `healthy`. The diagnoses are an
+ordered table of rules over `status.json` (`scripts/doctor.py`: `Rule(name, when(status) -> evidence | None,
+confidence, next, playbook)`), so the first matching rule is also the panel's `next`, and the table is tested
+with synthetic status objects. It reads `data/incidents/` first (`04-ledgers-and-provenance.md` section 3b),
+so a failed cloud run is diagnosable from the repository alone.
 No network unless `--live`. Under 5 s.
 `result` = `{diagnosis, confidence, evidence: [...], next: [...], playbook: "..."}`.
 
@@ -147,9 +154,10 @@ threshold, ids_sample, descriptor}`. Writes `output/checks.json`. No network. Ab
 
 **`ts collect [--sources trumpstruth,cnn,api] [--backfill] [--force-cnn] [--plan] [--dry-run] [--live] [--capture] [--removed-days N] [--max-ids N] [--budget host=N]`**
 The existing orchestrator. Adds: `--plan` prints, with zero requests, which legs would run or skip and why
-(from the policy table and the state), when each is next due, and an estimated cost range (B-058); `--dry-run` runs every leg against the network (subject to profile) but
-writes nothing under `data/`; instead it writes the would-be changes to `output/plans/collect-<run_id>.json`
-(records new and changed, events, anomalies) so an agent can inspect a collection before it lands.
+(from the policy table and the state), when each is next due, and an estimated cost range (B-058); `--dry-run` runs every leg against the network (subject to profile) on a scratch copy of `data/` and returns
+the change set between the copy and the real root, in the same shape as `ts diff` and the panel's
+`last_change` (records new and changed by field and source, ledger lines appended, state keys, checks started
+and stopped), so an agent can inspect a collection before it lands.
 `--capture` saves every response under `data/raw/<run_id>/` (on by default in `cloud`; the workflow uploads
 the directory as an artifact when the run is red). Anomalies go to `data/anomalies.jsonl`. The collector
 caps that are module constants today (`MAX_IDS_PER_RUN`, `removed_days`, `max_pages`, `max_verify`) become

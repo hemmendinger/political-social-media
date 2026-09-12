@@ -96,6 +96,13 @@
             "string",
             "null"
           ]
+        },
+        "reference_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "When the reference value was observed (e.g. the API statuses_count's run)."
         }
       }
     },
@@ -658,9 +665,13 @@
       "type": "object",
       "required": [
         "head",
+        "branch",
+        "data_dirty",
+        "status_stale",
         "behind_bot_commits",
         "behind_bot_minutes",
-        "bot_last_run"
+        "bot_last_run",
+        "fetched"
       ],
       "properties": {
         "head": {
@@ -690,6 +701,26 @@
         "fetched": {
           "type": "boolean",
           "description": "Whether git fetch ran (profiles without network report the local ref only)."
+        },
+        "branch": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "data_dirty": {
+          "type": "boolean",
+          "description": "Uncommitted changes under data/."
+        },
+        "untracked": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "status_stale": {
+          "type": "boolean",
+          "description": "A run record is newer than meta.generated_at, or checks.json.run_id is not the newest run."
         }
       }
     }
