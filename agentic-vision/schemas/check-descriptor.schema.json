@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://political-social-media/schemas/check-descriptor.schema.json",
+  "title": "CheckDescriptor",
+  "description": "Metadata every integrity check carries in the check registry (scripts/check_data.py). The OPERATIONS table of checks is generated from these, so a check cannot exist without its meaning and its playbook, and the docs cannot drift from the code.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "severity", "layer", "why", "condition", "threshold", "reading", "playbook", "since"],
+  "properties": {
+    "name": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$", "description": "The exact prefix used in checks.json strings today, e.g. duplicate_id, present_count_drift." },
+    "severity": { "type": "string", "enum": ["hard", "soft", "stat"], "description": "hard blocks the commit (exit 2); soft is recorded; stat is a number to watch." },
+    "layer": { "type": "string", "enum": ["schema", "store", "existence", "ledger", "coverage", "freshness", "volume", "quality"] },
+    "why": { "type": "string", "description": "One sentence: the failure this check exists to catch." },
+    "condition": { "type": "string", "description": "The predicate in plain words." },
+    "threshold": { "type": ["string", "null"], "description": "Tolerance in words, e.g. 'max(50, 1%)'; null for boolean checks." },
+    "reading": { "type": "string", "description": "How to interpret a firing: what is expected background versus a real problem." },
+    "playbook": { "type": "string", "description": "What to do, as verbs: 'ts repair rewrite-records', 'ts doctor', etc." },
+    "since": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$", "description": "Date the check was introduced; lets an agent tell old from new signals." },
+    "expected_background": { "type": ["string", "null"], "description": "A known steady-state value or range (e.g. present_count_drift ~350 until the API backfill) so a firing can be compared with normal." }
+  }
+}

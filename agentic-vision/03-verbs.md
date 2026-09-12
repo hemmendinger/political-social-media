@@ -1,0 +1,223 @@
+# 03. Verbs: the control surface
+
+One dispatcher, a fixed vocabulary, one output envelope, one set of guard rails. Serves Laws 3, 5, 11, 14.
+
+## 1. The dispatcher
+
+```
+python -m scripts.ts <verb> [args] [--json] [--dry-run] [--profile cloud|desktop|sandbox] [--data-root PATH]
+```
+
+`scripts/ts.py` is thin: it parses the verb, detects the profile, applies the guard rails, calls the existing
+module function (`collect.run_all`, `check_data.run_checks`, `build_db.build`, ...), wraps the result in the
+envelope, prints the cost line, and prints the `next` hint. The existing `python -m scripts.<x>` entry points
+keep working during migration and are removed in the last phase (see `10-migration-plan.md`).
+
+Every verb is registered with a descriptor:
+
+```python
+Verb(
+    name="check",
+    purpose="Run the integrity checks against data/ and write output/checks.json",
+    reads=["data/"], writes=["output/checks.json"], network=False,
+    cost="~2 s, 0 requests", supports_dry_run=False,
+    next=["ts status", "ts doctor"],
+)
+```
+
+`ts help` is generated from the registry, so the verb list in this document and the dispatcher cannot
+disagree (a coherence test compares them, see `05-invariants-and-schema.md`).
+
+## 2. The envelope (every verb, `--json`)
+
+```json
+{
+  "verb": "check",
+  "ok": true,
+  "profile": "sandbox",
+  "run_id": null,
+  "started_at": "2026-09-12T08:00:00Z",
+  "finished_at": "2026-09-12T08:00:02Z",
+  "cost": {"requests": 0, "seconds": 1.9, "files_written": ["output/checks.json"]},
+  "result": {"...": "verb-specific, schema in schemas/verb-envelope.schema.json"},
+  "warnings": ["stats.cnn_ambiguous_handles.count=1172 (B-001)"],
+  "truncated": [],
+  "next": ["ts status"]
+}
+```
+
+Rules:
+- `ok` means the verb completed and its own success criterion held (for `check`: no hard failures).
+- `cost` is always present and always measured, never estimated.
+- `truncated` lists every cap applied to the output (sample sizes, id caps), by name and limit, so silence
+  never reads as completeness.
+- `next` is one to three verbs that make sense after this one given its result.
+- Without `--json`, the same content prints as a compact human block ending with the same cost line.
+- Exit codes are the current ones (0 ok, 1 collector exception, 2 hard check) plus 3 = refused by a guard
+  rail, 4 = plan produced but not applied (dry-run).
+
+## 3. Profiles and guard rails (Law 11)
+
+A profile is where the verb runs and what it may do. Detection: `TS_PROFILE` if set; else `cloud` when
+`GITHUB_ACTIONS` is set; else `desktop` when the marker file `data/.profile-desktop` exists (the maintainer
+creates it once); else `sandbox`. The detected profile is printed on every invocation.
+
+| Capability | cloud | desktop | sandbox |
+|---|---|---|---|
+| Reach trumpstruth and cnn | yes | yes | only with `--live` |
+| Reach the Truth Social API | no (Cloudflare 403; `api` leg is skipped with a note, not probed every run) | yes | no (assumed; `--live` will probe once and record the result) |
+| Write `data/` | yes (the bot) | yes | only with `--data-root` outside the repo, or with `--apply` on a repair |
+| Commit and push `data/` | yes, only the bot's own commit step | with `--commit` | never (writes go to a branch, never to `main`) |
+| Run repairs | plan only | plan and apply | plan only, unless `--data-root` is a scratch copy |
+| Run the API backfill | no | yes | no |
+
+Guard rails are refusals with a clear message and exit 3, never silent downgrades:
+
+- A verb that would use the network in `sandbox` without `--live` refuses and says which URLs it would fetch.
+- A verb that would write `data/` in `sandbox` without a scratch `--data-root` refuses and offers
+  `ts scratch` (which copies `data/` to a temp directory and prints the flag to use).
+- `ts repair` never applies without `--apply`, and `--apply` requires a `--reason` that lands in the
+  intervention record.
+- `ts collect` in `cloud` never runs the `api` leg (the leg is recorded as `skipped: profile=cloud` so the
+  run record is honest and the six-hour re-probe cost disappears).
+- No verb ever deletes a ledger file. `repair redo-history` moves them to `data/.trash/<intervention id>/`
+  and the intervention record says so.
+
+## 4. The vocabulary
+
+Seventeen verbs. Grouped by the layer they operate on (see `01-system-model.md`). Each entry: purpose,
+reads, writes, network, cost, and the shape of `result`.
+
+### Situation (layer 7)
+
+**`ts status [--refresh]`**
+Print `STATUS.md`. With `--refresh`, rebuild `output/status.json` and `STATUS.md` from the current data first
+(runs `check` internally). Reads `data/`, `output/checks.json`, `knowledge/backlog.yaml`,
+`knowledge/decisions/`. Writes nothing unless `--refresh`. No network. Under 3 s.
+`result` = the `status.json` object (schema `schemas/status.schema.json`).
+
+**`ts diff [--since RUN_ID|SHA|ISO]`**
+What changed: new records, changed records (by field, with the source that changed them), deletions found,
+anomalies, interventions, and check transitions (a check that started or stopped firing). Default: since the
+previous run. Reads ledgers and `git`. No network. Under 5 s.
+`result` = `{since, until, records: {new: [...], changed: [{ts_id, fields: {...}}]}, deletions: [...],
+anomalies: {by_kind: {...}}, interventions: [...], checks: {started: [...], stopped: [...]}}`.
+
+### Diagnosis (layers 3, 4, 2)
+
+**`ts doctor [--run RUN_ID]`**
+Classify the situation into a cause and a next move. Looks at the last run's legs (`ok`, `errors`, `notes`),
+firing checks with their descriptors, the last 24 h of anomalies, freshness per source, the profile, and, if
+present, `data/raw/<run_id>/`. Emits one of a fixed set of diagnoses, each with evidence and a next verb:
+`markup_drift` (ParseError or yield below min; names the URL and the fixture to recapture),
+`source_down` (HttpError / TransportError; says whether it persisted across runs),
+`hard_check` (names the check, its playbook), `push_race`, `stale_lock`, `api_blocked_expected`,
+`quiet_account` (stale newest post but sources healthy), `silent_undercollection` (green runs, zero new
+posts, but trumpstruth's listing shows newer ids than `max_trumpstruth_id`; needs `--live`), `healthy`.
+No network unless `--live`. Under 5 s.
+`result` = `{diagnosis, confidence, evidence: [...], next: [...], playbook: "..."}`.
+
+**`ts explain <ts_id> [--raw]`**
+The evidence trail for one record: the record with every field annotated by its `field_sources` entry; every
+run record whose leg touched it (via `updated_run_id` history in git, cheap: `git log -S<ts_id>` on the month
+file); every deletion event, engagement snapshot, anomaly, and intervention for it; the trumpstruth and
+truthsocial URLs; with `--raw`, the latest raw capture and `raw_api`. Also prints the uncertainty flags from
+`v_confidence` in words. No network. Under 3 s.
+`result` = `{record, provenance: {field: {source, set_at_run}}, observations: [...], events: {deletions, engagement, anomalies, interventions}, confidence: {...}, urls: {...}}`.
+
+**`ts check [--only NAME]`**
+`check_data.run_checks` with structured output: each firing check as an object `{name, severity, value,
+threshold, ids_sample, descriptor}`. Writes `output/checks.json`. No network. About 2 s.
+
+### Collection (layers 0 to 4)
+
+**`ts collect [--sources trumpstruth,cnn,api] [--backfill] [--force-cnn] [--dry-run] [--live] [--capture]`**
+The existing orchestrator. Adds: `--dry-run` runs every leg against the network (subject to profile) but
+writes nothing under `data/`; instead it writes the would-be changes to `output/plans/collect-<run_id>.json`
+(records new and changed, events, anomalies) so an agent can inspect a collection before it lands.
+`--capture` saves every response under `data/raw/<run_id>/` (on by default in `cloud`; the workflow uploads
+the directory as an artifact when the run is red). Anomalies go to `data/anomalies.jsonl`. Cost: printed
+per leg from the run records (today: trumpstruth 3 to 7 requests and 5 to 15 s on a normal run; cnn 1 request
+and about 6 s when not skipped; the backfill about 15 minutes).
+
+**`ts capture <url> --as tests/fixtures/<name> --proves "<one line>"`**
+Fetch one page through the paced client, save it as a fixture, and append the manifest entry with the URL,
+the capture date, and what it proves. `--live` required in `sandbox`. One request.
+
+### Repair (layers 2 and 4, Law 12)
+
+**`ts repair <plan> [...] [--apply --reason "..."]`**
+Every repair is a named plan with the same life cycle: plan (default) writes `output/plans/<intervention
+id>.json` listing exactly which records, events, and state keys would change and the checks that will be run
+afterwards; `--apply` performs it inside one intervention record and runs `check` after; a failed check after
+apply reverts the working tree to the pre-apply commit and marks the intervention `reverted`. Plans:
+
+| Plan | Replaces (OPERATIONS section 5) | Touches |
+|---|---|---|
+| `regenerate-deletion --ts-id X` | the six manual steps | one record, its lines in `deletions.jsonl`, `processed_removed_ids` |
+| `rewalk-ids --from N` | lowering `max_trumpstruth_id` by hand | `state.json`; next collect does the walk (cost printed: `(max - N) * 1.5 s`) |
+| `reset-source --source S [--key K]` | deleting keys from `state.json` | `state.json` |
+| `rewrite-records` | the one-liner through `scripts.store` | `posts/*.jsonl` canonical rewrite |
+| `redo-history` | deleting `data/posts` etc. by hand | moves ledgers to `.trash`, then requires `collect --backfill` in a non-cloud profile |
+| `resolve-handles` | backlog B-001 | `reblog_of_acct` and `content_text` on cnn-only reblogs; marks `field_sources` `cnn-guess` or the resolved source |
+| `manual --note "..."` | any hand edit | records an intervention for something done outside the verbs (the escape hatch that keeps the ledger honest) |
+
+### Views and analysis (layer 5)
+
+**`ts build`** = `build_db.build`. Adds `v_confidence` and `v_coverage`. Under 10 s.
+**`ts query --sql|--file [--format table|csv|markdown|json]`** = `query.py`. Adds `--json`.
+**`ts report --week 2026-W37 | --start --end`** = `weekly.py`. Every table gains a `caveats` list.
+**`ts dictionary`** prints the generated data dictionary (from the schema and the views) as markdown.
+
+### Verification (Law 10, 16)
+
+**`ts verify [--quick]`**
+The fixed pre-push checklist, in order, stopping at the first failure: `pytest -q` (or the changed modules
+with `--quick`), the coherence tests, `ts check` on the real data, `ts replay --smoke`, and a diff of
+`STATUS.md` against a `--refresh`. Prints what it ran and what it cost. This is what an agent runs before
+every push and what `test.yml` runs in CI.
+
+**`ts replay <bundle> [--golden PATH] [--update-golden]`**
+Run the whole pipeline (collect all sources, check, build) against a bundle of evidence with a `FakeClock`
+and a `FakeTransport`, into a temporary data root, and diff the result against a golden data root. Bundles
+live in `tests/bundles/<name>/` with a manifest mapping URLs to files and a fixed clock. `--smoke` uses the
+smallest bundle. No network. Under 20 s.
+
+### Knowledge (layer 8)
+
+**`ts note lesson|decision|backlog|dossier [--from-template]`**
+Scaffold a knowledge entry with the next free id and today's date from `templates/`, and open it in `$EDITOR`
+if any. `ts note backlog --close B-001 --evidence "stats.cnn_ambiguous_handles.count=0"` closes an item with
+its acceptance evidence. Pure file operations.
+
+**`ts help [verb]`**
+Generated from the registry: purpose, flags, reads, writes, network, cost, next.
+
+**`ts scratch [--from data]`**
+Copy `data/` to a temporary directory outside the repository and print the `--data-root` flag to use with
+it. The sandbox guard rails point at this verb whenever a verb would write the real `data/`. Pure file copy,
+about 60 MB, under 2 s.
+
+## 5. The first sixty seconds (Law 3)
+
+```
+cat AGENTS.md            # the door: what this is, the laws in one screen, the verbs, what never to do
+python -m scripts.ts status     # the situation: health, freshness, drift, firing checks, pending, open decisions
+python -m scripts.ts doctor     # only if status is not green: the cause and the next verb
+```
+
+Three commands, about 1,500 tokens read, and the agent knows what to do. Everything else is reached by
+following a link from one of these three outputs.
+
+## 6. What this replaces
+
+| Today | Vision |
+|---|---|
+| `python -m scripts.collect --summary-file ...` | `ts collect --json` (the workflow reads `result.summary`) |
+| `python -m scripts.check_data` | `ts check` |
+| `python -m scripts.build_db` | `ts build` |
+| `python -m scripts.query`, `weekly` | `ts query`, `ts report` |
+| `python -m scripts.validate_backfill` | `ts replay` with the history bundle, or `ts check --only coverage` |
+| six manual steps to regenerate a deletion | `ts repair regenerate-deletion --ts-id X --apply --reason "..."` |
+| reading five files to know the state | `ts status` |
+| reading the workflow console to diagnose | `ts doctor` (+ `data/raw/<run_id>` artifact) |

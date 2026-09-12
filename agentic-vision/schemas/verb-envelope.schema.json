@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://political-social-media/schemas/verb-envelope.schema.json",
+  "title": "VerbEnvelope",
+  "description": "The object every dispatcher verb prints with --json. The human output is a rendering of the same object. result is verb-specific; everything else is uniform so an agent can parse any verb the same way.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["verb", "ok", "profile", "run_id", "started_at", "finished_at", "cost", "result", "warnings", "truncated", "next"],
+  "properties": {
+    "verb": { "type": "string" },
+    "args": { "type": "object", "additionalProperties": true, "description": "The parsed arguments, for the record." },
+    "ok": { "type": "boolean", "description": "The verb completed and its own success criterion held." },
+    "exit_code": { "type": "integer", "enum": [0, 1, 2, 3, 4], "description": "0 ok; 1 collector exception; 2 hard check failed; 3 refused by a guard rail; 4 plan produced, not applied." },
+    "profile": { "type": "string", "enum": ["cloud", "desktop", "sandbox"] },
+    "run_id": { "type": ["string", "null"], "description": "Set by collect and repair; null otherwise." },
+    "intervention_id": { "type": ["string", "null"] },
+    "started_at": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$" },
+    "finished_at": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$" },
+    "cost": {
+      "type": "object", "required": ["requests", "seconds", "files_written"], "additionalProperties": false,
+      "properties": {
+        "requests": { "type": "integer", "description": "HTTP requests actually sent (Http.request_count)." },
+        "requests_by_host": { "type": "object", "additionalProperties": { "type": "integer" } },
+        "seconds": { "type": "number" },
+        "slept_seconds": { "type": "number", "description": "Time spent pacing (from the clock's recorded sleeps); tells an agent how much of the wall time was rate limiting." },
+        "files_written": { "type": "array", "items": { "type": "string" } },
+        "bytes_written": { "type": "integer" }
+      }
+    },
+    "result": { "description": "Verb-specific. status -> Status; check -> checks.json v2; explain -> the explain object; collect -> {summary, legs[], checks}; repair -> {plan_path, changes, applied, intervention_id}; replay -> {passed, diff, run_records, anomalies}; diff -> the diff object; doctor -> {diagnosis, confidence, evidence, playbook}." },
+    "warnings": { "type": "array", "items": { "type": "string" } },
+    "truncated": { "type": "array", "items": { "type": "object", "required": ["what", "limit"], "properties": { "what": { "type": "string" }, "limit": { "type": "integer" }, "total": { "type": ["integer", "null"] } } }, "description": "Every cap that shortened this output, so an agent never mistakes a sample for the whole." },
+    "refused": { "type": ["object", "null"], "properties": { "rule": { "type": "string" }, "message": { "type": "string" }, "how_to_allow": { "type": "string" } }, "description": "Set with exit_code 3." },
+    "next": { "type": "array", "items": { "type": "string" }, "maxItems": 3 }
+  }
+}

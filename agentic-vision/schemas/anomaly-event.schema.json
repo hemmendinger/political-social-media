@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://political-social-media/schemas/anomaly-event.schema.json",
+  "title": "AnomalyEvent",
+  "description": "One line of data/anomalies.jsonl: a disagreement or contradiction between sources that the merge detected and did NOT resolve by overwriting. Today merge_partial computes these (MergeResult.anomalies) and every collector discards them; this ledger is where they go instead. Append-only.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["detected_at", "run_id", "source", "kind", "ts_id", "field", "kept", "dropped", "detail"],
+  "properties": {
+    "detected_at": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$" },
+    "run_id": { "type": "string" },
+    "source": { "type": "string", "enum": ["api", "trumpstruth", "cnn"], "description": "The source whose observation triggered the anomaly." },
+    "kind": {
+      "type": "string",
+      "enum": ["disagreement", "created_at_disagreement", "inverted_bounds", "resurrected", "parse_partial", "other_account", "yield_below_min"],
+      "description": "disagreement = a lower-precedence, non-empty, different value was dropped (merge rule 3/5/6); created_at_disagreement = rule 4, more than 2 s apart; inverted_bounds = rule 8; resurrected = rule 7; parse_partial = a page parsed but one card failed (collector counted it in errors); other_account = a trumpstruth entry not authored by realDonaldTrump was skipped; yield_below_min = a page returned fewer items than min_yield."
+    },
+    "ts_id": { "type": ["string", "null"], "description": "Null for page-level anomalies (yield_below_min)." },
+    "field": { "type": ["string", "null"], "description": "Record field for disagreement kinds; null otherwise." },
+    "kept": { "type": ["string", "null"], "description": "Rendered value kept, as '<source>=<value>' truncated to 200 chars." },
+    "dropped": { "type": ["string", "null"], "description": "Rendered value dropped, as '<source>=<value>' truncated to 200 chars." },
+    "detail": { "type": "string", "description": "The legacy one-line string (e.g. kind_disagreement:<ts_id>:api=original,cnn=reblog) so grep on old formats still works." },
+    "url": { "type": ["string", "null"], "description": "The page or API URL that produced the observation, when known; lets explain <ts_id> point at the evidence." }
+  },
+  "x-queries": [
+    "count by kind per day: a jump in created_at_disagreement usually means a source changed its timezone rendering",
+    "resurrected: every one is a possible false deletion; each should become a lesson or a confirmed source quirk",
+    "disagreement where field=kind and dropped starts with cnn=: expected background (cnn cannot see quotes or replies)"
+  ]
+}

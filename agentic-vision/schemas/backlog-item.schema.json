@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://political-social-media/schemas/backlog-item.schema.json",
+  "title": "BacklogItem",
+  "description": "One entry of knowledge/backlog.yaml (the structured successor of TODO.md). An agent should be able to pick the next item by reading only this file: priority, cost, what blocks it, how to know it is done, and where the evidence is.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "area",
+    "priority",
+    "status",
+    "problem",
+    "acceptance",
+    "cost",
+    "evidence"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^B-\\d{3}$"
+    },
+    "title": {
+      "type": "string",
+      "maxLength": 80
+    },
+    "area": {
+      "type": "string",
+      "enum": [
+        "data-quality",
+        "coverage",
+        "sources",
+        "verbs",
+        "situation",
+        "knowledge",
+        "simulation",
+        "economy",
+        "coordination",
+        "analysis"
+      ]
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "P0",
+        "P1",
+        "P2",
+        "P3"
+      ],
+      "description": "P0 = accuracy of the record is wrong or degrading; P1 = agent leverage; P2 = nice; P3 = someday."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "blocked",
+        "in-progress",
+        "done",
+        "dropped"
+      ]
+    },
+    "problem": {
+      "type": "string",
+      "description": "Two to five sentences. What is wrong, whom it affects, the measured size."
+    },
+    "options": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "cost",
+          "note"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "cost": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Candidate approaches, cheapest first."
+    },
+    "acceptance": {
+      "type": "string",
+      "description": "A measurable statement, ideally a check or stat reaching a value (e.g. stats.cnn_ambiguous_handles.count == 0)."
+    },
+    "cost": {
+      "type": "object",
+      "required": [
+        "build"
+      ],
+      "properties": {
+        "build": {
+          "type": "string",
+          "enum": [
+            "S",
+            "M",
+            "L"
+          ]
+        },
+        "requests": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "wall": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "profile": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Which profile can do it: cloud, desktop, sandbox, any."
+        }
+      }
+    },
+    "blocked_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Backlog ids or decision ids."
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Pointers: checks.json stat names, lesson ids, anomaly kinds, fixture files, file:line."
+    },
+    "decision": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Decision id if one is needed before starting."
+    },
+    "opened": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "closed": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "phase": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 3,
+      "description": "Migration phase from 10-migration-plan.md, while that plan is being executed; null afterwards."
+    }
+  }
+}
