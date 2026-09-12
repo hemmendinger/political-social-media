@@ -28,7 +28,7 @@ Schema: `schemas/status.schema.json`. Top-level sections, in reading order:
 |---|---|---|
 | `meta` | `generated_at`, `run_id`, `profile`, `commit`, `schema_version`, `history_source` (`history` file or `git`) | the run |
 | `health` | `verdict` (`green`, `yellow`, `red`) and `reasons[]`: red = a hard check fired, an incident record is newer than the last successful run, or the last run had a leg with `ok=false` for a source that was not expected to fail; yellow = a soft check outside its expected background, freshness past threshold, or schedule delivery under 50%; green otherwise | checks.json, incidents, run records, descriptors |
-| `cadence` | `runs_expected_24h` (from the cron), `runs_actual_24h` (run records), `ratio`; GitHub delivered 2 of about 16 slots on the first day (B-024) | run records |
+| `cadence` | `runs_expected_24h` (from the cron), `runs_actual_24h` (run records), `ratio`; GitHub delivered 2 of about 16 slots in the first 8 hours (B-024) | run records |
 | `checkout` | `head`, `branch`, `data_dirty` (uncommitted changes under `data/`), `untracked[]`, `status_stale` (a run record newer than `meta.generated_at`, or `checks.json.run_id` not the newest run), `behind_bot_commits`, `behind_bot_minutes`, `bot_last_run`, `fetched` (whether `git fetch` ran; profiles without network report the local ref), so the panel says which tree it describes and refuses to diagnose one it does not | git, run records |
 | `mission` | the four mission numbers with their previous value (last run) and 30-day trend | ledgers |
 | `freshness` | `newest_post_at`, `age_min`; per source: `last_ok_at`, `age_min`, `last_leg` (`ok`, `requests`, `new`, `updated`, `notes`), `expected` (whether this source is expected to work in this profile) | run records, state.json |
@@ -48,28 +48,28 @@ Rendered from `status.json` by a fixed template (`templates/STATUS.md`). The fir
 # STATUS  (generated 2026-09-12T04:58Z by run 20260912T045806Z-7e76, profile cloud, commit 9b7af34)
 
 HEALTH: YELLOW  — soft: single_source_recent_posts (53; background <=60), spike_days (2 days; real bursts); schedule delivery 12%
-MISSION: completeness 36,997 / ~36,554 API (+443 archive-only)  |  deletion latency median 87.9 min (30 d)
+MISSION: completeness 37,002 records (36,904 present, 98 deleted) / API 36,554 (+350 present)  |  deletion latency median 87.9 min (30 d)
          provenance: 2-source 83.1%, api-verified 0.05%  |  honesty flags: presumed-live 36,884, guessed-handle 1,172
 
 INCIDENTS: none open.   CADENCE: 2 of 16 scheduled runs in 24 h (12%)   CHECKOUT: at bot head (0 behind)
 
 FRESHNESS: newest post 2026-09-12T03:53Z (65 min ago)  [ok < 12 h]
   trumpstruth  ok  65 min ago   7 req  +4 new  6 updated   max_id 41698
-  cnn          ok  65 min ago   1 req  +0 new  4 updated   etag unchanged
+  cnn          ok  65 min ago   1 req  +0 new  4 updated   etag changed, imported 36,247
   api          skipped: profile cloud (Cloudflare 403; desktop only)      last live 2026-09-11T20:10Z
 
 DRIFT:  present vs api statuses_count  350  (threshold 365, background ~350, 7 d trend +4)  ok
         cnn_ambiguous_handles          1,172 (B-001, shrinking only via repair resolve-handles)
 
 CHECKS FIRING:
-  soft single_source_recent_posts = 53   reading: a few dozen cnn-only reposts near the id-walk boundary are normal;
+  soft single_source_recent_posts = 53   reading: posts 1 to 30 days old seen by one source (in practice cnn-only reposts near the id-walk boundary); a few dozen are normal;
        a jump means a source is missing posts.   verb: ts doctor
   soft spike_days = 2026-07-26 (57), 2026-08-04 (69)   reading: real bursts; a parser duplicating cards would also land here
        (duplicate_id is clean).   verb: none
 
 PENDING:  P0 backlog: none.  Open interventions: none.  Open decisions: D-002 (cnn cadence), D-003 (api collector role)
 
-LAST CHANGE (since run 20260912T001255Z-5139): +4 records, 10 updated, 0 deletions, 0 anomalies, checks unchanged.
+LAST CHANGE (since run 20260912T001255Z-5139): +4 records, 10 updated, 0 deletions, anomalies n/a (ledger not yet built), checks unchanged.
 
 NEXT: nothing required.  (ts diff for details; ts doctor if anything above surprises you)
 ```
@@ -84,7 +84,7 @@ The bot's message today: `collect: +4 posts, +0 deletions, checks ok`. The proto
 compatible and adds structure:
 
 ```
-collect: +4 posts, +0 deletions, checks ok | yellow | 8 req 15 s   <- the old prefix stays grep-stable; health and cost make `git log --oneline` tier 0
+collect: +4 posts, +0 deletions, checks ok | yellow | 8 req 15 s   <- the old prefix stays grep-stable; health and cost make `git log --oneline` tier 0 (8 req 15 s is the cloud profile with the api leg skipped; the same run today costs 12 req 51 s because of the 403 probe)
 
 trumpstruth ok 7 req +4/6 max_id 41698 | cnn ok 1 req +0/4 | api skipped profile=cloud
 soft: single_source_recent_posts=53 spike_days=2

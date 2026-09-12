@@ -41,7 +41,7 @@ collector: scripts/collect_trumpstruth.py
 state_keys:
   - max_trumpstruth_id: highest status id resolved sequentially; the next run starts after it; lower it to re-walk (repair rewalk-ids). NOTE: assigned only at the end of the walk (collect_trumpstruth.py:244), so a crash mid-walk re-fetches (B-015)
   - processed_removed_ids: removed pages already merged; remove an id to re-fetch it (repair regenerate-deletion)
-  - other_account_ids: ids skipped because another account authored them; written, never read
+  - other_account_ids: ids skipped because another account authored them; read only for its own de-duplication, never for a decision
   - backfill.phase / listing_cursor / removed_cursor / removed_page: resumable backfill cursors; phase in listing | removed | done
   - last_run_at, last_ok_at: written, never read
 ---
@@ -84,19 +84,19 @@ authentication. Coverage starts 2022-02-14 (the first post).
 - Q-tt-09 (2026-09-12): Detection floor. The narrowest deletion interval on record is 76 minutes, the median 742; 94 of 98 removal times are minute precision. Every deletion's lower bound equals its creation time because no API sighting has ever preceded a removal (B-036).
 - Q-tt-10 (2026-09-11): Search results carry a `status__deleted-badge`, a snippet, and for reposts `RT: https://truthsocial.com/users/<acct>/statuses/<id>`; the collector uses only the trumpstruth id from search results and fetches the status page for everything else.
 - Q-tt-11 (2026-09-11): A listing page 1 with fewer than 50 cards is treated as markup drift (`MIN_YIELD_PAGE1`), because the site has always returned 100.
-- Q-tt-12 (2026-09-11): Cursor format for the listing: base64 of `{"status_created_at":"YYYY-MM-DD HH:MM:SS","_pointsToNextItems":true}`; the site interprets the timestamp in its own zone; callers pass UTC plus 5 hours to be safe.
+- Q-tt-12 (2026-09-11): Cursor format for the listing: base64 of `{"status_created_at":"YYYY-MM-DD HH:MM:SS","_pointsToNextItems":true}`; the site interprets the timestamp in its own zone; the docstring says callers pass UTC plus 5 hours, but no production caller of `make_cursor` exists (only tests).
 
 ## Failure modes and what they look like
 
 | Failure | Symptom in run records / checks | First move |
 |---|---|---|
-| Markup change | leg `ok=false`, `error.type=ParseError` naming the parser; or `yield_below_min` anomaly | `ts doctor` says `markup_drift`; `ts capture` the URL as a new fixture; adjust the parser; keep the old fixture test if the old markup can recur |
+| Markup change | today: a run record with `ok=false` and `notes="ParseError: ..."` (a listing under 50 cards raises the same `ParseError`); in the vision: `error.type=ParseError` with the URL and phase, or a `yield_below_min` anomaly | `ts doctor` says `markup_drift`; `ts capture` the URL as a new fixture; adjust the parser; keep the old fixture test if the old markup can recur |
 | Site slow or down | `error.type=HttpError|TransportError` after 4 attempts | `ts doctor` says `source_down`; nothing to do unless it persists across runs |
 | A 5xx or connection blip on one status page during the walk | nothing today: the id is skipped and the mark advances past it (B-074, L-010); in the vision an anomaly `walk_retry` and a `pending_ids` entry | let the next run drain `pending_ids`; if it keeps failing, `ts repair rewalk-ids --from N --to N` |
 | Silent under-collection | green legs with `new=0` for many runs while the account is active | `ts doctor --live` compares the live listing's max id with `max_trumpstruth_id` |
 | Site removes a post we hold | appears in the removed search only if the post's creation date is inside the search window (see the creation-date quirk); status page merged as removed | expected; a deletion event and an interval |
 | Removal semantics change (search returns live posts as removed, or stops honoring `removed=only`) | many removed-search hits whose status page has no `Removed from platform` row | the vision's `removed_search_mismatch` anomaly (B-032); never mark an id processed unless the page confirmed removal |
-| Search grows past the request budget | leg truncated with `budget_exhausted` (B-032); today it would run into the 25-minute job timeout with no trace | narrow the window or raise the budget from the desktop |
+| Search grows past the request budget | leg truncated with `budget_exhausted` (B-032); today a 50-page cap truncates the search itself, but a large number of newly removed ids (one status page each at 1.5 s) would run into the 25-minute job timeout with no trace | narrow the window or raise the budget from the desktop |
 
 ## Endpoints
 

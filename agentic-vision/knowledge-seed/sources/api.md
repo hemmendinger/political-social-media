@@ -46,7 +46,7 @@ been recorded yet, because the API has only been reachable from the desktop for 
 | Engagement counts | Yes | replies, reblogs, favourites, upvotes, downvotes at observation time |
 | Media originals / mirrors | Originals | `media_attachments` with `meta.original` width/height/duration |
 | Edits | Yes | `edited_at` |
-| History | Yes, paginated | about 1,830 pages of 20 at 5 requests per minute, about 6 hours (B-003) |
+| History | Yes, paginated | about 1,830 pages (20 per page, the collector's limit) at 5 requests per minute, about 6 hours per TODO.md (B-003) |
 | Account totals | Yes | `statuses_count` (36,554 on 2026-09-11), `followers_count`, `last_status_at` (the last two are discarded today) |
 
 ## Quirks (facts about the world, each dated and addressable)
@@ -57,7 +57,7 @@ been recorded yet, because the API has only been reachable from the desktop for 
 - Q-api-04 (2026-09-11): Every `account` object is stripped before storage (`raw_api` keeps the rest); the stored `deleted_source` value for an API deletion is `api404` while the partial key is `api_404`.
 - Q-api-05 (2026-09-11): A live 200 for a record marked `deleted` flips it back to `present` (anomaly `resurrected`); the deletion fields are retained. This has not happened in the data yet.
 
-- Q-api-06 (2026-09-12): The two desktop API legs on 2026-09-11 (19:43 and 20:10 UTC) updated 20 records each but wrote no engagement rows: the store's throttle compared against the CNN rows written at 19:29, so the only fresh counts ever taken were discarded (B-072, L-009). Evidence: `data/engagement/2026-09.csv` has 37,226 rows, all `cnn`.
+- Q-api-06 (2026-09-12): The two desktop API legs on 2026-09-11 (19:43 and 20:10 UTC) updated 20 records each but wrote no engagement rows: the store's throttle compared against the CNN rows written at 19:29, so the only fresh counts ever taken were discarded (tracked in the knowledge seed as B-072 and L-009; not in TODO.md or MISTAKES.md). Evidence: `data/engagement/2026-09.csv` has 37,226 rows, all `cnn`.
 
 ## Failure modes and what they look like
 
@@ -74,7 +74,7 @@ been recorded yet, because the API has only been reachable from the desktop for 
 |---|---|---|---|
 | Account statuses | `https://truthsocial.com/api/v1/accounts/107780257626128497/statuses?limit=20&exclude_replies=false[&max_id=<ts_id>]` | `limit` (max 20 observed), `max_id`, `exclude_replies` | first page doubles as the probe; the account block carries `statuses_count` |
 | Single status | `https://truthsocial.com/api/v1/statuses/<ts_id>` | | 404 = deleted (fixture `api_status_404.json`) |
-| Account lookup | `https://truthsocial.com/api/v1/accounts/lookup?acct=<handle>` | | candidate for B-001 option 3; rate-limited like the rest |
+| Account lookup | `https://truthsocial.com/api/v1/accounts/lookup?acct=<handle>` | | candidate fix 3 of TODO.md item 1 (B-001 here); rate-limited like the rest |
 
 ## Open questions
 

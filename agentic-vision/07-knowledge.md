@@ -12,7 +12,7 @@ AGENTS.md                      the door (tier 0), at the repo root; templates/AG
 CLAUDE.md                      one line, `@AGENTS.md`, so Claude Code loads the door without a second copy
 STATUS.md                      the situation (generated; see 02-situation.md)
 knowledge/
-  backlog.json                 structured work items (schema: backlog-item.schema.json); JSON because the stdlib-only pipeline reads it
+  backlog.json                 structured work items (schema: backlog-item.schema.json); JSON because the pipeline reads its data with the standard library only (no YAML parser at runtime)
   decisions/D-001-....md       decision records with status, enforced_by, reversal_signal (template: templates/decision.md)
   lessons/L-001-....md         dated lessons, each linked two ways to a test (template: templates/lesson.md)
   sources/api.md               one dossier per source, quirks with ids Q-<src>-<nn> (template: templates/dossier.md)
@@ -102,7 +102,7 @@ The vision surfaces these as `proposed` records so they appear in `STATUS.md` un
 The draft is `templates/AGENTS.md`. Its sections, in order and with a line budget: what this is (5 lines),
 the first sixty seconds (3 commands), the laws that bind an agent here (10 lines), the verbs (one line each),
 the profiles and what each may do (a 3-row table), never do (8 lines), the map of files by question (15
-lines), conventions (Python 3.9, LF, commit prefixes, 8 lines). Two of its sections are generated blocks
+lines), conventions (Python 3.9, LF, commit prefixes, 8 lines; the prefixes are a habit of most commits today, not a stated rule). Two of its sections are generated blocks
 (`05-invariants-and-schema.md` section 6): the verb list from the registry, and a rules block rendered from
 lessons marked `general` and from accepted decisions, so a tooling lesson learned in one session binds the
 next without anyone remembering to copy it. `CLAUDE.md` holds the single line `@AGENTS.md`. It is the only

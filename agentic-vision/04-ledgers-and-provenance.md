@@ -42,11 +42,13 @@ that build a string also build a structured `anomaly_events` entry (`kind`, `fie
 `(ts_id, field, sha256(kept), sha256(dropped))`, so a re-observation of the same contradiction on every run
 does not grow the ledger. One identifier is renamed in code: `inverted_bounds` becomes
 `inverted_deletion_bounds`, the name the check already uses, so one string is greppable across both ledgers. Two page-level kinds are added at the
-collector level: `other_account` (today only a count in `notes`) and `yield_below_min` (today an exception
-with no record of what the page contained).
+collector level: `other_account` (today a count in `notes`, plus the ids met during the walk in
+`state.json` under `other_account_ids`) and `yield_below_min` (today a `ParseError` that fails the leg, with
+no record of what the page contained).
 
-Expected volume: a few per run at most (cnn disagreeing on `kind` for quotes and replies is the known
-background). A soft check `anomaly_rate` fires when a single run produces more than 50, which is what a
+Expected volume: a few per run at most (cnn, which only emits `original` and `reblog`, disagreeing on
+`kind` with api or trumpstruth for quotes is the known background; 1,998 quote records exist, 1,789 of them
+also seen by cnn). A soft check `anomaly_rate` fires when a single run produces more than 50, which is what a
 parser regression or a source change looks like.
 
 The run record gains an `anomalies` integer so the run line in `STATUS.md` can show it.
@@ -84,7 +86,7 @@ check failed, which keeps D-005). One small JSON file per failed run:
   "commit_before": "9b7af34",
   "legs": [{"source": "trumpstruth", "ok": false, "phase": "listing", "requests": 1,
             "error": {"type": "ParseError", "message": "no <div class=\"statuses\"> container found",
-                      "url": "https://www.trumpstruth.org/?sort=desc&per_page=100", "status": 200,
+                      "url": "https://www.trumpstruth.org/?sort=desc&per_page=100&removed=include", "status": 200,
                       "sha256": "…", "head": "<!doctype html><title>Just a moment...</title>…"}},
            {"source": "cnn", "ok": true, "new": 2, "updated": 0}],
   "checks": {"run_id": "…", "checked_at": "…", "ok": true, "hard": [], "soft": []},

@@ -8,7 +8,7 @@
       "priority": "P1",
       "status": "open",
       "phase": 2,
-      "problem": "The CNN archive stores a repost as `RT @<handle><text>` with no separator, so when the text starts with a word character the handle boundary is ambiguous. The merge never lets cnn override a handle known from the API or trumpstruth, so the damage is confined to cnn-only rows. Measured 2026-09-12: 1,157 of the 1,172 rows the stat counts are self-reposts resolved by the exact-prefix rule (residual risk: a longer handle sharing the prefix); 15 have another handle glued, of which 8 are already known handles, 2 have a known handle as a proper prefix, and 5 are unknown (B-054 splits the stat).\n",
+      "problem": "The CNN archive stores a repost as `RT @<handle><text>` with no separator, so when the text starts with a word character the handle boundary is ambiguous. The merge never lets cnn override a handle known from the API or trumpstruth, so the damage is confined to cnn-only rows. Measured 2026-09-12: 1,157 of the 1,172 rows the stat counts are self-reposts resolved by the exact-prefix rule (residual risk: a longer handle sharing the prefix); 15 have another handle glued; 8 of those appear as handles in API- or trumpstruth-sourced fields elsewhere in the data, 2 have such a handle as a proper prefix, 5 appear nowhere else (B-054 splits the stat).\n",
       "options": [
         {
           "name": "known-handle dictionary",
@@ -23,7 +23,7 @@
         {
           "name": "API account lookup",
           "cost": "M",
-          "note": "6 req/min, desktop only; last resort"
+          "note": "the unauthenticated API allows about 6 requests per minute (the client paces at 12 s); the desktop is the only profile that reaches it; last resort"
         }
       ],
       "acceptance": "stats.cnn_ambiguous_handles.count == 0 after B-054 (the 15, not the 1,172), and no cnn-only reblog has a handle that is not a known Truth Social account",
@@ -307,7 +307,7 @@
       "priority": "P1",
       "status": "blocked",
       "phase": 1,
-      "problem": "run_checks(trumpstruth_totals=...) has no caller; README and OPERATIONS present it as live.",
+      "problem": "run_checks(trumpstruth_totals=...) has no caller; README presents the check as live and OPERATIONS lists it with the qualifier 'only when passed in'.",
       "acceptance": "either checks.json carries local_total_vs_trumpstruth_total every run, or the code and docs no longer mention it",
       "cost": {
         "build": "S",
@@ -693,7 +693,7 @@
         "B-102"
       ],
       "evidence": [
-        "scripts/collect_trumpstruth.py:40",
+        "scripts/collect_trumpstruth.py:41",
         "scripts/collect.py:86-90"
       ],
       "decision": null,
@@ -896,7 +896,7 @@
       "priority": "P1",
       "status": "open",
       "phase": 2,
-      "problem": "Analysis is ad-hoc SQL over views whose columns are documented only in build_db.py; an answer carries no bounds, coverage, caveats, or data version, so a journalist's number cannot be reproduced or qualified.\n",
+      "problem": "Analysis is ad-hoc SQL over views whose full column list exists only in build_db.py (SPEC section 10 names lifetime_min and deletion_window_min without saying they are bounds); an answer carries no bounds, coverage, caveats, or data version, so a journalist's number cannot be reproduced or qualified.\n",
       "acceptance": "ts ask deleted_within --start --end returns confirmed/possible/excluded counts, both time-zone windows with the seam count, the coverage subset, computed caveats, and the data commit; six questions registered; golden answers tested",
       "cost": {
         "build": "M",
@@ -948,7 +948,7 @@
       "priority": "P2",
       "status": "open",
       "phase": 2,
-      "problem": "All 37,226 engagement rows are cnn; 35,909 were observed more than 14 days after creation (late baselines); 5,366 of 5,597 reblog rows have favourites 0 because the archive reports zeros for reposts. engagement_stats mixes them.",
+      "problem": "All 37,226 engagement rows are cnn; 35,909 were observed more than 14 days after creation (late baselines); 5,366 of 5,597 reblog rows have favourites 0 because the archive reports zeros for reposts. engagement_stats groups by kind, so it reports a meaningless reblog row (median 0) and mixes late baselines with tracked snapshots inside each kind.",
       "acceptance": "v_engagement_latest carries age_at_observation_min, snapshot_kind, source; engagement_stats excludes reblogs by default and reports the breakdown with caveats",
       "cost": {
         "build": "S",
@@ -1086,7 +1086,8 @@
       },
       "blocked_by": [],
       "evidence": [
-        "scripts/check_data.py:314"
+        "scripts/check_data.py:314 (result dict), :369-373 (written)",
+        "scripts/collect.py:103"
       ],
       "decision": null,
       "opened": "2026-09-12",
@@ -1099,7 +1100,7 @@
       "priority": "P1",
       "status": "open",
       "phase": 1,
-      "problem": "A source's identity is scattered over about 25 literal sites in six modules: two rank tables in merge.py, a hidden lowest-rank default for unknown field_sources entries, hard-coded deletion signals, source == branches, VALID_SOURCES in check_data, SOURCE_ORDER and an if/elif chain in collect.py, and the paced-host table in common.py. Adding a fourth source means editing about 14 files by hand, and forgetting one raises KeyError or fails every record with a hard check.\n",
+      "problem": "A source's identity is scattered over about 37 literal lines in eight modules: two rank tables in merge.py, a hidden lowest-rank default for unknown field_sources entries, hard-coded deletion signals, source == branches, VALID_SOURCES in check_data, SOURCE_ORDER and an if/elif chain in collect.py, and the paced-host table in common.py. Adding a fourth source means editing about 14 files by hand, and forgetting one raises KeyError or fails every record with a hard check.\n",
       "acceptance": "scripts/sources.py declares each source once (name, ranks, order, hosts and pacing, headers, deletion signal, state defaults, collector, dossier path, fixture prefix); merge, check_data, collect, and Http read it; a shared Leg runs the merge/checkpoint/run-record loop so a collector is fetch-and-parse only; the fourth-source benchmark in 10-migration-plan.md drops to five files",
       "cost": {
         "build": "M",
@@ -1205,7 +1206,7 @@
       "priority": "P2",
       "status": "open",
       "phase": 2,
-      "problem": "merge_partial reads keys by name and ignores the rest, so a parser field that is misspelled or never registered vanishes silently (retruthed, snippet_text, followers_count already do).",
+      "problem": "merge_partial reads keys by name and ignores the rest. Today the collectors drop parser keys before the merge in three inconsistent ways (an allowlist, an underscore strip, nothing), so a misspelled or newly added parser field can vanish silently; retruthed and snippet_text are dropped deliberately by to_partial, and followers_count never reaches a partial.",
       "acceptance": "merge_partial(strict=True) raises UnknownField for a key that is not a schema field, a registered signal, or a registered private key; tests and replay run strict; production stays lenient and counts unknown keys as an anomaly",
       "cost": {
         "build": "S",
@@ -1384,7 +1385,7 @@
       "priority": "P0",
       "status": "open",
       "phase": 0,
-      "problem": "The stat counts every cnn-sourced reblog whose text starts with a word character: 1,172 today. But the parser resolves the exact prefix RT @realDonaldTrump first, so 1,157 of those are self-reposts whose only residual risk is a longer handle sharing the prefix, and 15 have another handle glued; of the 15, 8 are handles already known from the API or trumpstruth (probably correct) and 2 have a known handle as a proper prefix (probably wrong). The number misdirected B-001 toward hundreds of lookups.\n",
+      "problem": "The stat counts every cnn-sourced reblog whose text starts with a word character: 1,172 today. But the parser resolves the exact prefix RT @realDonaldTrump first, so 1,157 of those are self-reposts whose only residual risk is a longer handle sharing the prefix, and 15 have another handle glued; of the 15, 8 appear as handles in API- or trumpstruth-sourced fields elsewhere in the data (reblog and quote targets, mentions; probably correct), 2 have such a handle as a proper prefix (probably wrong), 5 appear nowhere else. The number misdirected B-001 toward hundreds of lookups.\n",
       "acceptance": "stats carry cnn_self_repost_prefix_assumed (1,157) and cnn_ambiguous_handles (15, shrinking); B-001 acceptance reads ambiguous == 0",
       "cost": {
         "build": "S",
@@ -1395,8 +1396,8 @@
       "blocked_by": [],
       "evidence": [
         "scripts/check_data.py:292-300",
-        "scripts/parsers.py:783-787",
-        "2026-09-12 count: 1157 self, 15 other, 8 known, 2 known-prefix"
+        "scripts/parsers.py:783-793",
+        "2026-09-12 count: 1157 self, 15 other; of the 15, 8 handles appear in api/trumpstruth-sourced reblog_of_acct, quote_of_acct, or mentions, 2 have one as a proper prefix"
       ],
       "decision": null,
       "opened": "2026-09-12",
@@ -1433,7 +1434,7 @@
       "priority": "P1",
       "status": "open",
       "phase": 0,
-      "problem": "55 of checks.json's 134 lines are a months_present array; 98 of state.json's 129 lines are processed_removed_ids one integer per line. About 800 tokens of filler in the two files an agent opens first.",
+      "problem": "55 of checks.json's 133 lines are a months_present array; 98 of state.json's 141 lines are processed_removed_ids one integer per line. About 800 tokens of filler in the two files an agent opens first.",
       "acceptance": "months_present becomes {first, last, count, gaps}; integer lists in state.json render on one line (indent stays 2 for objects); a cold read of both files is under 60 lines",
       "cost": {
         "build": "S",
@@ -1676,7 +1677,8 @@
       ],
       "evidence": [
         "scripts/collect_trumpstruth.py:466,470",
-        "scripts/collect_api.py:94,118,240"
+        "scripts/collect_api.py:240",
+        "scripts/collect_archive.py:148"
       ],
       "decision": null,
       "opened": "2026-09-12",
@@ -1895,7 +1897,7 @@
       "area": "coverage",
       "priority": "P0",
       "phase": 0,
-      "problem": "_fetch_status_page_safe catches every exception (an HttpError after four attempts included) and the loop moves on; at the end max_trumpstruth_id is set to the highest id that returned 200, or to the listing maximum if none did. A 5xx or a connection blip on one status page silently loses that post (a repost's only source of its own id); a whole-walk outage jumps the mark past every id in the range. Found by replaying 500 x4 on 41686 then 200 on 41687.",
+      "problem": "_fetch_status_page_safe (lines 249-269) catches every exception except ParseError (an HttpError after four attempts included) and the loop moves on; at the end max_trumpstruth_id is set to the highest id that returned 200, or to the listing maximum if none did. A 5xx or a connection blip on one status page silently loses that post (a repost's only source of its own id); a whole-walk outage jumps the mark past every id in the range. Found by replaying 500 x4 on 41686 then 200 on 41687.",
       "acceptance": "ids that fail for a non-404 reason go to state.trumpstruth.pending_ids and are retried first on the next run (bounded, with a give-up count that becomes an anomaly); max_trumpstruth_id never advances past a pending id; the bundle red-walk-blip proves 41686 is fetched on the next run",
       "cost": {
         "build": "S",
@@ -1956,8 +1958,8 @@
         "profile": "any"
       },
       "evidence": [
-        "scripts/collect_trumpstruth.py:337-341,371",
-        "scripts/collect_archive.py (skip window)"
+        "scripts/collect_trumpstruth.py:337-341,383",
+        "scripts/collect_archive.py:59-61"
       ]
     },
     {

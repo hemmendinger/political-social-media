@@ -65,15 +65,15 @@ Bundles to ship in phase 1 (each small, under 2 MB):
 | `normal-run-cloud` | the example above; the api 403 path and the 6-hour re-probe skip |
 | `deletion-found` | a removed status page becomes a deletion event with correct bounds (the L-003 lesson) |
 | `retruthed-listing` | the ReTruthed target-card quirk and sequential resolution of a repost's own id |
-| `red-parse-error` | a listing with the container class renamed: the run fails, the run record carries the error, `ts doctor` says `markup_drift` |
-| `backfill-tail` | the last two listing pages of a backfill and the removed search over 2022 |
+| `red-parse-error` | a listing with the `statuses` container renamed: `parse_listing` raises `ParseError`, the run fails, the run record carries the error, `ts doctor` says `markup_drift` (a second variant keeps the container but under 50 cards, the `min_yield` path) |
+| `backfill-tail` | the last two listing pages of a backfill and the removed search over 2022-01-01 to today |
 | `red-walk-blip` | a 5xx on one status page mid-walk; the id lands in `pending_ids` and is fetched on the next run (B-074) |
 
 ## 2. From a red run to a bundle
 
 `ts replay --from-raw data/raw/<run_id>` (or from the downloaded workflow artifact) builds a bundle:
 routes from `index.jsonl`, `clock_start` from the run record, `seed/` from the git commit before the run
-(the run record's commit is in the bot's message). The agent then reproduces the failure offline, fixes the
+(found today by timestamp; with the `Run-Id` trailer of `02-situation.md`, by `git log --grep`). The agent then reproduces the failure offline, fixes the
 parser, replays until green, and promotes the bundle into `tests/bundles/` with a `proves` line. The
 failure becomes a permanent regression test in one motion (Law 13).
 
@@ -81,8 +81,9 @@ failure becomes a permanent regression test in one motion (Law 13).
 
 Two mechanisms, one pure function. `parsers.fingerprint(kind, text)` returns the structural summary a parser
 depends on: for a trumpstruth listing the count of `div.status` cards and the presence of each CSS class the
-parser reads (`status__external-link`, `status__reblog-indicator`, `alert--deletion`,
-`status-details-table__key`, `search-result`, `status__deleted-badge`), the details-table keys, the feed
+parsers read (`status__external-link`, `status__reblog-indicator`, `status-details-table__key`,
+`search-result`, `status__deleted-badge`; `alert--deletion` appears on removed pages but no parser reads it
+today, so it joins the token list rather than the parser), the details-table keys, the feed
 namespace; for the CNN file the row key set; for the API the status object key set. The fixture manifest
 stores each fixture's fingerprint.
 
@@ -95,8 +96,8 @@ stores each fixture's fingerprint.
   each manifest row and compare it with the fixture, so drift is seen even in a week with no collection.
   A change opens a backlog item (`ts note backlog --from-canary`) with the diff as evidence.
 
-Bundles to ship in phase 1 also include `removal-of-old-post` (a 40-day-old post appears in a full removed
-sweep and becomes a deletion event, the regression test for B-029) and `challenge-page` (a 200 with no
+Bundles to ship in phase 1 also include `removal-of-old-post` (a 40-day-old post is removed; the 14-day
+search never returns it, the full sweep does, and it becomes a deletion event: the regression test for B-029) and `challenge-page` (a 200 with no
 container produces an incident with class `challenge_page`, not `markup_drift`).
 
 ## 4. `ts verify`: the pre-push checklist
@@ -133,9 +134,10 @@ window, the CNN skip decision) so an author knows what `clock_start` pins.
 ## 6. Epistemic golden cases
 
 The synthetic dataset in `tests/conftest.py` has no record shaped like the real uncertainty modes. A group E
-is added (B-038): a deletion with `deleted_lower == created_at_utc` and `deleted_upper` 80 minutes later (the
-shape of all 98 real deletions), an api-tightened lower bound, a cnn-only repost pair sharing a target with one
-sibling missing, a present post from 2025-12 never verified, a post at 2026-08-31T23:30-04:00 (the UTC seam),
+is added (B-038): a deletion with `deleted_lower == created_at_utc` and `deleted_upper` 80 minutes later (every real
+deletion has the first property; about 31 of 98 have an interval near 80 minutes, 45 are longer than a day,
+the median is about 705 minutes), an api-tightened lower bound, a cnn-only repost pair sharing a target with one
+sibling missing, a present post from 2025-12 never verified, a post at 2026-08-31T23:30-04:00 (the UTC seam; `EASTERN` is defined in `scripts/common.py`),
 a late-baseline engagement row, a reblog with a glued cnn handle. `tests/test_epistemics.py` asserts that
 `deleted_within` partitions `v_deletions` into confirmed, possible, and excluded; that the August-shaped case
 yields 0 confirmed and 1 possible; that caveat counts equal the `v_confidence` counts; and that every

@@ -18,14 +18,14 @@ Goal: an agent can orient in three commands, nothing computed is lost, and the d
 | B-103 | `scripts/situation.py`: `output/status.json` and `STATUS.md` after exports; `output/history/status-YYYY-MM.jsonl`; bot commits `STATUS.md` | M |
 | B-104 | `AGENTS.md` from `templates/AGENTS.md`, `CLAUDE.md` = `@AGENTS.md` | S |
 | B-112, B-060, B-061, B-062 | populate `knowledge/` from `knowledge-seed/` (dossiers with quirk ids, decisions, lessons with two-way test markers, `backlog.json`, the two audits with dispositions); retire `TODO.md`, `MISTAKES.md`, `docs/dead-code-review.md` to pointers | S |
-| B-029 (D-017) | widen the removed search (since 2022-01-01 while under about 500 removals) and record the `sweep` on the run record; the cheapest accuracy win in the plan | S |
+| B-029 (D-017) | widen the removed search (since 2022-01-01 while the previous total fits in one page; 98 removals today) and record the `sweep` on the run record; the cheapest accuracy win in the plan | S |
 | B-030, B-042 | incident records committed `if: always()`; `checks.json` carries `run_id` and `checked_at` | S |
 | B-036 | `lifetime_lo_min` / `lifetime_hi_min`, bound basis and precision columns, `detection_floor_min` in coverage; the weekly report labels the bound | S |
 | B-051, B-054 | repair-state invariants (a half-finished repair fails a hard check); split the ambiguous-handle stat (1,157 self-reposts versus 15 glued handles) | S |
 | B-055, B-056 | cost block on every run record; compact `checks.json` and `state.json` | S |
 | B-074 | `pending_ids` for ids that fail mid-walk; the mark never advances past one (a silent-loss bug found by replay) | S |
-| B-013, B-028, B-015 | fixture manifest; ignore `data/.lock`; persist `max_trumpstruth_id` per id | S |
-| C1 to C33 | the doc corrections in `11-doc-deltas.md` section 1 (the restructurings wait for phase 2) | S |
+| B-013, B-028, B-015 | fixture manifest (the README table lists 20 of 24 files); ignore `data/.lock`; persist `max_trumpstruth_id` per id | S |
+| C1 to C37 | the doc corrections in `11-doc-deltas.md` section 1 (the restructurings wait for phase 2) | S |
 | D-007, D-008, D-009, D-013 | decide (recommendations in `knowledge-seed/decisions.md`); they gate B-025, B-003/B-004, B-012, and the pandas removal | maintainer |
 
 Acceptance (run from a clean clone):
@@ -89,7 +89,7 @@ Goal: the system remembers in the right places, analyses carry their caveats, an
 | B-115 | `repair.yml`; desktop `--commit` path | S |
 | B-116 (D-010) | untrack `posts.csv`; `output/history`; engagement throttle change (B-025 under D-007) | S |
 | B-001 | resolve the 15 glued handles (dictionary first, then one trumpstruth search each) as the first real `repair` plan with an intervention record | S |
-| B-022 | decide and document empty-list semantics; property test | S |
+| B-022 | decide whether an api `[]` clears a list (today the code documents `[]` as unknown and never clears); property test | S |
 | B-012 (D-009) | wire the trumpstruth total check | S |
 | B-035, B-037, B-038 | `ts ask` with the question registry and answer envelope; engagement snapshot semantics; epistemic golden cases | M |
 | B-046, B-047, B-048 | metric registry with SQL parity; strict observations in tests and replay; `ts scaffold` | M, S, M |
@@ -110,7 +110,7 @@ Goal: close the historical gaps the sources allow, from the desktop, as declared
 
 | Item | What | Build |
 |---|---|---|
-| B-003 | `repair api-backfill` (desktop, chunked commits, resumable); deletions before March 2026 become known with unknown timing | M |
+| B-003 | `repair api-backfill` (desktop, chunked commits, resumable); deletions removed before March 2026, unknown to every source because trumpstruth's tracking starts then, become known with unknown timing | M |
 | B-002 | historical id crawl from the desktop with `--max-ids` | S |
 | B-004 | desktop poller as a scheduled task calling `ts collect --sources api --commit` | S |
 | B-049 | sub-resource hook on the source registry | M |
@@ -148,7 +148,7 @@ them under Pending until decided.
 
 Within a phase, do the items in the order listed; each was placed after the items it reads. Two rules of
 thumb: touch each file once per phase (the three merge loops change in B-014, B-011, B-019, and B-106, so do
-those together), and land the doc corrections (C1 to C33) in the same pull request as the code that makes
+those together), and land the doc corrections (C1 to C37) in the same pull request as the code that makes
 them true.
 
 ## 6. The task benchmark (how we know it worked)
@@ -162,9 +162,9 @@ Six tasks, each timed as reads, writes, network requests, and wall clock, before
 | Diagnose a red run to a root cause | 4 files + the Actions console, about 3,500 tokens; often impossible from a sandbox | `ts doctor` + one artifact, about 800 tokens (phase 1) |
 | Reproduce a red run offline | not possible | `ts replay --from-raw`, under 1 minute (phase 1) |
 | Regenerate one deletion | 6 files read, 3 hand edits, no receipt | one command with `--dry-run`, an intervention record (phase 1) |
-| Answer "how many deletions within an hour in August, and how sure?" | build, query, read build_db.py for column meaning, answer 0 (wrong: every lower bound is creation time; the floor is 76 min) | after phase 0: `lifetime_lo_min`/`hi_min` make the interval visible; after phase 2: `ts ask deleted_within --start 2026-08-01 --end 2026-08-31 --param minutes=60` returns 0 confirmed, 6 possible, 0 excluded, with the detection floor and the lookback gap as caveats |
-| Add a fourth source | about 14 files and 25 literal sites by hand; an unregistered host is paced at 0 s; a forgotten rank table raises KeyError | `ts scaffold source` writes the registry entry, stubs, fixture slot, dossier stub; a parser and a fetch function are the only hand-written code (phase 2) |
-| Add a record field | 12 files and about 20 sites; a required field fails the hard check for all 37,002 records | one schema property with `x-` keys plus a migration; `ts repair migrate` rewrites the data with a receipt (phase 1) |
+| Answer "how many deletions within an hour in August, and how sure?" | build, query, read SPEC section 10 or build_db.py for column meaning (neither says `lifetime_min` is an upper bound), answer 0 (wrong: every lower bound is creation time; the narrowest observed interval is 76 min) | after phase 0: `lifetime_lo_min`/`hi_min` make the interval visible; after phase 2: `ts ask deleted_within --start 2026-08-01 --end 2026-08-31 --param minutes=60` returns 0 confirmed, 6 possible, 0 excluded, with the detection floor and the lookback gap as caveats |
+| Add a fourth source | about 37 literal lines across eight modules and a dozen files by hand; an unregistered host is paced at 0 s; a source missing from a rank table raises KeyError the first time its non-empty value meets another source's | `ts scaffold source` writes the registry entry, stubs, fixture slot, dossier stub; a parser and a fetch function are the only hand-written code (phase 2) |
+| Add a record field | 11 to 16 files and about 20 non-test sites; a required field fails the hard check for all 37,002 records | one schema property with `x-` keys plus a migration; `ts repair migrate` rewrites the data with a receipt (phase 1) |
 
 ## 7. What this plan does not do
 

@@ -91,7 +91,8 @@ desktop's unique contribution reaches `main` without touching a file the bot rew
 - Never force-push `main`. Never rebase the bot's commits.
 - Never run `collect` with the real `data/` root in a sandbox.
 - Never commit `data/raw/`, `data/truths.sqlite`, or a scratch root.
-- Never change `RECORD_FIELDS`, a check name, or a verb name without updating the schema or registry and
-  running `ts verify` (the coherence tests will stop you, but do it first).
+- Never change `RECORD_FIELDS` (which `check_data` requires every record to contain), a check name, or a
+  verb name without updating the schema or registry and running `ts verify` (the coherence tests will stop
+  you, but do it first).
 - Never state a fact about a source in a chat or a commit message only. It goes in the dossier.
 - Never skip, disable, or quarantine a test to get green.

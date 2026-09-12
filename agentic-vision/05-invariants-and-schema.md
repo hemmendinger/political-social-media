@@ -5,7 +5,7 @@ Serves Laws 6, 7, 9, 16.
 ## 1. Schemas as the contract
 
 Today the record shape is stated in four places that must agree by hand: `docs/SPEC.md` section 2 (table),
-`scripts/merge.py` `RECORD_FIELDS` (order and defaults), `scripts/check_data.py::_validate_record_schema`
+`scripts/merge.py` `RECORD_FIELDS` (order) with the default sets and `new_record()` beside it, `scripts/check_data.py::_validate_record_schema`
 (types), and `scripts/build_db.py` (columns), plus `scripts/collect.py::POSTS_CSV_COLUMNS` (a subset). Adding
 a field means touching all of them and the tests. The vision moves the truth into `schemas/` (the files in
 `agentic-vision/schemas/` move to the repo root when implemented):
@@ -21,8 +21,9 @@ a field means touching all of them and the tests. The vision moves the truth int
 | `verb-envelope.schema.json` | every `--json` output | `ts help` |
 
 Validation uses the standard library only (a small validator for the subset of JSON Schema these files use:
-type, enum, pattern, required, additionalProperties, items, oneOf with null). No new runtime dependency; the
-desktop still runs Python 3.9.
+type, enum, pattern, required, additionalProperties, items, oneOf with null). No new runtime dependency
+(today's are `tzdata`, the lazily imported `curl_cffi` fallback, and the unused `pandas`); the desktop still
+runs Python 3.9.
 
 `x-` extension keys carry what the docs need and the validator ignores: `x-role`, `x-provenance`,
 `x-example`, `x-csv`, `x-invariants`.
@@ -81,7 +82,7 @@ CHECKS = {
   "duplicate_id": CheckDescriptor(
       severity="hard", layer="store",
       why="The same post in two month files would double-count everything.",
-      condition="ts_id appears in more than one posts/*.jsonl file",
+      condition="ts_id occurs more than once across posts/*.jsonl (in one file or several)",
       threshold=None,
       reading="Only possible after a crash between writes or a hand edit.",
       playbook="ts repair rewrite-records --apply",
@@ -147,7 +148,7 @@ New checks the vision adds, all soft or stat:
 Three findings from the 2026-09-12 analysis walkthrough drive this section. First, `v_posts_et.lifetime_min`
 is an upper bound (creation to `deleted_upper`) exposed under a point name, and every one of the 98 deletions
 has `deleted_lower` equal to its creation time, so "deleted within an hour" returns a structural zero that
-reads as evidence (L-007). Second, the narrowest interval any source has resolved is 76 minutes (median 742),
+reads as evidence (L-007). Second, the narrowest interval any source has resolved is 76 minutes (median about 705),
 94 of 98 removal times are minute precision, and that floor is recorded nowhere. Third, the removed search
 covers only posts created in the last 14 days, so lifetimes over 14 days are structurally unobservable going
 forward (B-029, L-006). None of these is visible from a query today.
@@ -193,7 +194,7 @@ One row per post, flags derived from the record, plus an evidence grade:
 
 What each source and each signal could have seen, generated at build time from the ledgers, never written
 by hand. Per source: `history_start`, `history_end`, `records`, `polling_since` (earliest ok run record),
-`last_ok_at`, `api_verified`. Per signal: `removal_tracking_since` as `{declared: 2026-03-01,
+`last_ok_at`, `api_verified`. Per signal: `removal_tracking_since` as `{declared: "2026-03" (the docs say March 2026),
 observed_min: 2026-03-06T04:02Z}`; `removal_search` as `{window_days, lookback_semantics: "post creation
 date", last_full_sweep}` (from the `sweep` field on run records, `04-ledgers-and-provenance.md`; the
 policy in D-017 is the full window since 2022-01-01 on every run while the previous full search's total fits
@@ -219,8 +220,8 @@ them.
 
 All 37,226 engagement rows today are cnn; 35,909 were observed more than 14 days after creation; 5,366 of
 5,597 reblog rows have favourites 0 because the archive reports zeros for reposts. `v_engagement_latest`
-gains `age_at_observation_min`, `snapshot_kind` (`tracked` under 14 days, else `late_baseline`), and
-`source`; `engagement_stats` excludes reblogs by default and reports the kind and snapshot breakdown as
+gains `age_at_observation_min` and `snapshot_kind` (`tracked` under 14 days, else `late_baseline`) beside the
+`source` column it already has; `engagement_stats` excludes reblogs by default and reports the kind and snapshot breakdown as
 caveats (B-037).
 
 ### 3.6 Questions, not queries
@@ -289,7 +290,7 @@ facts stay where they are and become generated blocks:
 `ts dictionary --write` rewrites every block in place from its source (`record-table`, `media-item-table`,
 `sources-table`, `precedence-line`, `state-keys`, `checks-hard`, `checks-soft`, `checks-stats`, `verbs`,
 `questions`, `fixtures-table`, `module-map`); `ts dictionary` with no flag prints the diff. Blocks live in
-`docs/SPEC.md` sections 0 (module map), 1, 2, 3, 9, 11, `docs/OPERATIONS.md` sections 2, 4, 5,
+`docs/SPEC.md` (a new module map in section 0; the existing bullets and tables of sections 1, 2, 3, 9, 11), `docs/OPERATIONS.md` sections 2, 4, 5,
 `README.md` (sources table), `tests/fixtures/README.md`, and `AGENTS.md` (verbs). A coherence test
 regenerates them and fails on any difference, so a fact cannot be edited by hand in a generated block and a
 registry cannot change without its documentation.

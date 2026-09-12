@@ -167,7 +167,7 @@ flags with the same defaults (B-027); `--removed-days` defaults to the policy in
 searched is recorded as `sweep` on the run record. Each leg declares a request budget per host; exhaustion is
 recorded as a truncation, never reached as a job timeout (B-032). On any non-zero exit the verb writes
 `data/incidents/<run_id>.json` before returning, so the failure is committed even when the data is not. Cost: printed
-per leg from the run records (today: trumpstruth 3 to 7 requests and 5 to 15 s on a normal run; cnn 1 request
+per leg from the run records (today: trumpstruth 3 to 7 requests and 3 to 10 s on a normal run; cnn 1 request
 and about 6 s when not skipped; the backfill about 15 minutes).
 
 **`ts lease take --reason "..." --until ISO [--intervention ID]` / `ts lease release`**
