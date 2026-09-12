@@ -2362,7 +2362,7 @@
     },
     {
       "id": "B-116",
-      "title": "Stop committing posts.csv; history/checks time series; export sizing",
+      "title": "Stop committing posts.csv; split metrics into window and trailing files; the history line",
       "area": "economy",
       "priority": "P2",
       "status": "blocked",
