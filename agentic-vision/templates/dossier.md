@@ -39,9 +39,12 @@ Two to four sentences: who runs it, what it archives, its license, its update ca
 | Edits | | |
 | History before <date> | | |
 
-## Quirks (facts about the world, each dated)
+## Quirks (facts about the world, each dated and addressable)
 
-- YYYY-MM-DD: <quirk>. Evidence: <fixture or lesson id>. Handled by: <code path or merge rule>.
+- Q-<src>-<nn> (YYYY-MM-DD, verified YYYY-MM-DD): <quirk>. Evidence: <manifest file or lesson id>. Handled by: <code path or merge rule>.
+
+Code comments and tests cite the id (`# Q-tt-02`); a coherence test checks every cited id exists here. Numbers
+come from `knowledge/measurements.jsonl`, never typed twice.
 
 ## Failure modes and what they look like
 

@@ -243,7 +243,11 @@ answers over synthetic cases shaped like the real data (B-038) guard against reg
 | registry vs playbook | every descriptor's playbook verb exists in the dispatcher |
 | verbs vs docs | the dispatcher's verb list equals the list in `03-verbs.md` (or the generated `docs/verbs.md`) |
 | fixtures vs manifest | every file in `tests/fixtures/` has a manifest entry and vice versa |
-| lessons vs tests | every `encoded_in` test id in `knowledge/lessons/*.md` exists (collected with `pytest --collect-only -q`) |
+| lessons vs tests | every `encoded_in` test id in `knowledge/lessons/*.md` exists (collected with `pytest --collect-only -q`), and every test marked `@pytest.mark.lesson("L-nnn")` names a lesson that lists it (two-way) |
+| quirk ids | every `Q-<src>-<nn>` cited in code, tests, or lessons exists in that source's dossier, and every dossier quirk has a date and an evidence pointer |
+| audits | every file under `knowledge/audits/` has a Disposition table covering every finding, or is younger than 14 days |
+| backlog | `knowledge/backlog.json` validates against the schema; every `blocked_by` and `decision` id exists; every `acceptance_expr` parses |
+| rules block | the generated rules block in `AGENTS.md` equals the render of lessons marked `general` plus accepted decisions |
 | workflow vs docs | the cron in `collect.yml` equals the cron stated in `AGENTS.md`; the Python versions in `test.yml` equal those in `AGENTS.md` |
 | status render | `render(status.json)` equals the committed `STATUS.md` |
 | columns vs registry | every column of every view in the built sqlite has a `ColumnDoc`, and every `ColumnDoc` has a column |

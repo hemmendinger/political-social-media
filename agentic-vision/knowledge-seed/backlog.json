@@ -1,0 +1,2340 @@
+{
+  "_comment": "knowledge/backlog.json (seed). Read by ts status and ts note, so it is JSON, not YAML: the pipeline is stdlib-only. Each item follows schemas/backlog-item.schema.json plus an optional phase from 10-migration-plan.md. B-001..B-010 migrate TODO.md; B-011..B-013 migrate docs/dead-code-review.md; B-014..B-073 are findings of the 2026-09-12 audit and lens analyses; B-101.. are the vision's own work items. Closing an item is an observation when acceptance_expr evaluates true against checks.json.",
+  "items": [
+    {
+      "id": "B-001",
+      "title": "CNN archive: ambiguous repost handles (glued RT @handle prefix)",
+      "area": "data-quality",
+      "priority": "P1",
+      "status": "open",
+      "phase": 2,
+      "problem": "The CNN archive stores a repost as `RT @<handle><text>` with no separator, so when the text starts with a word character the handle boundary is ambiguous. The merge never lets cnn override a handle known from the API or trumpstruth, so the damage is confined to cnn-only rows. Measured 2026-09-12: 1,157 of the 1,172 rows the stat counts are self-reposts resolved by the exact-prefix rule (residual risk: a longer handle sharing the prefix); 15 have another handle glued, of which 8 are already known handles, 2 have a known handle as a proper prefix, and 5 are unknown (B-054 splits the stat).\n",
+      "options": [
+        {
+          "name": "known-handle dictionary",
+          "cost": "S",
+          "note": "longest known handle that is a prefix (fixes the 2 today); mark field_sources.reblog_of_acct = cnn-guess for the rest; offline"
+        },
+        {
+          "name": "trumpstruth cross-reference",
+          "cost": "S",
+          "note": "one search per unresolved row (about 13 requests today), persisted, with repair provenance"
+        },
+        {
+          "name": "API account lookup",
+          "cost": "M",
+          "note": "6 req/min, desktop only; last resort"
+        }
+      ],
+      "acceptance": "stats.cnn_ambiguous_handles.count == 0 after B-054 (the 15, not the 1,172), and no cnn-only reblog has a handle that is not a known Truth Social account",
+      "cost": {
+        "build": "S",
+        "requests": "0 for option 1; ~13 for option 2",
+        "wall": "minutes",
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-054"
+      ],
+      "evidence": [
+        "stats.cnn_ambiguous_handles",
+        "knowledge/sources/cnn.md quirk 2026-09-11",
+        "tests/fixtures/cnn_archive_sample.json"
+      ],
+      "decision": null,
+      "opened": "2026-09-11",
+      "closed": null
+    },
+    {
+      "id": "B-002",
+      "title": "Historical reposts before 2026-09-11 lack their own ids on trumpstruth listings",
+      "area": "coverage",
+      "priority": "P1",
+      "status": "open",
+      "phase": 3,
+      "problem": "Listing pages render a repost as a ReTruthed label plus the target's card; a repost's own status id and time exist only on its own status page. Sequential resolution covers new ids going forward; historically reposts come from CNN, which de-duplicates repeated reposts of the same target.\n",
+      "options": [
+        {
+          "name": "sequential crawl of ids 1..41",
+          "700 from the desktop": null,
+          "cost": "L",
+          "note": "about 17 h of requests at 1.5 s; resumable; needs the cap exposed (B-027)"
+        },
+        {
+          "name": "API history backfill",
+          "cost": "L",
+          "note": "resolves the same gap with richer fields; see B-003"
+        }
+      ],
+      "acceptance": "every reblog record from 2022-02 onward has its own ts_id and created_at_utc from trumpstruth or api (v_confidence.cnn_dedup_risk count == 0)",
+      "cost": {
+        "build": "S",
+        "requests": "~41,700",
+        "wall": "~17 h",
+        "profile": "desktop"
+      },
+      "blocked_by": [
+        "B-027"
+      ],
+      "evidence": [
+        "knowledge/sources/trumpstruth.md quirk (ReTruthed card)",
+        "tests/fixtures/trumpstruth_listing_2026-09-09_cursor.html"
+      ],
+      "decision": null,
+      "opened": "2026-09-11",
+      "closed": null
+    },
+    {
+      "id": "B-003",
+      "title": "Historical posts are presumed live; deletions before March 2026 are unknown (API backfill)",
+      "area": "coverage",
+      "priority": "P1",
+      "status": "blocked",
+      "phase": 3,
+      "problem": "Posts known only from the archives carry status=present without last_verified_live_at. trumpstruth's removal tracking starts in March 2026 (98 removed posts total). Our present count exceeds the live statuses_count by about 350, which is the size of the unflagged historical deletions plus structural differences. A full API walk (about 1,830 pages at 5 requests per minute, about 6 hours, resumable) verifies every historical post and adds canonical fields.\n",
+      "options": [
+        {
+          "name": "repair api-backfill from the desktop",
+          "cost": "L",
+          "note": "resumable state sources.api.backfill{phase walk|verify|done, max_id, pages}; walk about 1,830 pages at 12 s; verify absent records with single GETs; raw_api stripped by default (--keep-raw) so 37k records do not bloat; commits every 500 records so the bot interleaves; any archived post the live account no longer returns becomes a deletion with deleted_upper = observed_at"
+        }
+      ],
+      "acceptance": "coverage.presumed_live_count == 0 and present_count_drift within tolerance",
+      "cost": {
+        "build": "M",
+        "requests": "~1,830 + verifies",
+        "wall": "~6 h",
+        "profile": "desktop"
+      },
+      "blocked_by": [
+        "D-008"
+      ],
+      "evidence": [
+        "stats.present_vs_api_statuses_count",
+        "knowledge/sources/trumpstruth.md (removal tracking since 2026-03)"
+      ],
+      "decision": "D-008",
+      "opened": "2026-09-11",
+      "closed": null
+    },
+    {
+      "id": "B-004",
+      "title": "Desktop API poller (scheduled task while the PC is on)",
+      "area": "coverage",
+      "priority": "P2",
+      "status": "open",
+      "phase": 3,
+      "problem": "GitHub runners cannot reach the API; finer engagement and deletion timing need a desktop poller.",
+      "acceptance": "api leg runs at least hourly while the desktop is on; api_verified_share rises",
+      "cost": {
+        "build": "S",
+        "requests": "1-8 per run",
+        "wall": "seconds",
+        "profile": "desktop"
+      },
+      "blocked_by": [
+        "D-008",
+        "B-101"
+      ],
+      "evidence": [
+        "knowledge/sources/api.md"
+      ],
+      "decision": "D-008",
+      "opened": "2026-09-11",
+      "closed": null
+    },
+    {
+      "id": "B-005",
+      "title": "HTML dashboard over metrics, published with GitHub Pages",
+      "area": "analysis",
+      "priority": "P3",
+      "status": "open",
+      "phase": 3,
+      "problem": "A human-facing view of the metrics. Must be generated from status.json and metrics.json, never a second source of truth.",
+      "acceptance": "a page renders the mission numbers and the weekly tables from committed JSON",
+      "cost": {
+        "build": "M",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-103"
+      ],
+      "evidence": [],
+      "decision": null,
+      "opened": "2026-09-11",
+      "closed": null
+    },
+    {
+      "id": "B-006",
+      "title": "Media mirroring at first sight",
+      "area": "coverage",
+      "priority": "P2",
+      "status": "open",
+      "phase": 3,
+      "problem": "Deleted posts lose their images and video posters unless mirrored; trumpstruth's mirrors cover most cases meanwhile.",
+      "acceptance": "every media item of a post seen live has a mirror we control",
+      "cost": {
+        "build": "M",
+        "requests": "1 per media item",
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [],
+      "evidence": [],
+      "decision": null,
+      "opened": "2026-09-11",
+      "closed": null
+    },
+    {
+      "id": "B-007",
+      "title": "Video transcripts from trumpstruth's VTT caption tracks",
+      "area": "analysis",
+      "priority": "P3",
+      "status": "open",
+      "phase": 3,
+      "problem": "Video posts have no text; trumpstruth serves VTT captions.",
+      "acceptance": "a transcript field or table exists for posts with captions",
+      "cost": {
+        "build": "M",
+        "requests": "1 per video",
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [],
+      "evidence": [
+        "tests/fixtures/trumpstruth_status_41686_original_video.html"
+      ],
+      "decision": null,
+      "opened": "2026-09-11",
+      "closed": null
+    },
+    {
+      "id": "B-008",
+      "title": "Factba.se spot checks of deletion counts",
+      "area": "sources",
+      "priority": "P3",
+      "status": "open",
+      "phase": 3,
+      "problem": "A browse-only independent count to compare deletions against.",
+      "acceptance": "a dated comparison recorded in the trumpstruth dossier",
+      "cost": {
+        "build": "S",
+        "requests": "manual",
+        "wall": null,
+        "profile": "desktop"
+      },
+      "blocked_by": [],
+      "evidence": [],
+      "decision": null,
+      "opened": "2026-09-11",
+      "closed": null
+    },
+    {
+      "id": "B-009",
+      "title": "Raw responses as workflow artifacts for forensic debugging",
+      "area": "simulation",
+      "priority": "P1",
+      "status": "open",
+      "phase": 1,
+      "problem": "Context.raw_dir exists and is never set; a red run cannot be reproduced offline.",
+      "acceptance": "superseded by B-106 (raw capture) and B-107 (replay); close when both are done",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-106"
+      ],
+      "evidence": [
+        "scripts/common.py:216"
+      ],
+      "decision": null,
+      "opened": "2026-09-11",
+      "closed": null
+    },
+    {
+      "id": "B-010",
+      "title": "Desktop Python upgrade from the Windows Store 3.9 build",
+      "area": "economy",
+      "priority": "P3",
+      "status": "open",
+      "phase": 3,
+      "problem": "The code stays 3.9-compatible because of the desktop; the cloud runs 3.12.",
+      "acceptance": "D-006 superseded; CI matrix reduced",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "desktop"
+      },
+      "blocked_by": [],
+      "evidence": [],
+      "decision": "D-006",
+      "opened": "2026-09-11",
+      "closed": null
+    },
+    {
+      "id": "B-011",
+      "title": "Share the duplicated collector helpers (_new_run_counts, _build_row, engagement row, ACCOUNT_ID, _source_state)",
+      "area": "verbs",
+      "priority": "P2",
+      "status": "open",
+      "phase": 1,
+      "problem": "Byte-identical helpers in three collectors; a leg record change must be made three times.",
+      "acceptance": "one definition in scripts/common.py; tests unchanged",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [],
+      "evidence": [
+        "docs/dead-code-review.md section 6"
+      ],
+      "decision": null,
+      "opened": "2026-09-11",
+      "closed": null
+    },
+    {
+      "id": "B-012",
+      "title": "Wire or remove the inert trumpstruth_total_drift check",
+      "area": "verbs",
+      "priority": "P1",
+      "status": "blocked",
+      "phase": 1,
+      "problem": "run_checks(trumpstruth_totals=...) has no caller; README and OPERATIONS present it as live.",
+      "acceptance": "either checks.json carries local_total_vs_trumpstruth_total every run, or the code and docs no longer mention it",
+      "cost": {
+        "build": "S",
+        "requests": "1 per run if wired (stats page)",
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "D-009"
+      ],
+      "evidence": [
+        "scripts/check_data.py:248",
+        "scripts/collect.py:100-102"
+      ],
+      "decision": "D-009",
+      "opened": "2026-09-11",
+      "closed": null
+    },
+    {
+      "id": "B-013",
+      "title": "Fixture manifest: four used fixtures are undocumented",
+      "area": "knowledge",
+      "priority": "P1",
+      "status": "open",
+      "phase": 0,
+      "problem": "tests/fixtures/README.md omits 41514, 41515, search_removed_2026-08-28_to_09-11, search_removed_page2_empty.",
+      "acceptance": "tests/fixtures/manifest.json lists every file on disk (coherence test)",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [],
+      "evidence": [
+        "docs/dead-code-review.md section 7"
+      ],
+      "decision": null,
+      "opened": "2026-09-11",
+      "closed": null
+    },
+    {
+      "id": "B-014",
+      "title": "Merge anomalies are computed then discarded",
+      "area": "knowledge",
+      "priority": "P0",
+      "status": "open",
+      "phase": 0,
+      "problem": "MergeResult.anomalies (disagreements, created_at disagreements, inverted bounds, resurrections) is returned to every collector and read by none. README and OPERATIONS claim they are logged in run notes. The only evidence of where sources contradict each other is lost every run.\n",
+      "acceptance": "data/anomalies.jsonl receives every anomaly; the run record carries an anomalies count; README corrected (C2)",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [],
+      "evidence": [
+        "04-ledgers-and-provenance.md section 1",
+        "scripts/collect_*.py merge loops"
+      ],
+      "decision": "D-016",
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-015",
+      "title": "Persist max_trumpstruth_id per resolved id, as the docstring and SPEC claim",
+      "area": "sources",
+      "priority": "P1",
+      "status": "open",
+      "phase": 0,
+      "problem": "The walk saves state per id but assigns max_trumpstruth_id only after both loops; a crash mid-walk re-fetches up to 200 ids.",
+      "acceptance": "a replay bundle that kills the run mid-walk resumes without re-fetching",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [],
+      "evidence": [
+        "scripts/collect_trumpstruth.py:213-244",
+        "docs/SPEC.md:258"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-016",
+      "title": "Exit code 1 is overloaded (lock held vs collector raised)",
+      "area": "verbs",
+      "priority": "P2",
+      "status": "open",
+      "phase": 1,
+      "problem": "The workflow cannot distinguish the two; the vision's envelope adds exit 3 for refusals.",
+      "acceptance": "lock held exits 3 with a refused block",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-102"
+      ],
+      "evidence": [
+        "scripts/collect.py:253-255,120-121"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-017",
+      "title": "A typo in --sources runs nothing and then fails missing_run_row",
+      "area": "verbs",
+      "priority": "P2",
+      "status": "open",
+      "phase": 1,
+      "problem": "Unknown source names are silently filtered; the run then trips a hard check and rebuilds exports.",
+      "acceptance": "unknown source names are refused before anything runs",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [],
+      "evidence": [
+        "scripts/collect.py:79"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-018",
+      "title": "Standalone check_data runs a smaller check set than the cloud run",
+      "area": "verbs",
+      "priority": "P1",
+      "status": "open",
+      "phase": 1,
+      "problem": "The CLI never passes run_id, api_statuses_count, or now, so missing_run_row and present_count_drift are only evaluated inside collect.",
+      "acceptance": "ts check reads state.json for api_statuses_count and uses the clock, so its output equals the cloud run's",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [],
+      "evidence": [
+        "scripts/check_data.py:360-367"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-019",
+      "title": "api and cnn legs append events before save_posts; a crash leaves orphan rows",
+      "area": "sources",
+      "priority": "P1",
+      "status": "open",
+      "phase": 1,
+      "problem": "Deletion events and engagement rows are appended during the merge loop and before posts are saved; the trumpstruth leg orders its writes correctly. On the desktop a crash between the writes trips deletion_unknown_post / engagement_unknown_post.",
+      "acceptance": "all three legs write posts first, then events (a replay bundle proves it)",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [],
+      "evidence": [
+        "scripts/collect_api.py:144-147,231-233",
+        "scripts/collect_archive.py:358-361,380-382"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-020",
+      "title": "Append-only files have no torn-last-line recovery",
+      "area": "sources",
+      "priority": "P2",
+      "status": "open",
+      "phase": 1,
+      "problem": "A crash mid-append leaves a partial last line that makes the next load fail.",
+      "acceptance": "loaders skip and report a torn final line; ts doctor names it",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [],
+      "evidence": [
+        "scripts/store.py:50-67,142-159,238-240"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-021",
+      "title": "content_text provenance can lag content_html provenance",
+      "area": "data-quality",
+      "priority": "P2",
+      "status": "open",
+      "phase": 1,
+      "problem": "When a higher-ranked source supplies identical html, field_sources.content_html is re-stamped but content_text is not (20 vs 17 records with api).",
+      "acceptance": "field_sources.content_text == field_sources.content_html whenever content_text was derived from html",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [],
+      "evidence": [
+        "scripts/merge.py:245-249"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-022",
+      "title": "Empty lists from a higher-ranked source never clear mentions or tags",
+      "area": "data-quality",
+      "priority": "P2",
+      "status": "open",
+      "phase": 2,
+      "problem": "Empty means unknown for lists too, so an api re-observation with [] cannot clear a stale list. Decide whether api [] is authoritative.",
+      "acceptance": "documented in SPEC section 7 and, if changed, covered by a merge property test",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [],
+      "evidence": [
+        "scripts/merge.py:187-188"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-023",
+      "title": "Drop the ignored removed=include parameter from the listing URL",
+      "area": "sources",
+      "priority": "P3",
+      "status": "open",
+      "phase": 1,
+      "problem": "The site ignores it; it misleads readers into thinking listing cards can signal removal.",
+      "acceptance": "URL constant and fixture manifest updated",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [],
+      "evidence": [
+        "scripts/collect_trumpstruth.py:31"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-024",
+      "title": "GitHub cron delivered 2 of about 16 scheduled runs in the first day",
+      "area": "economy",
+      "priority": "P1",
+      "status": "open",
+      "phase": 1,
+      "problem": "Effective cadence 2-5 h instead of 30 min; deletion latency is hours. Measure over a week, then add a second trigger if needed.",
+      "options": [
+        {
+          "name": "measure",
+          "cost": "S",
+          "note": "runs_expected_24h vs runs_actual_24h in status.json"
+        },
+        {
+          "name": "repository_dispatch from a desktop scheduled task",
+          "cost": "S",
+          "note": "only while the PC is on"
+        },
+        {
+          "name": "external free cron hitting workflow_dispatch",
+          "cost": "S",
+          "note": "needs a token with actions:write"
+        }
+      ],
+      "acceptance": "runs_actual_24h / runs_expected_24h >= 0.8 over 7 days",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-103"
+      ],
+      "evidence": [
+        "09-economy.md section 6"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-025",
+      "title": "Engagement throttle for cnn: one row per day, not per hour",
+      "area": "economy",
+      "priority": "P1",
+      "status": "blocked",
+      "phase": 1,
+      "problem": "Each 2-hourly CNN download appends about 328 rows; up to 234 KB per day into a tracked CSV, for counts that are late snapshots anyway.",
+      "acceptance": "engagement growth under 30 KB per day from cnn; api rows unchanged",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "D-007"
+      ],
+      "evidence": [
+        "09-economy.md section 4"
+      ],
+      "decision": "D-007",
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-026",
+      "title": "Load posts once per run instead of three times",
+      "area": "economy",
+      "priority": "P2",
+      "status": "open",
+      "phase": 1,
+      "problem": "run_checks, build, and the CSV writer each json-load 57 MB (about 1.3 s each).",
+      "acceptance": "one load per run; run wall time down by about 2.5 s",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [],
+      "evidence": [
+        "09-economy.md section 3"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-027",
+      "title": "Expose collector caps as verb flags (max-ids, removed-days, max-pages, max-verify)",
+      "area": "verbs",
+      "priority": "P1",
+      "status": "open",
+      "phase": 1,
+      "problem": "MAX_IDS_PER_RUN=200 and three run() parameters are unreachable from any CLI; an id re-walk from the desktop needs a larger cap.",
+      "acceptance": "ts collect --max-ids 5000 works; defaults unchanged",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-102"
+      ],
+      "evidence": [
+        "scripts/collect_trumpstruth.py:40",
+        "scripts/collect.py:86-90"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-028",
+      "title": "Ignore data/.lock in git",
+      "area": "coordination",
+      "priority": "P1",
+      "status": "open",
+      "phase": 0,
+      "problem": "A crashed desktop run leaves a lock file that git add data would commit.",
+      "acceptance": ".gitignore contains data/.lock",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [],
+      "evidence": [
+        ".gitignore"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-029",
+      "title": "Deletion lookback gap: the removed search only covers posts created in the last 14 days",
+      "area": "coverage",
+      "priority": "P0",
+      "status": "open",
+      "phase": 0,
+      "problem": "trumpstruth's /search date filter applies to the post's creation date, not its removal date (the 2026-01-01..09-11 window returned 88 of the 98 removals known from the 2022 window). The incremental collector searches only the last 14 days, so a removal of any post older than 14 days is never seen. 35 of the 98 deletions on record were older than 14 days at removal; going forward about a third of deletions would be missed and lifetime series would be right-censored at 14 days.\n",
+      "options": [
+        {
+          "name": "search since 2022-01-01 on every run while total removals stay under about 500",
+          "cost": "S",
+          "note": "1 page today (98 results per 100-row page); processed_removed_ids prevents re-fetching status pages; record the sweep window on the run record"
+        },
+        {
+          "name": "14-day daily plus a full sweep on Sundays",
+          "cost": "S",
+          "note": "cheaper as the removal count grows into several pages"
+        }
+      ],
+      "acceptance": "coverage.removal_search.last_full_sweep is within 7 days on every run; a replay bundle with a removal of a 40-day-old post produces the deletion event",
+      "cost": {
+        "build": "S",
+        "requests": "+0 to +4 per run",
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "D-017"
+      ],
+      "evidence": [
+        "scripts/collect_trumpstruth.py:337-341",
+        "tests/fixtures/trumpstruth_search_removed_2026.html (88) vs MISTAKES.md (98)",
+        "data/deletions.jsonl ages"
+      ],
+      "decision": "D-017",
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-030",
+      "title": "Commit an incident record when a cloud run fails",
+      "area": "situation",
+      "priority": "P0",
+      "status": "open",
+      "phase": 0,
+      "problem": "On a non-zero exit the workflow's commit step is skipped, so the failure run record, the failing checks.json, and any collected data die with the runner. The ledger on main can only ever record success; a sandboxed agent cannot tell a red run from a dropped schedule.\n",
+      "acceptance": "collect.yml has an if: always() step that commits data/incidents/<run_id>.json and STATUS.md even on failure (never data/posts on a hard-check failure); ts doctor reads it",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "cloud"
+      },
+      "blocked_by": [
+        "B-103"
+      ],
+      "evidence": [
+        ".github/workflows/collect.yml:36-57",
+        "scripts/collect.py:118-124"
+      ],
+      "decision": "D-014",
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-031",
+      "title": "Structured error envelope with leg phase on run records",
+      "area": "verbs",
+      "priority": "P1",
+      "status": "open",
+      "phase": 1,
+      "problem": "A failure is a 500-character string with no URL, status, body digest, or phase; a Cloudflare challenge page (200, no container) is indistinguishable from markup drift.",
+      "acceptance": "ParseError and HttpError carry url, status, body sha256 and a 2 KB head; run records carry error{type,message,url,status,sha256,head,phase}",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [],
+      "evidence": [
+        "scripts/collect.py:48-61",
+        "scripts/parsers.py:47"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-032",
+      "title": "Per-leg request budgets and undercollection guards",
+      "area": "sources",
+      "priority": "P1",
+      "status": "open",
+      "phase": 1,
+      "problem": "MAX_REMOVED_PAGES=50 times 100 results times one status page each is about two hours at 1.5 s, past the 25-minute job timeout, with no in-repo trace. Several green-but-empty paths exist: a card whose account fails to parse is counted as another account; a removed-search hit is marked processed even if its status page did not say removed.\n",
+      "acceptance": "each leg declares a request budget; exhaustion is recorded as a truncation on the run record; other_account ratio, listing-max lag, and removed-search mismatch are anomalies with soft checks",
+      "cost": {
+        "build": "M",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-014"
+      ],
+      "evidence": [
+        "scripts/collect_trumpstruth.py:42,162-167,196-197,309-321"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-033",
+      "title": "Union merge for append-only ledgers, rebase abort between push retries, JSON lock with liveness",
+      "area": "coordination",
+      "priority": "P1",
+      "status": "open",
+      "phase": 1,
+      "problem": "A desktop run and a cloud run that both append to deletions.jsonl or runs/*.jsonl guarantee a rebase conflict; the retry loop has no git rebase --abort, so all three attempts fail. data/.lock holds a bare pid, is not gitignored, and a held lock exits like a collector failure.\n",
+      "acceptance": ".gitattributes marks the append-only ledgers merge=union; the workflow aborts a failed rebase before retrying and records a push_race incident; the lock is JSON with pid liveness and is gitignored",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-028"
+      ],
+      "evidence": [
+        ".github/workflows/collect.yml:50-56",
+        "scripts/collect.py:206-222"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-034",
+      "title": "Structural fingerprints checked on every fetched page",
+      "area": "simulation",
+      "priority": "P1",
+      "status": "open",
+      "phase": 1,
+      "problem": "Markup drift is discovered only when a page yields under min_yield or a parser raises; a page that changed but still parses is invisible.",
+      "acceptance": "parsers.fingerprint(kind, text) lists the classes and keys each parser depends on; fixtures store theirs in the manifest; every production page is compared and a difference is a markup_changed anomaly, never an exception",
+      "cost": {
+        "build": "M",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-013",
+        "B-014"
+      ],
+      "evidence": [
+        "06-simulation-and-verification.md section 3"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-035",
+      "title": "ts ask: named, versioned questions with an answer envelope and computed caveats",
+      "area": "analysis",
+      "priority": "P1",
+      "status": "open",
+      "phase": 2,
+      "problem": "Analysis is ad-hoc SQL over views whose columns are documented only in build_db.py; an answer carries no bounds, coverage, caveats, or data version, so a journalist's number cannot be reproduced or qualified.\n",
+      "acceptance": "ts ask deleted_within --start --end returns confirmed/possible/excluded counts, both time-zone windows with the seam count, the coverage subset, computed caveats, and the data commit; six questions registered; golden answers tested",
+      "cost": {
+        "build": "M",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-036",
+        "B-111"
+      ],
+      "evidence": [
+        "lens:analysis",
+        "09-economy.md section 2"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-036",
+      "title": "Interval-honest deletion columns and the detection floor",
+      "area": "analysis",
+      "priority": "P0",
+      "status": "open",
+      "phase": 0,
+      "problem": "v_posts_et.lifetime_min is an upper bound (deleted_upper minus creation) under a point name, and every one of the 98 deletions has deleted_lower equal to creation time, so a query for deletions within an hour returns a structural zero that reads as evidence. The narrowest interval any source can resolve is about 76 minutes; 94 of 98 removal times are minute precision. The weekly report prints lifetime_min and deletion_window_min as two identical columns.\n",
+      "acceptance": "v_posts_et exposes lifetime_lo_min, lifetime_hi_min, lower_basis, upper_basis, upper_precision; lifetime_min is a deprecated alias for one release; v_coverage carries detection_floor_min; the weekly report labels the bound",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [],
+      "evidence": [
+        "scripts/build_db.py:136-145",
+        "data/posts (98 of 98 lower == created)",
+        "data/deletions.jsonl (min width 76 min)"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-037",
+      "title": "Engagement snapshot semantics (age, kind, source) and reblog exclusion",
+      "area": "analysis",
+      "priority": "P2",
+      "status": "open",
+      "phase": 2,
+      "problem": "All 37,226 engagement rows are cnn; 35,909 were observed more than 14 days after creation (late baselines); 5,366 of 5,597 reblog rows have favourites 0 because the archive reports zeros for reposts. engagement_stats mixes them.",
+      "acceptance": "v_engagement_latest carries age_at_observation_min, snapshot_kind, source; engagement_stats excludes reblogs by default and reports the breakdown with caveats",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-111"
+      ],
+      "evidence": [
+        "data/engagement/2026-09.csv",
+        "scripts/metrics.py:238-262"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-038",
+      "title": "Epistemic golden cases in the test suite",
+      "area": "simulation",
+      "priority": "P2",
+      "status": "open",
+      "phase": 2,
+      "problem": "No test guards against an over-confident answer; the synthetic dataset in conftest has no deletion shaped like the real ones (lower == created), no cnn-only repost pair, no UTC seam post, no late-baseline engagement row.",
+      "acceptance": "conftest group E covers each uncertainty mode; tests/test_epistemics.py asserts the three-valued verdicts and caveat counts; golden answers in tests/golden/answers.json",
+      "cost": {
+        "build": "M",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-035"
+      ],
+      "evidence": [
+        "tests/conftest.py:53-183"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-039",
+      "title": "Module header convention and a generated module map",
+      "area": "knowledge",
+      "priority": "P2",
+      "status": "open",
+      "phase": 2,
+      "problem": "Which module reads or writes what, and whether it touches the network, is learned by reading it.",
+      "acceptance": "every scripts/*.py docstring starts with a five-line header (Layer, Reads, Writes, Network, Entry); ts dictionary --map renders the generated module map block; a coherence test enforces the header",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-114"
+      ],
+      "evidence": [
+        "lens:coldstart"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-040",
+      "title": "Watchdog workflow filing the doctor verdict as a GitHub issue",
+      "area": "situation",
+      "priority": "P3",
+      "status": "open",
+      "phase": 3,
+      "problem": "An agent without console access still cannot see a diagnosis if the incident commit itself failed (push race).",
+      "acceptance": "a 6-hourly workflow runs ts doctor --json and creates or updates one issue per failure class",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "cloud"
+      },
+      "blocked_by": [
+        "B-108",
+        "B-030"
+      ],
+      "evidence": [
+        "lens:incident"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-041",
+      "title": "Time-zone-explicit windows: utc_date, the seam count, and both bounds on every answer",
+      "area": "analysis",
+      "priority": "P1",
+      "status": "open",
+      "phase": 1,
+      "problem": "Month files are UTC partitions while analysis days are Eastern; a cheap read of one month file gets a window off by the seam posts, and nothing says so.",
+      "acceptance": "v_posts_et has utc_date; v_confidence has utc_seam; metrics.window() returns both bounds and the seam count; the dictionary states the partition zone",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-036"
+      ],
+      "evidence": [
+        "docs/SPEC.md section 3",
+        "README.md:64-66"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-042",
+      "title": "checks.json carries run_id and checked_at",
+      "area": "situation",
+      "priority": "P0",
+      "status": "open",
+      "phase": 0,
+      "problem": "checks.json is not tied to the run that produced it, and on exit 2 it is lost with the runner.",
+      "acceptance": "checks.json v2 has run_id and checked_at; the incident record embeds it",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [],
+      "evidence": [
+        "scripts/check_data.py:314"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-043",
+      "title": "Source registry and the shared Leg skeleton",
+      "area": "sources",
+      "priority": "P1",
+      "status": "open",
+      "phase": 1,
+      "problem": "A source's identity is scattered over about 25 literal sites in six modules: two rank tables in merge.py, a hidden lowest-rank default for unknown field_sources entries, hard-coded deletion signals, source == branches, VALID_SOURCES in check_data, SOURCE_ORDER and an if/elif chain in collect.py, and the paced-host table in common.py. Adding a fourth source means editing about 14 files by hand, and forgetting one raises KeyError or fails every record with a hard check.\n",
+      "acceptance": "scripts/sources.py declares each source once (name, ranks, order, hosts and pacing, headers, deletion signal, state defaults, collector, dossier path, fixture prefix); merge, check_data, collect, and Http read it; a shared Leg runs the merge/checkpoint/run-record loop so a collector is fetch-and-parse only; the fourth-source benchmark in 10-migration-plan.md drops to five files",
+      "cost": {
+        "build": "M",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-011",
+        "B-105"
+      ],
+      "evidence": [
+        "scripts/merge.py:63,66,190,212,240,271,316-321,408-415",
+        "scripts/check_data.py:28",
+        "scripts/collect.py:32,85-92",
+        "scripts/common.py:345-350"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-044",
+      "title": "Schema version and ts repair migrate: shape changes as planned migrations",
+      "area": "knowledge",
+      "priority": "P1",
+      "status": "open",
+      "phase": 1,
+      "problem": "missing_fields is a hard check and merge deep-copies existing records, so adding a required record field fails the cloud run (exit 2) for all 37,002 existing records until an ad-hoc script rewrites 55 month files with no receipt.\n",
+      "acceptance": "the record schema carries x-schema-version; state.json carries schema_version; scripts/migrate.py holds ordered, reasoned migrations; ts repair migrate plans (files, records, diff size) and applies through store.save_posts with an intervention record; a hard check fires when data is behind the code's version",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-105",
+        "B-109"
+      ],
+      "evidence": [
+        "scripts/check_data.py:82-85",
+        "scripts/merge.py:384"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-045",
+      "title": "Refuse requests to unregistered hosts instead of pacing them at 0 s",
+      "area": "coordination",
+      "priority": "P1",
+      "status": "open",
+      "phase": 1,
+      "problem": "Http.get sleeps 0 s for any host not in the three-entry pacing table, so a new collector written without touching common.py runs unthrottled against a site that has never been asked.",
+      "acceptance": "an unregistered host raises before the first request unless the source registry declares it with an interval; a test proves it",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [],
+      "evidence": [
+        "scripts/common.py:345-350,422-424"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-046",
+      "title": "Metric registry with SQL parity",
+      "area": "analysis",
+      "priority": "P2",
+      "status": "open",
+      "phase": 2,
+      "problem": "A metric is three sites in metrics.py, three in weekly.py, two tests with hard-coded lists, and a starter SQL whose count is asserted as exactly 11; the SQL and Python implementations of the same idea (engagement percentiles) already disagree.",
+      "acceptance": "@metric descriptors (name, section, shape, columns, caveats, since, sql, parity) drive the report, the CSVs, the starter set, and a parity test; the == 11 assertion is gone",
+      "cost": {
+        "build": "M",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-111"
+      ],
+      "evidence": [
+        "scripts/metrics.py:19-23,305-318",
+        "scripts/weekly.py:74-260",
+        "tests/test_query.py:129-130"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-047",
+      "title": "Strict observations in tests and replay",
+      "area": "simulation",
+      "priority": "P2",
+      "status": "open",
+      "phase": 2,
+      "problem": "merge_partial reads keys by name and ignores the rest, so a parser field that is misspelled or never registered vanishes silently (retruthed, snippet_text, followers_count already do).",
+      "acceptance": "merge_partial(strict=True) raises UnknownField for a key that is not a schema field, a registered signal, or a registered private key; tests and replay run strict; production stays lenient and counts unknown keys as an anomaly",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-043"
+      ],
+      "evidence": [
+        "scripts/merge.py:378",
+        "scripts/collect_trumpstruth.py:45-56",
+        "scripts/collect_api.py:61-63"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-048",
+      "title": "ts scaffold source|field|check|metric: one verb that touches every seam",
+      "area": "verbs",
+      "priority": "P2",
+      "status": "open",
+      "phase": 2,
+      "problem": "Extending the system is a checklist held in the agent's head; a half-finished extension is pushable.",
+      "acceptance": "the verb writes the registry entry, stubs, test stub, fixture slot, knowledge stub, and migration when needed, then regenerates the generated blocks; every stub carries a fill-me marker that ts verify refuses",
+      "cost": {
+        "build": "M",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-043",
+        "B-044",
+        "B-046"
+      ],
+      "evidence": [
+        "lens:extend"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-049",
+      "title": "Sub-resource fetch hook on the source registry (transcripts, mirrors, spot checks)",
+      "area": "sources",
+      "priority": "P2",
+      "status": "open",
+      "phase": 3,
+      "problem": "A field that needs a second request (the transcript from a trumpstruth VTT track, a media mirror) has no hook; the evidence is already in a fixture.",
+      "acceptance": "a Source may declare SubResource(field, url_from, parse, host, min_interval, when, cap); the Leg fetches them after the merge under the same pacing and budget; B-006 and B-007 are implemented through it",
+      "cost": {
+        "build": "M",
+        "requests": "1 per sub-resource",
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-043"
+      ],
+      "evidence": [
+        "tests/fixtures/trumpstruth_status_41686_original_video.html (<track src=...vtt>)"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-050",
+      "title": "merge.forget_deletion and merge.forget_source: the inverse of a signal",
+      "area": "verbs",
+      "priority": "P1",
+      "status": "open",
+      "phase": 1,
+      "problem": "The merge is monotone (deleted_upper = min, trumpstruth_removed_at set once, an event emitted once per source) and has no inverse, so every repair is an edit-in-place through one-off scripts.",
+      "acceptance": "pure functions beside the merge rules return a record with a signal's effects removed; every repair plan is forget then re-observe; a property test proves forget(merge(r, s)) restores the pre-signal fields",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [],
+      "evidence": [
+        "scripts/merge.py:297-349,418",
+        "lens:repair"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-051",
+      "title": "Repair-state invariants in check_data",
+      "area": "verbs",
+      "priority": "P0",
+      "status": "open",
+      "phase": 0,
+      "problem": "A half-finished repair passes every hard check today (event removed but record still deleted; record reset but event kept; deleted with a null upper bound).",
+      "acceptance": "hard deleted_without_event, present_with_deletion_fields, deleted_without_upper; soft deletion_bounds_drifted_from_event; each with a descriptor and a bundle that fails on the half-state",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [],
+      "evidence": [
+        "scripts/check_data.py:197-206",
+        "lens:repair (scratch experiment)"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-052",
+      "title": "ts repair undo and ts lease",
+      "area": "coordination",
+      "priority": "P1",
+      "status": "open",
+      "phase": 1,
+      "problem": "Undo is git archaeology; a desktop repair longer than the cron gap races the bot on state.json with no way to hold the cloud collector for a stated time.",
+      "acceptance": "an applied repair is one commit touching only data/, with before and after shas in the intervention record; ts repair undo <id> reverts it and refuses when a later intervention touched the same targets; ts lease take commits data/lease.json with holder, expiry and reason and the cloud collector exits 0 without writing while it is unexpired (B-069); ts lease release removes it",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-109"
+      ],
+      "evidence": [
+        "lens:repair",
+        ".github/workflows/collect.yml:50-56"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-053",
+      "title": "Carry write-once provenance forward across a history redo",
+      "area": "data-quality",
+      "priority": "P1",
+      "status": "open",
+      "phase": 1,
+      "problem": "redo-history deletes the ledgers and re-collects, so first_seen_at, first_seen_source, last_verified_live_at, and event detected_at are regenerated as today's values.",
+      "acceptance": "repair redo-history extracts the carry-forward set before moving the ledgers to .trash and re-applies it after the rebuild; a bundle proves first_seen_at survives",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-109"
+      ],
+      "evidence": [
+        "docs/OPERATIONS.md:102-105",
+        "scripts/merge.py:388-390"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-054",
+      "title": "Split the cnn_ambiguous_handles stat into its two populations",
+      "area": "data-quality",
+      "priority": "P0",
+      "status": "open",
+      "phase": 0,
+      "problem": "The stat counts every cnn-sourced reblog whose text starts with a word character: 1,172 today. But the parser resolves the exact prefix RT @realDonaldTrump first, so 1,157 of those are self-reposts whose only residual risk is a longer handle sharing the prefix, and 15 have another handle glued; of the 15, 8 are handles already known from the API or trumpstruth (probably correct) and 2 have a known handle as a proper prefix (probably wrong). The number misdirected B-001 toward hundreds of lookups.\n",
+      "acceptance": "stats carry cnn_self_repost_prefix_assumed (1,157) and cnn_ambiguous_handles (15, shrinking); B-001 acceptance reads ambiguous == 0",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [],
+      "evidence": [
+        "scripts/check_data.py:292-300",
+        "scripts/parsers.py:783-787",
+        "2026-09-12 count: 1157 self, 15 other, 8 known, 2 known-prefix"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-055",
+      "title": "Cost block on every run record",
+      "area": "economy",
+      "priority": "P0",
+      "status": "open",
+      "phase": 0,
+      "problem": "A run record carries only a total request count; nothing says that the api leg's 36 s were pure sleep, how many bytes came in, or what was written.",
+      "acceptance": "run records carry cost{requests, requests_by_host, bytes_in, slept_s, wall_s, files_written, bytes_written}; Http counts by host and bytes; the clock exposes slept seconds; the verb envelope reuses the same block",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [],
+      "evidence": [
+        "scripts/common.py:345-431",
+        "data/runs/2026-09.jsonl (api leg: 4 req, 36 s)"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-056",
+      "title": "Compact the token-hostile artifacts an agent reads first",
+      "area": "economy",
+      "priority": "P1",
+      "status": "open",
+      "phase": 0,
+      "problem": "55 of checks.json's 134 lines are a months_present array; 98 of state.json's 129 lines are processed_removed_ids one integer per line. About 800 tokens of filler in the two files an agent opens first.",
+      "acceptance": "months_present becomes {first, last, count, gaps}; integer lists in state.json render on one line (indent stays 2 for objects); a cold read of both files is under 60 lines",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [],
+      "evidence": [
+        "output/checks.json:78-134",
+        "data/state.json:30-128"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-057",
+      "title": "Touched-month writes and one posts load per run",
+      "area": "economy",
+      "priority": "P1",
+      "status": "open",
+      "phase": 1,
+      "problem": "save_posts rewrites all 55 month files on every checkpoint (a 200-id walk performs up to 20 full rewrites, about 25 s) and the store is loaded three to four times per run.",
+      "acceptance": "Context.posts() loads once; store.save_posts(root, records, months=...) rewrites only changed partitions; the run's diff touches only the months it changed",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-026"
+      ],
+      "evidence": [
+        "scripts/store.py:90-117",
+        "scripts/collect_trumpstruth.py:115-131"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-058",
+      "title": "ts collect --plan: a zero-request preview from a source policy table",
+      "area": "verbs",
+      "priority": "P1",
+      "status": "open",
+      "phase": 1,
+      "problem": "Skip rules, caps, cadences, and pacing are constants spread over four modules; an agent cannot predict what a run will do or cost without reading them.",
+      "acceptance": "scripts/policy.py holds SOURCE_POLICY (allowed profiles, interval and due time, pacing, caps per profile, removed-search rule); ts collect --plan prints per leg run/skip, reason, next_due, and an estimated cost range with zero requests; the run record stores the estimate beside the measured cost and a soft check fires when they diverge by more than 3x",
+      "cost": {
+        "build": "M",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-101",
+        "B-055"
+      ],
+      "evidence": [
+        "scripts/collect_trumpstruth.py:39-42",
+        "scripts/collect_archive.py:21",
+        "scripts/collect_api.py:24,80"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-059",
+      "title": "Growth guard and forecast in status",
+      "area": "economy",
+      "priority": "P3",
+      "status": "open",
+      "phase": 3,
+      "problem": "Nothing reports bytes per day per tracked file or warns before a partition gets expensive.",
+      "acceptance": "check_data adds a sizes stat (tracked MB, largest partition, engagement MB) and a soft growth check (posts partition over 8 MB, engagement partition over 5 MB, 7-day mean growth over 300 KB/day); status shows a 12-month forecast",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-103"
+      ],
+      "evidence": [
+        "09-economy.md section 4"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-060",
+      "title": "Two-way lesson-test links with a pytest marker",
+      "area": "knowledge",
+      "priority": "P1",
+      "status": "open",
+      "phase": 0,
+      "problem": "MISTAKES.md names no test for any lesson; the Capture Date lesson's test exists (tests/test_merge.py) but nothing links them, so a recurrence is undetectable by reading the lessons.",
+      "acceptance": "every lesson's encoded_in lists pytest node ids; each such test carries @pytest.mark.lesson('L-nnn'); a coherence test checks both directions with pytest --collect-only",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-112"
+      ],
+      "evidence": [
+        "MISTAKES.md:19-22",
+        "tests/test_merge.py (deletion bound tests)"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-061",
+      "title": "Addressable quirk ids in the dossiers, cited by code and tests",
+      "area": "knowledge",
+      "priority": "P1",
+      "status": "open",
+      "phase": 0,
+      "problem": "Source behavior is prose in five places with dated stamps nothing refreshes; a parser comment cannot point at the fact it handles.",
+      "acceptance": "every dossier quirk line carries an id Q-<src>-<nn>, a date, an evidence pointer, and the code path that handles it; comments and tests cite the id; a coherence test checks every cited id exists",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-112"
+      ],
+      "evidence": [
+        "knowledge-seed/sources/*.md"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-062",
+      "title": "Audits live under knowledge/audits/ and end with a disposition table",
+      "area": "knowledge",
+      "priority": "P1",
+      "status": "open",
+      "phase": 0,
+      "problem": "docs/dead-code-review.md listed four undocumented fixtures on 2026-09-11 and nothing happened; audits go stale without notice and are re-derived every session.",
+      "acceptance": "knowledge/audits/<date>-<slug>.md with front matter status open|dispositioned and a Disposition table mapping every finding to a backlog id, a dropped-with-reason, or a fixing commit; a coherence test refuses an open audit older than 14 days; the dead-code review and 11-doc-deltas section 1 are the first two",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-112"
+      ],
+      "evidence": [
+        "docs/dead-code-review.md",
+        "11-doc-deltas.md section 1"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-063",
+      "title": "Knowledge trailers on commits and the fix receipt in ts verify",
+      "area": "knowledge",
+      "priority": "P1",
+      "status": "open",
+      "phase": 1,
+      "problem": "A fix's evidence, test, lesson, and doc delta are linked only in the author's head; commit messages carry facts (commit 79db0c2) that never reached the lessons file.",
+      "acceptance": "commits touching parsers, merge, collectors, or checks carry trailers Lesson:, Quirk:, Fixture:, Backlog:, Decision:, Docs: (or Knowledge: none with a reason); ts verify warns when a changed module has no receipt; ts note scaffolds the missing pieces",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-110",
+        "B-060"
+      ],
+      "evidence": [
+        "lens:accretion"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-064",
+      "title": "knowledge/measurements.jsonl: dated numeric facts about the sources",
+      "area": "knowledge",
+      "priority": "P2",
+      "status": "open",
+      "phase": 1,
+      "problem": "Numbers about the world (statuses_count 36,549 vs 36,554 on the same date in MISTAKES.md, archive row counts, the validation overlaps validate_backfill computes and asks to be pasted into MISTAKES.md) are typed into prose and disagree.",
+      "acceptance": "an append-only ledger {at, subject, value, unit, evidence, note} written by the api leg (statuses_count), the cnn leg (row count), the coverage builder (detection floor), and validate_backfill; dossiers cite it instead of typing numbers",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [],
+      "evidence": [
+        "MISTAKES.md:41,47",
+        "scripts/validate_backfill.py:5"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-065",
+      "title": "Structured facts on run records instead of free-text notes",
+      "area": "sources",
+      "priority": "P2",
+      "status": "open",
+      "phase": 1,
+      "problem": "Facts every run measures (listing max id, imported rows, statuses_count, the sweep window) are packed into ad-hoc key=value notes.",
+      "acceptance": "run records carry facts{...} per leg; notes stays free text for humans; STATUS and coverage read facts",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-011"
+      ],
+      "evidence": [
+        "scripts/collect_trumpstruth.py:466,470",
+        "scripts/collect_api.py:94,118,240"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "status": "open",
+      "blocked_by": [],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null,
+      "id": "B-066",
+      "title": "Tracked capability manifest (profiles.json) and scratch-by-default in sandboxes",
+      "area": "coordination",
+      "priority": "P0",
+      "phase": 0,
+      "problem": "Every entry point defaults to the real data root and the real network, and nothing knows where it runs; a sandbox agent following the README would crawl trumpstruth and rewrite data/.",
+      "acceptance": "profiles.json at the repo root declares hosts, api, write_data, commit, repair, and data_root per profile; the dispatcher resolves the profile before parsing arguments and prints it; in sandbox the default data root is a scratch copy under $TMPDIR keyed by HEAD and the transport is an empty FakeTransport, so a refusal names the exact URL; --data-root ./data in sandbox is refused (exit 3)",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "evidence": [
+        "scripts/collect.py:242,259",
+        "lens:safety"
+      ]
+    },
+    {
+      "status": "open",
+      "blocked_by": [
+        "B-102",
+        "B-033"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null,
+      "id": "B-067",
+      "title": "ts commit: the single path by which data reaches main",
+      "area": "coordination",
+      "priority": "P1",
+      "phase": 1,
+      "problem": "Three actors can push data commits; the bot's push loop cannot recover from a conflicted rebase; nothing checks that a data commit is data-only.",
+      "acceptance": "ts commit refuses in sandbox, refuses changes outside data/, output/, STATUS.md and any forbidden file (.lock, raw/, *.sqlite), runs check_data, rebases with git rebase --abort between attempts, pushes, and writes a push_race incident when it cannot; the workflow step and desktop --commit both call it",
+      "cost": {
+        "build": "M",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "evidence": [
+        ".github/workflows/collect.yml:43-57"
+      ]
+    },
+    {
+      "status": "open",
+      "blocked_by": [
+        "B-109"
+      ],
+      "decision": "D-012",
+      "opened": "2026-09-12",
+      "closed": null,
+      "id": "B-068",
+      "title": "data-guard.yml and CODEOWNERS: anyone else's data change is checked like the bot's",
+      "area": "coordination",
+      "priority": "P1",
+      "phase": 1,
+      "problem": "test.yml ignores data/**; a hand-edited month file merged from a branch passes CI and the bot's next run exits 2 on it.",
+      "acceptance": "a workflow on any pull request or non-main push touching data/ fails unless check_data is green, an intervention record accompanies the change, and no forbidden file is included; CODEOWNERS routes data/ changes to the maintainer; branch protection per D-012",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "cloud"
+      },
+      "evidence": [
+        ".github/workflows/test.yml:5-8"
+      ]
+    },
+    {
+      "status": "open",
+      "blocked_by": [
+        "B-028"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null,
+      "id": "B-069",
+      "title": "Lease, not lock: a committed data/lease.json with expiry, and a local gitignored JSON lock with pid liveness",
+      "area": "coordination",
+      "priority": "P1",
+      "phase": 1,
+      "problem": "One mtime-based lock file serves two purposes: what other actors must see (a long desktop repair or backfill) and what only this machine must see (mutual exclusion). A committed lock would brick the cron.",
+      "acceptance": "ts lease take --reason --until [--intervention] commits data/lease.json {holder, profile, host, taken_at, expires_at, reason, intervention}; the cloud collector honors an unexpired lease by exiting 0 with a leased run record and STATUS shows LEASED; ts lease release removes it; the local lock is JSON with pid liveness and gitignored",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "evidence": [
+        "scripts/collect.py:206-222"
+      ]
+    },
+    {
+      "status": "open",
+      "blocked_by": [
+        "B-043"
+      ],
+      "decision": "D-019",
+      "opened": "2026-09-12",
+      "closed": null,
+      "id": "B-070",
+      "title": "Observation ledger for the desktop and API hand-off",
+      "area": "coordination",
+      "priority": "P1",
+      "phase": 1,
+      "problem": "The desktop's unique contribution (API live sightings and engagement) rewrites month files that the bot also rewrites; the two desktop API legs on 2026-09-11 updated 20 records each and their engagement rows were lost to the throttle (B-072).",
+      "acceptance": "collect_api on the desktop appends idempotent observations to data/observations/api/YYYY-MM.jsonl (union-mergeable); whoever runs collect next folds unapplied observations through merge_partial; folding twice is a no-op; desktop work reaches the cloud record without touching posts/*.jsonl",
+      "cost": {
+        "build": "M",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "evidence": [
+        "data/runs/2026-09.jsonl (api legs 19:43, 20:10)",
+        "lens:safety"
+      ]
+    },
+    {
+      "status": "open",
+      "blocked_by": [
+        "B-044"
+      ],
+      "decision": "D-018",
+      "opened": "2026-09-12",
+      "closed": null,
+      "id": "B-071",
+      "title": "Split state.json per source",
+      "area": "coordination",
+      "priority": "P2",
+      "phase": 1,
+      "problem": "One file holds three actors' memory; every bot commit rewrites last_run_at, etag, and last_probe_at, so any concurrent desktop change to the api block conflicts.",
+      "acceptance": "data/state/{trumpstruth,cnn,api}.json plus data/state/meta.json (schema_version); store.load_state returns the same shape; a migration writes the split",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "evidence": [
+        "git show 9b7af34 -- data/state.json"
+      ]
+    },
+    {
+      "status": "open",
+      "blocked_by": [],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null,
+      "id": "B-072",
+      "title": "Engagement throttle is source-blind: api snapshots lose to cnn baselines",
+      "area": "data-quality",
+      "priority": "P1",
+      "phase": 1,
+      "problem": "filter_engagement skips a row when the post's latest row from any source is under 60 minutes old. The CNN import at 19:29 on 2026-09-11 wrote a row per post; the desktop API legs at 19:43 and 20:10 then produced 0 rows (37,226 rows, all cnn) although they were the only fresh counts the system has ever had.",
+      "acceptance": "the throttle is per (post, source); api rows are never skipped because of a cnn row; the smoke bundle proves an api leg after a cnn import writes its rows",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "evidence": [
+        "scripts/store.py:194-230",
+        "data/engagement/2026-09.csv (0 api rows)"
+      ]
+    },
+    {
+      "status": "open",
+      "blocked_by": [
+        "B-067",
+        "B-069",
+        "B-107"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null,
+      "id": "B-073",
+      "title": "Coordination test harness: two clones, a bare origin, fake clock and transport",
+      "area": "simulation",
+      "priority": "P2",
+      "phase": 2,
+      "problem": "Every coordination hazard (push race, lease, committed lock, data-only commits) is discovered on main.",
+      "acceptance": "tests/test_coordination.py stands up a bare repo with bot and desktop clones, drives the real verbs in-process with TS_PROFILE and the smoke bundle's routes, and replays each hazard in 08-roles-and-coordination.md section 3 as a test",
+      "cost": {
+        "build": "M",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "evidence": [
+        "08-roles-and-coordination.md section 3"
+      ]
+    },
+    {
+      "id": "B-101",
+      "title": "Profiles and guard rails (cloud, desktop, sandbox)",
+      "area": "coordination",
+      "priority": "P0",
+      "status": "open",
+      "phase": 0,
+      "problem": "The api leg probes from the cloud where it always fails; sandboxes can write real data; nothing knows where it runs.",
+      "acceptance": "ts prints the profile; cloud skips api; sandbox refuses network without --live and real data/ writes without a scratch root",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [],
+      "evidence": [
+        "03-verbs.md section 3",
+        "08-roles-and-coordination.md"
+      ],
+      "decision": "D-008",
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-102",
+      "title": "The dispatcher scripts/ts.py with the envelope, cost line, and help",
+      "area": "verbs",
+      "priority": "P0",
+      "status": "open",
+      "phase": 0,
+      "problem": "Seven entry points with their own flags; no structured output; no cost line.",
+      "acceptance": "every existing command has a ts verb; --json validates against the envelope schema; ts help is generated",
+      "cost": {
+        "build": "M",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [],
+      "evidence": [
+        "03-verbs.md"
+      ],
+      "decision": "D-015",
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-103",
+      "title": "The situation artifact: output/status.json and STATUS.md every run",
+      "area": "situation",
+      "priority": "P0",
+      "status": "open",
+      "phase": 0,
+      "problem": "The state must be reconstructed from five files and the Actions console.",
+      "acceptance": "STATUS.md is committed by the bot; render(status.json) == STATUS.md (coherence test); first screen answers the five questions",
+      "cost": {
+        "build": "M",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-105"
+      ],
+      "evidence": [
+        "02-situation.md"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-104",
+      "title": "AGENTS.md at the repo root",
+      "area": "knowledge",
+      "priority": "P0",
+      "status": "open",
+      "phase": 0,
+      "problem": "No single door; five overlapping docs.",
+      "acceptance": "AGENTS.md exists, under 120 lines, and the coherence test checks its cron and Python lines",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [],
+      "evidence": [
+        "templates/AGENTS.md"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-105",
+      "title": "Schemas at the repo root and the check registry with descriptors",
+      "area": "knowledge",
+      "priority": "P0",
+      "status": "open",
+      "phase": 0,
+      "problem": "The record shape lives in four places; checks carry no meaning or playbook.",
+      "acceptance": "schemas/ validated in tests; every check has a descriptor; the record table in SPEC section 2 and the check tables in OPERATIONS section 4 are generated blocks that match",
+      "cost": {
+        "build": "M",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [],
+      "evidence": [
+        "05-invariants-and-schema.md"
+      ],
+      "decision": "D-011",
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-106",
+      "title": "Raw capture wired through Context.raw_dir; artifact upload on non-green runs",
+      "area": "simulation",
+      "priority": "P1",
+      "status": "open",
+      "phase": 1,
+      "problem": "A red run cannot be reproduced.",
+      "acceptance": "data/raw/<run_id>/index.jsonl exists after a cloud run; artifact uploaded when not green",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-101"
+      ],
+      "evidence": [
+        "04-ledgers-and-provenance.md section 5"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-107",
+      "title": "ts replay with bundles, golden diff, and --from-raw",
+      "area": "simulation",
+      "priority": "P1",
+      "status": "open",
+      "phase": 1,
+      "problem": "FakeClock and FakeTransport exist but nothing runs the whole pipeline offline in one command.",
+      "acceptance": "six bundles ship; ts verify --quick runs the smoke bundle; a red run's artifact becomes a bundle",
+      "cost": {
+        "build": "M",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-102"
+      ],
+      "evidence": [
+        "06-simulation-and-verification.md"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-108",
+      "title": "ts explain, ts doctor, ts diff",
+      "area": "verbs",
+      "priority": "P1",
+      "status": "open",
+      "phase": 1,
+      "problem": "No evidence trail per record; no diagnosis; no what-changed.",
+      "acceptance": "each verb documented in the generated verb block of docs/OPERATIONS.md section 5 and covered by a test against the smoke bundle",
+      "cost": {
+        "build": "M",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-102",
+        "B-014",
+        "B-105"
+      ],
+      "evidence": [
+        "03-verbs.md",
+        "04-ledgers-and-provenance.md section 6"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-109",
+      "title": "ts repair plans with plan/apply and the interventions ledger",
+      "area": "verbs",
+      "priority": "P1",
+      "status": "open",
+      "phase": 1,
+      "problem": "Repairs are hand edits to tracked files with no receipt.",
+      "acceptance": "the seven plans exist; each writes an intervention record; OPERATIONS section 5 recipes are one command each",
+      "cost": {
+        "build": "M",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-102"
+      ],
+      "evidence": [
+        "03-verbs.md section 4 (Repair)",
+        "schemas/intervention-event.schema.json"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-110",
+      "title": "ts verify and the coherence tests",
+      "area": "simulation",
+      "priority": "P1",
+      "status": "open",
+      "phase": 1,
+      "problem": "Nothing checks that docs, schemas, registries, and code agree.",
+      "acceptance": "tests/test_coherence.py covers the eleven rows in 05-invariants-and-schema.md section 4; test.yml runs ts verify --ci",
+      "cost": {
+        "build": "M",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-105",
+        "B-102"
+      ],
+      "evidence": [
+        "05-invariants-and-schema.md section 4"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-111",
+      "title": "v_confidence, v_coverage, and caveats on every metric",
+      "area": "analysis",
+      "priority": "P1",
+      "status": "open",
+      "phase": 2,
+      "problem": "Uncertainty is prose in the README; analyses can be confidently wrong.",
+      "acceptance": "the two views exist; every metrics function returns caveats; weekly renders them per table",
+      "cost": {
+        "build": "M",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-105"
+      ],
+      "evidence": [
+        "05-invariants-and-schema.md section 3"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-112",
+      "title": "Migrate MISTAKES, TODO, OPERATIONS 6-7, dead-code-review into knowledge/",
+      "area": "knowledge",
+      "priority": "P0",
+      "status": "open",
+      "phase": 0,
+      "problem": "Knowledge is organized by document type, not by subject; audits are never acted on.",
+      "acceptance": "knowledge/ populated from knowledge-seed/; the old files are two-line pointers; coherence test checks lesson->test links",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-104"
+      ],
+      "evidence": [
+        "07-knowledge.md section 3",
+        "knowledge-seed/"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-113",
+      "title": "Canaries and canary.yml",
+      "area": "simulation",
+      "priority": "P2",
+      "status": "open",
+      "phase": 2,
+      "problem": "Markup drift is discovered only when a page yields under min_yield.",
+      "acceptance": "ts doctor --live reports structural drift per source; the weekly workflow opens a backlog item on change",
+      "cost": {
+        "build": "M",
+        "requests": "3 per run",
+        "wall": null,
+        "profile": "cloud"
+      },
+      "blocked_by": [
+        "B-107"
+      ],
+      "evidence": [
+        "06-simulation-and-verification.md section 3"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-114",
+      "title": "Generated docs and the SPEC/OPERATIONS restructuring",
+      "area": "knowledge",
+      "priority": "P2",
+      "status": "open",
+      "phase": 2,
+      "problem": "SPEC sections 2, 3, 9, 12 and OPERATIONS 3, 4 are hand-maintained copies of code facts.",
+      "acceptance": "the tables in those sections are <!-- generated:NAME --> blocks rewritten in place by ts dictionary --write from the schemas and registries, and a coherence test diffs them; no separate generated directory",
+      "cost": {
+        "build": "M",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-105",
+        "B-110"
+      ],
+      "evidence": [
+        "11-doc-deltas.md section 2"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-115",
+      "title": "repair.yml and the desktop --commit path",
+      "area": "coordination",
+      "priority": "P2",
+      "status": "open",
+      "phase": 2,
+      "problem": "Data repairs race the bot's commits.",
+      "acceptance": "repairs run under the collect concurrency group; desktop --commit pulls, runs, commits, pushes",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "B-109"
+      ],
+      "evidence": [
+        "08-roles-and-coordination.md section 3"
+      ],
+      "decision": null,
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-116",
+      "title": "Stop committing posts.csv; history/checks time series; export sizing",
+      "area": "economy",
+      "priority": "P2",
+      "status": "blocked",
+      "phase": 2,
+      "problem": "12.7 MB rewritten per run; no time series for trends.",
+      "acceptance": "posts.csv untracked and generated on demand (ts build --csv; a 90-day posts-recent.csv of about 0.7 MB if a download URL is wanted); metrics-window.json every run and metrics-trailing.json once a day; repository growth under 200 KB per day",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "D-010"
+      ],
+      "evidence": [
+        "09-economy.md section 4"
+      ],
+      "decision": "D-010",
+      "opened": "2026-09-12",
+      "closed": null
+    },
+    {
+      "id": "B-117",
+      "title": "Commit successful legs when one leg fails (cloud)",
+      "area": "coordination",
+      "priority": "P1",
+      "status": "blocked",
+      "phase": 1,
+      "problem": "A single failed leg discards the whole run's work in the cloud (commit step skipped on exit 1).",
+      "acceptance": "collect.yml commits when checks pass regardless of a failed leg; the run record shows the failure",
+      "cost": {
+        "build": "S",
+        "requests": null,
+        "wall": null,
+        "profile": "any"
+      },
+      "blocked_by": [
+        "D-014"
+      ],
+      "evidence": [
+        "11-doc-deltas.md C23"
+      ],
+      "decision": "D-014",
+      "opened": "2026-09-12",
+      "closed": null
+    }
+  ],
+  "dropped": [
+    {
+      "from": "docs/dead-code-review.md",
+      "item": "unused imports in tests (5)",
+      "note": "trivial; fix in passing, no item"
+    },
+    {
+      "from": "docs/dead-code-review.md",
+      "item": "parse_feed, parse_stats, make_cursor test-only",
+      "note": "kept as library surface; parse_stats becomes live if D-009 wires the total check"
+    },
+    {
+      "from": "docs/dead-code-review.md",
+      "item": "write-only state keys last_run_at etc.",
+      "note": "kept as operator-visible diagnostics; documented in the generated blocks in state.md"
+    },
+    {
+      "from": "docs/dead-code-review.md",
+      "item": "KeyError arm in check_data",
+      "note": "trivial; fix in passing"
+    },
+    {
+      "from": "docs/dead-code-review.md",
+      "item": "unread record fields lang, card_title, pinned, reblog_of_created_at",
+      "note": "cheap to keep; the schema marks their role; no action"
+    }
+  ]
+}

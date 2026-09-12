@@ -58,9 +58,15 @@ Rules:
 
 ## 3. Profiles and guard rails (Law 11)
 
-A profile is where the verb runs and what it may do. Detection: `TS_PROFILE` if set; else `cloud` when
-`GITHUB_ACTIONS` is set; else `desktop` when the marker file `data/.profile-desktop` exists (the maintainer
-creates it once); else `sandbox`. The detected profile is printed on every invocation.
+A profile is where the verb runs and what it may do. Detection happens before argument parsing: `TS_PROFILE`
+if set; else `cloud` when `GITHUB_ACTIONS` is set; else `desktop` when the marker file `data/.profile-desktop`
+exists (the maintainer creates it once); else `sandbox`. The detected profile is printed on every invocation.
+Capabilities are declared once, in a tracked manifest `profiles.json` at the repo root (hosts, `api`,
+`write_data`, `commit`, `repair`, `data_root` per profile; B-066); the table below is its rendering, and the
+dispatcher enforces it, so no verb carries its own profile branches. In `sandbox` the default data root is a
+scratch copy under `$TMPDIR/ts-scratch/<HEAD sha>/data` (made by `ts scratch` on first use, about 60 MB, under
+2 s) and the transport is an empty `FakeTransport`, so a verb that would fetch fails by naming the exact URL
+it wanted and the flag that would allow it; `--data-root ./data` in `sandbox` is refused.
 
 | Capability | cloud | desktop | sandbox |
 |---|---|---|---|
@@ -85,7 +91,7 @@ Guard rails are refusals with a clear message and exit 3, never silent downgrade
 
 ## 4. The vocabulary
 
-Twenty verbs. Grouped by the layer they operate on (see `01-system-model.md`). Each entry: purpose,
+Twenty-one verbs. Grouped by the layer they operate on (see `01-system-model.md`). Each entry: purpose,
 reads, writes, network, cost, and the shape of `result`.
 
 ### Situation (layer 7)
@@ -93,7 +99,7 @@ reads, writes, network, cost, and the shape of `result`.
 **`ts status [--refresh]`**
 Print `STATUS.md`. With `--refresh`, rebuild `output/status.json` and `STATUS.md` from the current data first
 (runs `check` internally). Includes open incidents, the schedule delivery ratio, and how far this checkout
-is behind the bot's last run (`checkout` block), so a sandbox agent knows whether it is looking at stale data. Reads `data/`, `output/checks.json`, `knowledge/backlog.yaml`,
+is behind the bot's last run (`checkout` block), so a sandbox agent knows whether it is looking at stale data. Reads `data/`, `output/checks.json`, `knowledge/backlog.json`,
 `knowledge/decisions/`. Writes nothing unless `--refresh`. No network. Under 3 s.
 `result` = the `status.json` object (schema `schemas/status.schema.json`).
 
@@ -153,11 +159,19 @@ recorded as a truncation, never reached as a job timeout (B-032). On any non-zer
 per leg from the run records (today: trumpstruth 3 to 7 requests and 5 to 15 s on a normal run; cnn 1 request
 and about 6 s when not skipped; the backfill about 15 minutes).
 
-**`ts pause [--off] --reason "..."`**
-Commits `data/paused.json` (`{by, at, reason, until}`); while it exists the cloud collector exits 0 without
-writing and `STATUS.md` shows PAUSED. The way to hold the bot during a long desktop repair instead of racing
-it on `state.json` (B-052). `--off` removes it. In `sandbox` it writes the file but the commit is the pull
-request's.
+**`ts lease take --reason "..." --until ISO [--intervention ID]` / `ts lease release`**
+Commits `data/lease.json` (`{holder, profile, host, taken_at, expires_at, reason, intervention}`); while it
+is unexpired the cloud collector exits 0 without writing (a `leased` run record, no incident) and `STATUS.md`
+shows LEASED with the holder and expiry. The way to hold the bot during a long desktop repair or the API
+backfill instead of racing it on `state.json` (B-069). Coordination state other actors must see lives in git
+with an expiry; the local lock (JSON, pid liveness, gitignored) is only this machine's.
+
+**`ts commit [--run RUN_ID] [--dry-run]`**
+The single path by which data reaches `main` (B-067): refuses in `sandbox`; refuses when anything outside
+`data/`, `output/`, `STATUS.md` is staged or a forbidden file (`.lock`, `raw/`, `*.sqlite`, a scratch path) is
+included; runs `check`; commits data only with the structured message; `git pull --rebase` with `git rebase
+--abort` between the three attempts; pushes; on the third failure writes a `push_race` incident and pushes
+that alone. The workflow's commit step and `--commit` on `collect` and `repair` call it.
 
 **`ts capture <url> --as tests/fixtures/<name> --source S --parser scripts.parsers:fn --proves "<one line>"`**
 Fetch one page through the paced client, save it as a fixture, and append the manifest entry (`file, url,
@@ -229,10 +243,12 @@ smallest bundle. No network. Under 20 s.
 
 ### Knowledge (layer 8)
 
-**`ts note lesson|decision|backlog|dossier [--from-template]`**
+**`ts note lesson|decision|backlog|quirk|audit [--from-template] [--from-incident RUN_ID] [--from-canary]`**
 Scaffold a knowledge entry with the next free id and today's date from `templates/`, and open it in `$EDITOR`
 if any. `ts note backlog --close B-001 --evidence "stats.cnn_ambiguous_handles.count=0"` closes an item with
-its acceptance evidence. Pure file operations.
+its acceptance evidence; an item with an `acceptance_expr` closes itself when `ts status` observes it true.
+`ts note quirk --source trumpstruth` appends the next `Q-tt-nn` line to the dossier. `ts note trailers`
+prints the knowledge trailers a commit should carry for the current diff (B-063). Pure file operations.
 
 **`ts scaffold source|field|check|metric <name> [...]`**
 The extension checklist that writes itself (B-048). `scaffold source factbase --hosts factba.se=2.0

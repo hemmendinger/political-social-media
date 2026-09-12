@@ -49,13 +49,15 @@ been recorded yet, because the API has only been reachable from the desktop for 
 | History | Yes, paginated | about 1,830 pages of 20 at 5 requests per minute, about 6 hours (B-003) |
 | Account totals | Yes | `statuses_count` (36,554 on 2026-09-11), `followers_count`, `last_status_at` (the last two are discarded today) |
 
-## Quirks (facts about the world, each dated)
+## Quirks (facts about the world, each dated and addressable)
 
-- 2026-09-11: Unauthenticated rate limit measured at about 6 requests per minute; a burst of manual checks produced a 429 on the first scripted request (L-002). `Retry-After` is honored.
-- 2026-09-11: Cloudflare returns 403 to GitHub Actions runners for every request, including through curl_cffi impersonating Chrome. The desktop is unaffected. Consequence: the cloud record is complete for posts and deletions (trumpstruth + cnn); engagement snapshots and live verification happen only when the desktop runs a collection.
-- 2026-09-11: `statuses_count` (36,554) is lower than our `present` count (36,904, diff 350) because the archives keep posts deleted before March 2026 that nothing has flagged; and differs from CNN (36,236, no replies, de-duplicated reposts) and trumpstruth (37,105, includes other accounts' originals). Tracked as `present_count_drift` with a 1% tolerance.
-- 2026-09-11: Every `account` object is stripped before storage (`raw_api` keeps the rest); the stored `deleted_source` value for an API deletion is `api404` while the partial key is `api_404`.
-- 2026-09-11: A live 200 for a record marked `deleted` flips it back to `present` (anomaly `resurrected`); the deletion fields are retained. This has not happened in the data yet.
+- Q-api-01 (2026-09-11): Unauthenticated rate limit measured at about 6 requests per minute; a burst of manual checks produced a 429 on the first scripted request (L-002). `Retry-After` is honored.
+- Q-api-02 (2026-09-11): Cloudflare returns 403 to GitHub Actions runners for every request, including through curl_cffi impersonating Chrome. The desktop is unaffected. Consequence: the cloud record is complete for posts and deletions (trumpstruth + cnn); engagement snapshots and live verification happen only when the desktop runs a collection.
+- Q-api-03 (2026-09-11): `statuses_count` (36,554) is lower than our `present` count (36,904, diff 350) because the archives keep posts deleted before March 2026 that nothing has flagged; and differs from CNN (36,236, no replies, de-duplicated reposts) and trumpstruth (37,105, includes other accounts' originals). Tracked as `present_count_drift` with a 1% tolerance.
+- Q-api-04 (2026-09-11): Every `account` object is stripped before storage (`raw_api` keeps the rest); the stored `deleted_source` value for an API deletion is `api404` while the partial key is `api_404`.
+- Q-api-05 (2026-09-11): A live 200 for a record marked `deleted` flips it back to `present` (anomaly `resurrected`); the deletion fields are retained. This has not happened in the data yet.
+
+- Q-api-06 (2026-09-12): The two desktop API legs on 2026-09-11 (19:43 and 20:10 UTC) updated 20 records each but wrote no engagement rows: the store's throttle compared against the CNN rows written at 19:29, so the only fresh counts ever taken were discarded (B-072, L-009). Evidence: `data/engagement/2026-09.csv` has 37,226 rows, all `cnn`.
 
 ## Failure modes and what they look like
 

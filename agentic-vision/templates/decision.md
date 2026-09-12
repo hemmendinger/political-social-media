@@ -6,6 +6,9 @@ date: YYYY-MM-DD
 supersedes: null
 superseded_by: null
 area: sources | contract | verbs | situation | knowledge | coordination | economy
+enforced_by: []          # tests or guard rails that make this decision hold, once accepted
+reversal_signal: null    # the stat or check that would tell us this decision is wrong
+blocks: []               # backlog ids waiting on this decision while proposed
 ---
 
 # D-000: <title>

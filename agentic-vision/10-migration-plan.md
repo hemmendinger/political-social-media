@@ -1,6 +1,6 @@
 # 10. Migration plan: from today's repository to the vision, by leverage
 
-Four phases. Each phase has a goal, its items (ids from `knowledge-seed/backlog.yaml`), an acceptance
+Four phases. Each phase has a goal, its items (ids from `knowledge-seed/backlog.json`), an acceptance
 test an agent can run, and what it costs to build. The ordering rule: a phase contains only work that
 everything after it stands on, and nothing that a later phase would make cheaper. Phase 0 can be done in
 one sitting and changes no data semantics; it is what makes every later session cheaper.
@@ -12,11 +12,12 @@ Goal: an agent can orient in three commands, nothing computed is lost, and the d
 | Item | What | Build |
 |---|---|---|
 | B-014 | `data/anomalies.jsonl` + `store.append_anomaly` + `anomalies` count on run records; the three merge loops append; correct README/OPERATIONS (C2) | S |
-| B-101 | profiles: detection, printed on every invocation; `cloud` skips the api leg; `sandbox` guards | S |
+| B-101, B-066 | profiles resolved before argument parsing and printed on every invocation; `profiles.json` as the tracked capability manifest; `cloud` skips the api leg; `sandbox` defaults to a scratch root and an empty transport | S |
 | B-102 | `scripts/ts.py` dispatcher wrapping the existing functions; envelope; cost line; `help`; verbs `status check build query report collect`; old entry points untouched | M |
 | B-105 | `schemas/` at the root (from `agentic-vision/schemas/`); stdlib validator; `_validate_record_schema` reads the schema; check registry with descriptors; `checks.json` v2 (`firing` objects added, strings kept) | M |
 | B-103 | `scripts/situation.py`: `output/status.json` and `STATUS.md` after exports; `output/history/checks-*.jsonl`; bot commits `STATUS.md` | M |
-| B-104 | `AGENTS.md` from `templates/AGENTS.md` | S |
+| B-104 | `AGENTS.md` from `templates/AGENTS.md`, `CLAUDE.md` = `@AGENTS.md` | S |
+| B-112, B-060, B-061, B-062 | populate `knowledge/` from `knowledge-seed/` (dossiers with quirk ids, decisions, lessons with two-way test markers, `backlog.json`, the two audits with dispositions); retire `TODO.md`, `MISTAKES.md`, `docs/dead-code-review.md` to pointers | S |
 | B-029 (D-017) | widen the removed search (since 2022-01-01 while under about 500 removals) and record the `sweep` on the run record; the cheapest accuracy win in the plan | S |
 | B-030, B-042 | incident records committed `if: always()`; `checks.json` carries `run_id` and `checked_at` | S |
 | B-036 | `lifetime_lo_min` / `lifetime_hi_min`, bound basis and precision columns, `detection_floor_min` in coverage; the weekly report labels the bound | S |
@@ -53,8 +54,11 @@ Goal: any red run can be reproduced offline and any repair is one command with a
 | B-024, B-026, B-027 | measure cron delivery in `status.json`; load posts once; expose caps as flags | S each |
 | B-031, B-032, B-033, B-034 | error envelope with leg phase; request budgets and undercollection guards; union merge, rebase abort, JSON lock; fingerprints on every fetch | S to M each |
 | B-041 | `utc_date`, `utc_seam`, `metrics.window()` with both bounds | S |
-| B-050, B-052, B-053 | `forget_deletion` / `forget_source`; `repair undo` and `ts pause`; carry-forward across `redo-history` | S each |
+| B-050, B-052, B-053 | `forget_deletion` / `forget_source`; `repair undo` and `ts lease take`; carry-forward across `redo-history` | S each |
 | B-057, B-058 | touched-month writes and one load per run; `ts collect --plan` with the policy table | S, M |
+| B-063, B-064, B-065 | knowledge trailers and the fix receipt; `measurements.jsonl`; structured `facts` on run records | S each |
+| B-067, B-068, B-069 | `ts commit` as the only path to `main`; `data-guard.yml` and `CODEOWNERS`; `ts lease` and the local JSON lock | M, S, S |
+| B-070, B-071, B-072 | the observation ledger for the desktop hand-off; `state.json` split per source; per-(post, source) engagement throttle | M, S, S |
 | B-011 | share the collector helpers (do it while touching all three merge loops) | S |
 
 Acceptance:
@@ -74,7 +78,7 @@ Goal: the system remembers in the right places, analyses carry their caveats, an
 
 | Item | What | Build |
 |---|---|---|
-| B-112 | populate `knowledge/` from `knowledge-seed/` (dossiers, decisions, lessons, backlog); retire `TODO.md`, `MISTAKES.md`, `docs/dead-code-review.md` to pointers; `ts note` | S |
+| `ts note` | scaffolding for lessons, decisions, backlog items, dossier quirks, and audits | S |
 | B-111 | `v_confidence`, `v_coverage`, `caveats` on every metric, weekly renders them | M |
 | B-114 | `ts dictionary --write` and the generated blocks inside SPEC, OPERATIONS, README, the fixtures README, and AGENTS.md; README to 40 lines | M |
 | B-043, B-044, B-045 | the source registry and the shared Leg; schema version and `repair migrate`; refuse unregistered hosts | M, S, S |
@@ -86,6 +90,7 @@ Goal: the system remembers in the right places, analyses carry their caveats, an
 | B-012 (D-009) | wire the trumpstruth total check | S |
 | B-035, B-037, B-038 | `ts ask` with the question registry and answer envelope; engagement snapshot semantics; epistemic golden cases | M |
 | B-046, B-047, B-048 | metric registry with SQL parity; strict observations in tests and replay; `ts scaffold` | M, S, M |
+| B-073 | the two-clone coordination harness | M |
 | B-039 | module headers and the generated module map | S |
 
 Acceptance:

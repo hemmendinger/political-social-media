@@ -16,7 +16,7 @@ what an agent reads). It replaces the current practice of reconstructing the sta
 - **Every number has a threshold and a trend.** A drift value alone is not information; `350 (threshold 365,
   7-day trend +4)` is.
 - **Nothing is computed twice.** `situation.py` reads `checks.json`, the ledgers, `state.json`,
-  `knowledge/backlog.yaml`, `knowledge/decisions/`, and `git`. It does not re-run checks or metrics.
+  `knowledge/backlog.json`, `knowledge/decisions/`, and `git`. It does not re-run checks or metrics.
 - **Generated, never edited.** A coherence test fails if `STATUS.md` differs from a fresh render of
   `status.json`.
 
@@ -94,7 +94,10 @@ anomalies: 0
 
 Human and agent commits use a prefix vocabulary that matches the layers: `verb:` (dispatcher or verb
 changes), `parser:`, `merge:`, `check:`, `view:`, `situation:`, `knowledge:`, `repair: <intervention id>`,
-`lesson: L-0xx`, `decision: D-0xx`. A coherence test does not enforce this; `AGENTS.md` asks for it.
+`lesson: L-0xx`, `decision: D-0xx`, and end with knowledge trailers (git's native footer lines, readable with
+`git log --format='%(trailers:key=Lesson,valueonly)'`): `Lesson:`, `Quirk:`, `Fixture:`, `Backlog:`,
+`Decision:`, `Docs:`, or `Knowledge: none` with a reason. `ts verify` warns when a commit touching a parser,
+the merge, a collector, or a check lacks them (B-063); `AGENTS.md` asks for the prefixes.
 
 ## 5. History for trends
 

@@ -17,7 +17,7 @@ the next agent will look.**
 | 0 | `00-principles.md` | definitions of agent-intuitive, agent-ergonomic, agent-accretive; sixteen design laws; anti-patterns | first |
 | 1 | `01-system-model.md` | the tower of ten abstractions; the one vocabulary; how layers link; the module map | first |
 | 2 | `02-situation.md` | `status.json` and `STATUS.md`; the commit-message protocol; trends | designing what an agent reads first |
-| 3 | `03-verbs.md` | the dispatcher, the envelope, profiles and guard rails, twenty verbs | designing what an agent can do |
+| 3 | `03-verbs.md` | the dispatcher, the envelope, profiles and guard rails, twenty-one verbs | designing what an agent can do |
 | 4 | `04-ledgers-and-provenance.md` | the anomaly leak and its fix; interventions; raw capture; `ts explain` | the accretive half of the data layer |
 | 5 | `05-invariants-and-schema.md` | schemas as the contract; registries for sources, checks, metrics, verbs, questions; migrations; bounds, confidence, coverage, caveats, questions; coherence and property tests; generated blocks | the correctness half |
 | 6 | `06-simulation-and-verification.md` | replay bundles; from a red run to a bundle; canaries; `ts verify` | before touching a parser |
@@ -34,8 +34,8 @@ Supporting artifacts, all concrete enough to copy into place:
 - `templates/` — `AGENTS.md` (the door), `STATUS.md` (the rendered situation), and the decision, lesson,
   and dossier templates.
 - `knowledge-seed/` — the knowledge layer already populated from what the repository knows today: three
-  source dossiers, a 76-item structured backlog (migrating `TODO.md`, the dead-code review, and the
-  2026-09-12 audit findings), 18 decisions (7 accepted, 11 proposed with recommendations), and 8 lessons.
+  source dossiers with 25 addressable quirks, a 90-item structured backlog (JSON, because the stdlib-only pipeline reads it) (migrating `TODO.md`, the dead-code review, and the
+  2026-09-12 audit findings), 20 decisions (7 accepted, 13 proposed with recommendations), and 9 lessons.
 
 ## What was found along the way
 
@@ -55,6 +55,12 @@ The audit behind this design surfaced things worth knowing even if none of the v
 - The 1,172 "ambiguous handle" rows that head `TODO.md` are 1,157 self-reposts the parser already resolves
   by exact prefix plus 15 glued other handles, 8 of them already known; the P0 item was a 15-row problem
   misdirected by its own check definition. (B-054, B-001, L-008)
+- Knowledge is filed by document type, not by subject: the same CNN quirk appears in five files, no lesson
+  names its test, decisions live outside the repository, and the one audit was never acted on. (`07`, B-060
+  to B-064)
+- The desktop's two API runs, the only fresh engagement counts ever taken, wrote zero rows: the throttle
+  compared against CNN rows written minutes earlier. Every entry point defaults to the real data root and the
+  real network, with no notion of where it runs. (`08` section 3b, B-072, B-066)
 - The merge is monotone and has no inverse, so every repair today is edit-in-place through a one-off script,
   and a half-finished repair passes every hard check. (`03` Repair, B-050, B-051)
 - A source is about 25 literal sites in six modules; an unregistered host is paced at 0 s; adding a
@@ -75,5 +81,5 @@ The audit behind this design surfaced things worth knowing even if none of the v
 
 Start with phase 0 of `10-migration-plan.md`. Copy `templates/AGENTS.md` to the root and `schemas/` to
 the root; wire the anomaly ledger; build `scripts/ts.py` and `scripts/situation.py`. Then move this
-directory to `docs/agentic-vision/` and let `knowledge/backlog.yaml` (seeded from `knowledge-seed/`) carry
+directory to `docs/agentic-vision/` and let `knowledge/backlog.json` (seeded from `knowledge-seed/`) carry
 the plan forward, so that the plan and the backlog are one thing and `STATUS.md` shows what is pending.

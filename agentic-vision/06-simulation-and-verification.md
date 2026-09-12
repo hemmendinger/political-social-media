@@ -103,6 +103,7 @@ Fixed order, stop at first failure, print what ran and what it cost:
 | 5 | round trip: `save_posts(load_posts())` byte-identical | 5 s | no |
 | 6 | `ts status --refresh` and `git diff --stat STATUS.md output/status.json` (a change here is not an error, it is shown so the agent knows the situation moved) | 3 s | yes |
 | 7 | `python -m compileall -q scripts` under Python 3.9 syntax rules (a small AST check for `match`, `X | Y`, walrus-free is not required) | 1 s | yes |
+| 8 | fix receipt: if the diff touches a parser, the merge, a collector, or a check, the commit message draft (or `--trailers`) names a lesson, quirk, fixture, backlog, or `Knowledge: none` with a reason (B-063); a warning, not a failure | 0 s | yes |
 
 `test.yml` runs `ts verify --ci`, which is steps 1, 2, 3, and 7 (no real data needed).
 

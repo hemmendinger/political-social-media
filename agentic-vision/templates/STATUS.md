@@ -51,4 +51,4 @@ deletion latency {{sparkline.deletion_latency}}
 2-source share  {{sparkline.two_source_share}}
 
 ## Links
-AGENTS.md · knowledge/sources/{api,trumpstruth,cnn}.md · knowledge/decisions/ · knowledge/lessons/ · knowledge/backlog.yaml · scripts/check_data.py (registry) · `ts help`
+AGENTS.md · knowledge/sources/{api,trumpstruth,cnn}.md · knowledge/decisions/ · knowledge/lessons/ · knowledge/backlog.json · scripts/check_data.py (registry) · `ts help`

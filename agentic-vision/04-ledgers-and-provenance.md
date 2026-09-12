@@ -60,6 +60,14 @@ Why a ledger and not just git: git says what changed; the ledger says why, wheth
 to undo it. `STATUS.md` shows interventions that are applied but not verified, so nothing half-done is
 forgotten across sessions.
 
+## 3a. `data/observations/api/YYYY-MM.jsonl`: the desktop's hand-off
+
+The API-capable actor appends one line per sighting `{observed_at, source: "api", ts_id, kind: live | 404,
+partial, engagement, run_id}` instead of rewriting month files; the next `collect` in any profile folds
+unapplied observations (tracked by a cursor in the api state) through `merge_partial` and the per-(post,
+source) engagement throttle, then records the fold on its run record. Idempotent, union-mergeable, and the
+reason the desktop and the bot never touch the same file (B-070; `08-roles-and-coordination.md` section 3b).
+
 ## 3b. `data/incidents/<run_id>.json`: a failed run leaves a trace
 
 Written by `ts collect` on every non-zero exit, before the process ends, and committed by a workflow step
@@ -93,13 +101,14 @@ errors, notes}`. Vision adds, all optional so old lines still validate:
 
 | Field | Meaning |
 |---|---|
-| `profile` | `cloud`, `desktop`, `sandbox` |
+| `profile`, `host` | `cloud`, `desktop`, `sandbox`, and the machine, so cadence and contribution per actor can be read (`STATUS.md`: desktop last api leg N hours ago) |
 | `anomalies` | count appended to `anomalies.jsonl` by this leg |
-| `skipped` | reason string when the leg did not run (`profile=cloud`, `ran 99 min ago`, `unreachable at last probe ...`); today these are mixed into `notes` |
+| `skipped` | reason string when the leg did not run (`profile=cloud`, `leased by human:… until …`, `ran 99 min ago`, `unreachable at last probe ...`); today these are mixed into `notes`. A refused or leased run still writes its records, so the absence of a run record has exactly one meaning: the schedule was dropped |
 | `error` | `{type, message, url, status, sha256, head, phase}` when `ok=false`; the message is not truncated, the URL is the request that failed, `head` is the first 2 KB of the body, `phase` is where in the leg it happened (`listing`, `resolve:41699`, `removed_search:2026-08-30..2026-09-13:page2`, `removed_status:41644`, `cnn:download`, `api:probe`, `api:verify:<ts_id>`) |
 | `sweep` | the removed-search window this leg covered, `{start_date, end_date, pages, results}`; `v_coverage` derives the observable-lifetime limit from it (B-029) |
 | `budget` | `{host: {limit, used}}`; a truncation entry when a limit was hit (B-032) |
 | `cost` | `{requests, requests_by_host, bytes_in, slept_s, wall_s, files_written, bytes_written}` measured, plus `estimate` from `--plan` when one was made (B-055, B-058) |
+| `facts` | what the leg measured, as data: `{listing_max_id, imported_rows, statuses_count, followers_count, ...}`; `notes` stays free text for humans (B-065) |
 | `raw_dir` | `data/raw/<run_id>/` when captures were kept |
 | `truncated` | caps that applied (`ids_per_run=200`) |
 

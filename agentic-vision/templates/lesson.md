@@ -5,8 +5,12 @@ component: parsers | merge | store | collect_trumpstruth | collect_archive | col
 source: api | trumpstruth | cnn | none
 severity: data-wrong | data-missing | run-failed | wasted-effort
 encoded_in:
-  - tests/test_x.py::test_name      # the regression test that now prevents this
-  - tests/fixtures/<file>           # the evidence captured
+  - tests/test_x.py::test_name      # the regression test that now prevents this; it carries @pytest.mark.lesson("L-000")
+evidence:
+  - tests/fixtures/<file>           # the manifest entry captured
+quirks:
+  - Q-<src>-<nn>                    # the dossier fact this lesson established, if any
+general: false                      # true = the Rule below is rendered into the generated rules block of AGENTS.md
 guards:
   - check_data:<check_name>         # a check that would fire if it happened again (or none)
 links:

@@ -9,7 +9,9 @@ doc becomes once the vision's artifacts exist). Every correction was verified ag
 ## 1. Corrections: the docs are wrong today
 
 These are independent of the vision and should land first (phase 0), because an agent reading the docs
-today is misled by each of them.
+today is misled by each of them. When the knowledge layer exists, this table becomes
+`knowledge/audits/2026-09-12-doc-deltas.md` with a Disposition column mapping each row to the phase-0 fix or
+the backlog id that carries it (B-062), so the vision's own audit obeys the rule it sets.
 
 | # | File | Says | Truth | Fix |
 |---|---|---|---|---|
@@ -65,10 +67,10 @@ which the site ignores.
 
 | Document | Becomes | Keeps | Loses (moved to) |
 |---|---|---|---|
-| `README.md` | a 40-line front page for humans arriving from GitHub: one paragraph, the sources table as a generated block, "how to use the data" (three commands), and links to `AGENTS.md`, `STATUS.md`, the dossiers | the project statement; setup | Data conventions (the SPEC section 2 block and the dossiers), Integrity (the OPERATIONS section 4 blocks), Known issues (`knowledge/backlog.yaml`), Layout (`AGENTS.md`) |
+| `README.md` | a 40-line front page for humans arriving from GitHub: one paragraph, the sources table as a generated block, "how to use the data" (three commands), and links to `AGENTS.md`, `STATUS.md`, the dossiers | the project statement; setup | Data conventions (the SPEC section 2 block and the dossiers), Integrity (the OPERATIONS section 4 blocks), Known issues (`knowledge/backlog.json`), Layout (`AGENTS.md`) |
 | `docs/SPEC.md` | the module contract for implementers; the prose rules stay hand-written and corrected; the fact tables become generated blocks | the prose rules that cannot be generated (parsers, merge rules, collectors) | nothing leaves; section 2's table, section 3's formats and state keys, section 9's check list, section 11's metric list, and a module map in section 0 are rewritten in place by `ts dictionary --write`; section 12 is dropped in favor of the workflow files themselves |
 | `docs/OPERATIONS.md` | the playbook, rewritten as verbs: section 1 unchanged in content; section 2 a generated sources block plus one dossier link per source; section 3 the generated state key block and the ownership table from `08-roles-and-coordination.md`; section 4 generated check blocks; section 5 rewritten so every recipe is one `ts` command with `--dry-run`, with the generated verb block; sections 6 and 7 moved to `knowledge/decisions/` | the run order; the red-run classification (now `ts doctor`'s diagnoses, documented) | hand-edit recipes |
-| `TODO.md` | two lines pointing at `knowledge/backlog.yaml` | nothing | everything (B-001 to B-010) |
+| `TODO.md` | two lines pointing at `knowledge/backlog.json` | nothing | everything (B-001 to B-010) |
 | `MISTAKES.md` | two lines pointing at `knowledge/lessons/` and the dossiers | nothing | build errors (L-001 to L-004); source-side anomalies (dossier quirk lines) |
 | `docs/dead-code-review.md` | deleted | nothing | actionable rows become B-011 to B-013; the rest are recorded as dropped in the backlog file |
 | `tests/fixtures/README.md` | its table becomes a generated block from `tests/fixtures/manifest.json` | the capture-date discipline | the hand-maintained table |
@@ -99,6 +101,11 @@ which the site ignores.
 
 `test.yml`:
 - `run: python -m scripts.ts verify --ci` (coherence tests, unit tests, smoke replay, 3.9 syntax check).
+
+New `data-guard.yml` (on any pull request or non-`main` push touching `data/`): `check_data` must be green,
+an intervention record must accompany the change, and no forbidden file may be included (B-068); plus a
+`CODEOWNERS` line routing `data/` to the maintainer and branch protection on `main` (D-012). The bot's commit
+step becomes `python -m scripts.ts commit --run "$RUN_ID"` (B-067).
 
 New `repair.yml` (`workflow_dispatch`, inputs `plan`, `args`, `reason`, under `concurrency: collect`): runs
 `ts repair <plan> <args> --apply --reason "<reason>"` in the cloud, commits the intervention. New

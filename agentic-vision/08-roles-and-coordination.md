@@ -41,14 +41,36 @@ write is caught before merge.
 | A force push over the bot | nothing prevents it | `AGENTS.md` never-do list; branch protection on `main` (a maintainer setting, recommended in D-012) |
 | A hand edit to `state.json` nobody knows about | OPERATIONS section 3 says "yes, carefully" | every state change is a repair plan with an intervention record; `ts repair manual` for the exceptions |
 | Deleting `data/posts` for a redo | OPERATIONS section 5 says to delete files | `repair redo-history` moves them to `data/.trash/<intervention id>/` and refuses in `cloud` |
-| A desktop repair takes longer than the cron gap; the bot rewrites `state.json` (`last_run_at`, `etag`, `last_probe_at`) every run and the repair's push conflicts | nothing holds the bot | `ts pause` commits `data/paused.json`; the cloud collector exits 0 without writing while it exists; `STATUS.md` shows PAUSED; `ts pause --off` when done (B-052) |
+| A desktop repair takes longer than the cron gap; the bot rewrites `state.json` (`last_run_at`, `etag`, `last_probe_at`) every run and the repair's push conflicts | nothing holds the bot | `ts lease take` commits `data/lease.json`; the cloud collector exits 0 without writing while it exists; `STATUS.md` shows LEASED; `ts lease release` when done (B-052) |
 | Two people apply the same repair | no lock beyond `data/.lock` (30 min) | the intervention record's `target` is checked against open interventions; a duplicate plan is refused with the id of the open one |
 | The API becomes reachable from the cloud again, or stops being reachable from the desktop | the api leg re-probes every 6 h from the cloud and burns 4 requests each time | `cloud` never probes; `desktop` probes on every run (it is cheap there); a monthly `canary.yml` probe from the cloud records whether the block persists, as a dossier line |
+
+## 3b. Partition what two actors write
+
+The routine desktop-and-cloud overlap cannot conflict if every shared file is either append-only and
+union-mergeable, or owned by one actor:
+
+| File | Rule | Mechanism |
+|---|---|---|
+| `deletions.jsonl`, `runs/*.jsonl`, `engagement/*.csv`, `anomalies.jsonl`, `interventions.jsonl`, `observations/**` | append-only, order irrelevant, uniqueness enforced by `check_data` | `.gitattributes merge=union` (B-033) |
+| `incidents/*.json` | one writer per file | `-merge` |
+| `posts/*.jsonl` | rewritten only by `collect` in `cloud` and by applied repairs | the desktop never rewrites them: its api leg appends **observations** (`data/observations/api/YYYY-MM.jsonl`, one idempotent line per sighting with the partial and the engagement counts) and the next `collect` anywhere folds unapplied observations through `merge_partial`; folding twice is a no-op (B-070, D-019) |
+| `state.json` | one file, three actors' memory, rewritten every run | split per source, `data/state/<source>.json` (B-071, D-018) |
+| `lease.json` | one holder at a time | `ts lease` (B-069) |
+| `output/`, `STATUS.md` | derived | regenerated, never merged |
+
+The observation ledger also fixes a loss the audit found: the two desktop api legs on 2026-09-11 updated 20
+records each but wrote no engagement rows, because the throttle compared against the CNN rows written minutes
+earlier (B-072, L-009). With per-(post, source) throttling and observations folded by the cloud, the
+desktop's unique contribution reaches `main` without touching a file the bot rewrites.
 
 ## 4. Coordination protocol (the hand-offs)
 
 1. **Code and knowledge changes** go through a branch and a pull request. `ts verify` must be green. The
-   pull request description names the lesson, decision, or backlog ids it touches.
+   pull request description names the lesson, decision, or backlog ids it touches. **Data changes on a
+   branch** are checked by `data-guard.yml` (B-068): `check_data` green, an intervention record present, no
+   forbidden file; `CODEOWNERS` routes `data/` to the maintainer; branch protection (D-012) makes `ts commit`
+   the only path to `main`.
 2. **Data changes** are either a bot run or an applied repair. A repair is proposed as a plan file in a pull
    request (`output/plans/<id>.json` is committed only for review, then removed), applied by `repair.yml`
    or on the desktop, and its intervention record is the receipt.

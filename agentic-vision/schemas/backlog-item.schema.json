@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://political-social-media/schemas/backlog-item.schema.json",
   "title": "BacklogItem",
-  "description": "One entry of knowledge/backlog.yaml (the structured successor of TODO.md). An agent should be able to pick the next item by reading only this file: priority, cost, what blocks it, how to know it is done, and where the evidence is.",
+  "description": "One entry of knowledge/backlog.json (the structured successor of TODO.md). An agent should be able to pick the next item by reading only this file: priority, cost, what blocks it, how to know it is done, and where the evidence is.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -165,6 +165,13 @@
       "minimum": 0,
       "maximum": 3,
       "description": "Migration phase from 10-migration-plan.md, while that plan is being executed; null afterwards."
+    },
+    "acceptance_expr": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Optional machine-evaluable form of acceptance: a comparison of a dotted path in checks.json (or status.json) against a literal, e.g. 'stats.cnn_ambiguous_handles.count == 0' or 'coverage.presumed_live_count < 100'. When present, ts status announces the item as done the run it becomes true."
     }
   }
 }
