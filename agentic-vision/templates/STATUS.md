@@ -4,6 +4,8 @@ HEALTH: {{health.verdict|upper}}  — {{health.reasons|join(", ")}}
 MISSION: completeness {{mission.completeness.value}} / ~{{mission.completeness.reference}} API ({{mission.completeness.note}})  |  deletion latency median {{mission.deletion_latency.value}} min (30 d)
          provenance: 2-source {{mission.provenance.two_source_share}}, api-verified {{mission.provenance.api_verified_share}}  |  honesty flags: presumed-live {{mission.honesty.presumed_live}}, guessed-handle {{mission.honesty.guessed_handle}}
 
+INCIDENTS: {{pending.incidents_open|ids_or_none}}   CADENCE: {{cadence.runs_actual_24h}} of {{cadence.runs_expected_24h}} scheduled runs in 24 h ({{cadence.ratio|pct}})   CHECKOUT: {{checkout.head}} {{checkout|staleness_words}}   LEASE: {{lease|holder_or_none}}
+
 FRESHNESS: newest post {{freshness.newest_post_at}} ({{freshness.age_min}} min ago)  [ok < 12 h]
 {{#each freshness.sources}}
   {{name|pad 12}} {{last_leg.ok|okword}}  {{age_min}} min ago  {{last_leg.requests}} req  +{{last_leg.new}} new  {{last_leg.updated}} updated   {{last_leg.notes}}
