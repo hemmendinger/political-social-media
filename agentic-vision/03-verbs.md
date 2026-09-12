@@ -85,14 +85,15 @@ Guard rails are refusals with a clear message and exit 3, never silent downgrade
 
 ## 4. The vocabulary
 
-Seventeen verbs. Grouped by the layer they operate on (see `01-system-model.md`). Each entry: purpose,
+Twenty verbs. Grouped by the layer they operate on (see `01-system-model.md`). Each entry: purpose,
 reads, writes, network, cost, and the shape of `result`.
 
 ### Situation (layer 7)
 
 **`ts status [--refresh]`**
 Print `STATUS.md`. With `--refresh`, rebuild `output/status.json` and `STATUS.md` from the current data first
-(runs `check` internally). Reads `data/`, `output/checks.json`, `knowledge/backlog.yaml`,
+(runs `check` internally). Includes open incidents, the schedule delivery ratio, and how far this checkout
+is behind the bot's last run (`checkout` block), so a sandbox agent knows whether it is looking at stale data. Reads `data/`, `output/checks.json`, `knowledge/backlog.yaml`,
 `knowledge/decisions/`. Writes nothing unless `--refresh`. No network. Under 3 s.
 `result` = the `status.json` object (schema `schemas/status.schema.json`).
 
@@ -109,11 +110,17 @@ anomalies: {by_kind: {...}}, interventions: [...], checks: {started: [...], stop
 Classify the situation into a cause and a next move. Looks at the last run's legs (`ok`, `errors`, `notes`),
 firing checks with their descriptors, the last 24 h of anomalies, freshness per source, the profile, and, if
 present, `data/raw/<run_id>/`. Emits one of a fixed set of diagnoses, each with evidence and a next verb:
-`markup_drift` (ParseError or yield below min; names the URL and the fixture to recapture),
-`source_down` (HttpError / TransportError; says whether it persisted across runs),
-`hard_check` (names the check, its playbook), `push_race`, `stale_lock`, `api_blocked_expected`,
-`quiet_account` (stale newest post but sources healthy), `silent_undercollection` (green runs, zero new
-posts, but trumpstruth's listing shows newer ids than `max_trumpstruth_id`; needs `--live`), `healthy`.
+`markup_drift` (ParseError, yield below min, or a fingerprint change; names the URL and the fixture to
+recapture), `challenge_page` (an HTTP 200 whose body has no container: a Cloudflare challenge or a maintenance
+page, told apart from drift by the body head in the error envelope), `source_down` (HttpError /
+TransportError; says whether it persisted across runs), `hard_check` (names the check, its playbook),
+`push_race` (the commit step's rebase failed), `stale_lock`, `budget_exhausted` (a leg hit its request budget),
+`removal_semantics` (removed-search hits whose pages are not removed), `api_blocked_expected`,
+`schedule_dropped` (green runs but `runs_actual_24h` far below `runs_expected_24h`), `quiet_account` (stale
+newest post but sources healthy and on schedule), `silent_undercollection` (green runs, zero new posts, but
+trumpstruth's listing shows newer ids than `max_trumpstruth_id`; needs `--live`), `healthy`. It reads
+`data/incidents/` first (`04-ledgers-and-provenance.md` section 3), so a failed cloud run is diagnosable from
+the repository alone.
 No network unless `--live`. Under 5 s.
 `result` = `{diagnosis, confidence, evidence: [...], next: [...], playbook: "..."}`.
 
@@ -131,35 +138,63 @@ threshold, ids_sample, descriptor}`. Writes `output/checks.json`. No network. Ab
 
 ### Collection (layers 0 to 4)
 
-**`ts collect [--sources trumpstruth,cnn,api] [--backfill] [--force-cnn] [--dry-run] [--live] [--capture]`**
+**`ts collect [--sources trumpstruth,cnn,api] [--backfill] [--force-cnn] [--dry-run] [--live] [--capture] [--removed-days N] [--max-ids N] [--budget host=N]`**
 The existing orchestrator. Adds: `--dry-run` runs every leg against the network (subject to profile) but
 writes nothing under `data/`; instead it writes the would-be changes to `output/plans/collect-<run_id>.json`
 (records new and changed, events, anomalies) so an agent can inspect a collection before it lands.
 `--capture` saves every response under `data/raw/<run_id>/` (on by default in `cloud`; the workflow uploads
-the directory as an artifact when the run is red). Anomalies go to `data/anomalies.jsonl`. Cost: printed
+the directory as an artifact when the run is red). Anomalies go to `data/anomalies.jsonl`. The collector
+caps that are module constants today (`MAX_IDS_PER_RUN`, `removed_days`, `max_pages`, `max_verify`) become
+flags with the same defaults (B-027); `--removed-days` defaults to the policy in D-017 and the window
+searched is recorded as `sweep` on the run record. Each leg declares a request budget per host; exhaustion is
+recorded as a truncation, never reached as a job timeout (B-032). On any non-zero exit the verb writes
+`data/incidents/<run_id>.json` before returning, so the failure is committed even when the data is not. Cost: printed
 per leg from the run records (today: trumpstruth 3 to 7 requests and 5 to 15 s on a normal run; cnn 1 request
 and about 6 s when not skipped; the backfill about 15 minutes).
 
-**`ts capture <url> --as tests/fixtures/<name> --proves "<one line>"`**
-Fetch one page through the paced client, save it as a fixture, and append the manifest entry with the URL,
-the capture date, and what it proves. `--live` required in `sandbox`. One request.
+**`ts pause [--off] --reason "..."`**
+Commits `data/paused.json` (`{by, at, reason, until}`); while it exists the cloud collector exits 0 without
+writing and `STATUS.md` shows PAUSED. The way to hold the bot during a long desktop repair instead of racing
+it on `state.json` (B-052). `--off` removes it. In `sandbox` it writes the file but the commit is the pull
+request's.
+
+**`ts capture <url> --as tests/fixtures/<name> --source S --parser scripts.parsers:fn --proves "<one line>"`**
+Fetch one page through the paced client, save it as a fixture, and append the manifest entry (`file, url,
+captured_at, status, sha256, source, parser, proves, fingerprint`). Tests and bundles build their routes with
+`FakeTransport.from_manifest(names)` instead of hand-typed route dicts. `--live` required in `sandbox`. One
+request.
 
 ### Repair (layers 2 and 4, Law 12)
 
-**`ts repair <plan> [...] [--apply --reason "..."]`**
+**`ts repair <plan> [...] [--apply --reason "..." [--commit]]`**
 Every repair is a named plan with the same life cycle: plan (default) writes `output/plans/<intervention
-id>.json` listing exactly which records, events, and state keys would change and the checks that will be run
-afterwards; `--apply` performs it inside one intervention record and runs `check` after; a failed check after
-apply reverts the working tree to the pre-apply commit and marks the intervention `reverted`. Plans:
+id>.json` listing exactly which records and fields would change (before and after, differing fields only),
+which ledger lines would be removed (copied verbatim as retractions) and added, which state keys would change,
+the estimated cost, and the checks that will run afterwards, then exits 4; `--apply` performs it inside one
+intervention record and runs `check` after; a failed check after apply reverts the working tree to the
+pre-apply state and marks the intervention `reverted`; `--commit` makes the applied repair one commit that
+touches only `data/` (`repair(<plan>): <reason> [<id>]`), pulls with rebase first, pushes with the bot's retry
+loop, and stores the before and after shas in the record.
+
+Two principles from the repair walkthrough shape every plan. The merge is monotone (`deleted_upper` only
+narrows, `trumpstruth_removed_at` is set once, an event is emitted once per source), so it needs an explicit
+inverse: `merge.forget_deletion(record)` and `merge.forget_source(record, source)` live beside the rules they
+invert, and a repair is **forget, then re-observe**, never edit-in-place (B-050). And a single record is
+re-observed by its own id with one request (`/statuses/<trumpstruth_id>`), never routed through the windowed
+search or a whole-history phase. Values written by a repair carry the source `repair` at rank 0, so the next
+genuine observation overrides them. Plans:
 
 | Plan | Replaces (OPERATIONS section 5) | Touches |
 |---|---|---|
-| `regenerate-deletion --ts-id X` | the six manual steps | one record, its lines in `deletions.jsonl`, `processed_removed_ids` |
-| `rewalk-ids --from N` | lowering `max_trumpstruth_id` by hand | `state.json`; next collect does the walk (cost printed: `(max - N) * 1.5 s`) |
+| `regenerate-deletion --ts-id X [--all]` | the six manual steps | `forget_deletion`, one status-page request, re-merge with the `(X, trumpstruth)` pair removed from the logged set so a fresh event is produced; the old event line is retracted into the record |
+| `rewalk-ids --from N [--to M] [--forget-source trumpstruth] [--now]` | lowering `max_trumpstruth_id` by hand | `state.json`; with `--forget-source` every affected record first loses its trumpstruth-sourced values (an empty value from the fixed parser could never clear them otherwise); `--now` walks immediately with `--max-ids`; cost printed as `(M - N + 1) * 1.5 s` |
 | `reset-source --source S [--key K]` | deleting keys from `state.json` | `state.json` |
 | `rewrite-records` | the one-liner through `scripts.store` | `posts/*.jsonl` canonical rewrite |
-| `redo-history` | deleting `data/posts` etc. by hand | moves ledgers to `.trash`, then requires `collect --backfill` in a non-cloud profile |
+| `redo-history [--from-raw DIR...] [--live]` | deleting `data/posts` etc. by hand | extracts the carry-forward set (`first_seen_*`, `last_verified_live_at`, event `detected_at`), moves ledgers to `.trash`, rebuilds from raw captures (0 requests) or live, re-applies the carry-forward set (B-053) |
+| `api-backfill [--commit-every 500] [--keep-raw]` | B-003, never had a code path | resumable walk of every API page from the desktop, verify pass for absent records, `raw_api` stripped by default, chunked commits so the bot interleaves |
+| `undo <intervention id>` | git archaeology | reverts the intervention's commit and restores its retractions; refuses if a later intervention touched the same targets (B-052) |
 | `resolve-handles` | backlog B-001 | `reblog_of_acct` and `content_text` on cnn-only reblogs; marks `field_sources` `cnn-guess` or the resolved source |
+| `migrate [--to N]` | ad-hoc scripts after a schema change | rewrites every record to the code's schema version through `store.save_posts` (B-044) |
 | `manual --note "..."` | any hand edit | records an intervention for something done outside the verbs (the escape hatch that keeps the ledger honest) |
 
 ### Views and analysis (layer 5)
@@ -167,7 +202,15 @@ apply reverts the working tree to the pre-apply commit and marks the interventio
 **`ts build`** = `build_db.build`. Adds `v_confidence` and `v_coverage`. Under 10 s.
 **`ts query --sql|--file [--format table|csv|markdown|json]`** = `query.py`. Adds `--json`.
 **`ts report --week 2026-W37 | --start --end`** = `weekly.py`. Every table gains a `caveats` list.
-**`ts dictionary`** prints the generated data dictionary (from the schema and the views) as markdown.
+**`ts ask <question> [--start --end] [--tz ET|UTC] [--param k=v] [--compare before|after DATE|trailing N] [--save]`**
+A named, versioned analysis from the question registry (`05-invariants-and-schema.md` section 3.6). Returns
+the answer envelope: answer, bounds or a three-valued count, `n`, the window in both zones with the seam
+count, the coverage subset, computed caveats, method, and provenance (data commit, build time). `--save`
+writes it under `output/answers/<question>-<args>.json` so a quoted figure is reproducible. `ts ask` with
+no question lists the registry. Under 2 s after `build`.
+**`ts dictionary [--write]`** prints (or rewrites in place) every generated block in the documents from the
+schemas and registries (`05-invariants-and-schema.md` section 6): the record and media tables, sources and
+precedence, state keys, the check tables, the verb and question lists, the fixtures table, the module map.
 
 ### Verification (Law 10, 16)
 
@@ -189,6 +232,14 @@ smallest bundle. No network. Under 20 s.
 Scaffold a knowledge entry with the next free id and today's date from `templates/`, and open it in `$EDITOR`
 if any. `ts note backlog --close B-001 --evidence "stats.cnn_ambiguous_handles.count=0"` closes an item with
 its acceptance evidence. Pure file operations.
+
+**`ts scaffold source|field|check|metric <name> [...]`**
+The extension checklist that writes itself (B-048). `scaffold source factbase --hosts factba.se=2.0
+--rank below:cnn --created-at-rank below:trumpstruth --deletion-signal none --order after:cnn` writes the
+registry entry, the collector and parser stubs, the test stub, the fixture slot in the manifest, the dossier
+stub, and regenerates the generated blocks; `scaffold field video_transcript --merge scalar --sources
+trumpstruth` also writes the migration. Every stub carries a `# scaffold: fill me` marker that `ts verify`
+refuses, so a half-finished extension cannot be pushed. `--dry-run` lists the files.
 
 **`ts help [verb]`**
 Generated from the registry: purpose, flags, reads, writes, network, cost, next.

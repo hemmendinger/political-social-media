@@ -26,8 +26,8 @@ adds, and the single artifact through which the layer above sees it ("legible vi
 | 1 | **Observation** | What one source claimed at one time, parsed into fields. Pure function of evidence. | parser "partials": dicts with `_source`, `_engagement`, `retruthed`, `account` | the name `Observation` for the concept; `observed_at` and `url` carried on every partial; anomalies at parse time (yield below min, other account) emitted as events, not just counted | `ts explain <ts_id>` lists the observations behind a record |
 | 2 | **Belief** | The current merged record for one post, with per-field provenance and the deletion interval. | `data/posts/YYYY-MM.jsonl` records (SPEC section 2); `field_sources`; `merge_partial` | `schemas/post-record.schema.json` as the source of truth; `confidence` as a derived view, not a stored field | the record itself; `ts explain` |
 | 3 | **Invariant** | A predicate the belief state must satisfy (hard) or should satisfy (soft), plus stats to watch. | `check_data.run_checks`, `output/checks.json` strings, OPERATIONS section 4 tables written by hand | a **check registry**: each check carries a `CheckDescriptor` (why, condition, threshold, reading, playbook, since, expected background); `checks.json` becomes objects; the OPERATIONS table is generated | `STATUS.md` shows every firing check with its reading and its playbook verb |
-| 4 | **Ledger** | Append-only event logs: what happened, when, by whom. | `runs/*.jsonl` (per run and source), `deletions.jsonl`, `engagement/*.csv` | `anomalies.jsonl` (stops the current leak: `MergeResult.anomalies` is discarded by every collector), `interventions.jsonl` (repairs, resets, hand edits, with reason and undo) | `ts status` summarizes the last 24 h of each ledger; `ts explain` filters them by `ts_id` |
-| 5 | **View** | Derived, disposable projections for analysis. | `data/truths.sqlite`, `v_posts_et`, `v_deletions`, `v_engagement_latest`, `output/posts.csv`, `output/metrics.json`, `output/reports/*.md`, `queries/*.sql` | `v_confidence` (per-post certainty flags), `v_coverage` (per-source windows), a generated data dictionary, every metric carrying a `caveats` object | `ts query`, `ts report`; the data dictionary |
+| 4 | **Ledger** | Append-only event logs: what happened, when, by whom. | `runs/*.jsonl` (per run and source), `deletions.jsonl`, `engagement/*.csv`; failed runs leave no trace on `main` | `anomalies.jsonl` (stops the current leak: `MergeResult.anomalies` is discarded by every collector), `interventions.jsonl` (repairs, resets, hand edits, with reason and undo), `incidents/<run_id>.json` (a failed run's record, committed even when its data is not) | `ts status` summarizes the last 24 h of each ledger; `ts explain` filters them by `ts_id` |
+| 5 | **View** | Derived, disposable projections for analysis. | `data/truths.sqlite`, `v_posts_et`, `v_deletions`, `v_engagement_latest`, `output/posts.csv`, `output/metrics.json`, `output/reports/*.md`, `queries/*.sql` | columns generated from a registry that names each one's bound; `v_confidence` (per-post evidence flags and grade), `v_coverage` (per-source and per-signal windows, detection floor, last sweep), a generated data dictionary, every metric carrying computed `caveats`, named questions with answer envelopes | `ts ask`, `ts query`, `ts report`; the data dictionary |
 | 6 | **Verb** | A named operation with declared inputs, outputs, side effects, network, and cost. | seven `python -m scripts.<x>` entry points with their own flags | one dispatcher `python -m scripts.ts <verb>` with a fixed vocabulary, `--json`, `--dry-run`, an output envelope, a cost line, and a `next` hint; profiles and guard rails | `ts help` (generated from the verb registry) and `03-verbs.md` |
 | 7 | **Situation** | The state of the whole system right now, and what changed since last time. | pieces spread across `checks.json`, `metrics.json`, `state.json`, run rows, and the commit message | `output/status.json` and `STATUS.md`, regenerated every run; a commit-message protocol that makes `git log` a timeline | `STATUS.md` is the first file read after the door |
 | 8 | **Knowledge** | What the system knows about its sources, its own history, and its open questions. | `docs/SPEC.md`, `docs/OPERATIONS.md`, `TODO.md`, `MISTAKES.md`, `tests/fixtures/README.md`, `docs/dead-code-review.md`, out-of-repo plan | `knowledge/decisions/D-*.md`, `knowledge/lessons/L-*.md` (each linked to a test), `knowledge/sources/<source>.md` dossiers, `knowledge/backlog.yaml`; coherence tests that fail when knowledge and code disagree | `AGENTS.md` links every knowledge artifact by purpose |
@@ -74,6 +74,26 @@ where renaming would churn the tests; the vocabulary governs docs, verbs, file n
 | **decision** | A dated record of a choice with status. | `open decision`, `design decision`, `the approved plan` |
 | **dossier** | The per-source knowledge file. | `source notes`, the Sources table in the README, MISTAKES "data anomalies (source side)" |
 | **backlog item** | A structured piece of known, unscheduled work with evidence and acceptance. | `TODO`, `deferred feature`, `known issue` |
+| **bound** | A derived number's relation to the truth: `exact`, `lower`, `upper`, `interval`. Every view column and answer states its bound. | `lifetime_min` (an upper bound under a point name) |
+| **verdict** | The result of a predicate over an interval: `confirmed`, `possible`, `excluded`. | a count |
+| **detection floor** | The narrowest interval a signal can resolve, measured from its ledger (deletions: 76 min). | |
+| **coverage window** | The span in which a source or signal could have observed something (history start, polling since, removal tracking since, search lookback). | `blind spot`, `horizon` (the earliest instant a class of event is observable at all) |
+| **lookback gap** | Events an incremental collector structurally misses (removals of posts older than the search window). | |
+| **caveat** | A named flag with scope (record or window), a count or value, and one sentence, attached to an answer as data. | the static Caveats paragraph |
+| **evidence grade** | `A` api-verified, `B` two or more sources, `C` single source. | |
+| **question** | A named, versioned analysis with parameters, unit, bound, and golden answer (`ts ask`). | `saved query`, `starter SQL` |
+| **incident** | The committed record of a run that did not land, with legs, error, checks, fingerprints, and a diagnosis. | `red run` |
+| **failure class** | One of the fixed diagnoses `ts doctor` can return. | |
+| **leg phase** | Where inside a leg something happened (`listing`, `resolve:<id>`, `removed_search:<range>:page<n>`, ...). | |
+| **fingerprint** | The structural summary of a page a parser depends on (classes, keys, counts), stored per fixture and compared on every fetch. | `canary` (a weekly live comparison), `drift` (the difference) |
+| **budget** | The per-host request cap inside one leg; exhaustion is a recorded truncation. | `cap` (a module constant) |
+| **sweep** | One removed-search window actually covered by a leg, recorded on its run record. | |
+| **seam** | Records whose UTC month partition and Eastern analysis day disagree. | |
+| **forget** | The pure inverse of a merge signal on one record (`forget_deletion`, `forget_source`); a repair is forget, then re-observe. | `edit-in-place`, `one-off script` |
+| **re-observation** | A targeted fetch of one page by its own id, merged like any observation, to refill what was forgotten. | |
+| **retraction** | A ledger line removed by a repair, copied verbatim into the intervention record. | `delete the line` |
+| **pause marker** | `data/paused.json`, committed; the cloud collector exits without writing while it exists. | |
+| **carry-forward set** | Write-once provenance (`first_seen_*`, `last_verified_live_at`, event `detected_at`) extracted before a rebuild and re-applied after. | |
 | **deleted** vs **removed** | `deleted` is our belief (`status`). `removed` is trumpstruth's word for its own signal. Docs say deleted; only the trumpstruth dossier and parser say removed. | |
 | **present** vs **live** | `present` is our belief. `live` means verified by the API at a time (`last_verified_live_at`). Archive-only records are present but not verified live. | `presumed live` |
 
@@ -115,6 +135,10 @@ scripts/
   ts.py              layer 6 dispatcher (new): verbs, envelope, profiles, guards
   situation.py       layer 7 (new): builds status.json and STATUS.md from layers 3-5 and 8
   explain.py         layer 2/4 (new): the evidence trail for one record
+  ask.py, caveats.py layer 5 (new): the question registry and the caveat registry
+  sources.py         layers 1-4 (new): the source registry (ranks, hosts, signals, state defaults) and the shared Leg
+  schema.py          layer 2 (new): derives RECORD_FIELDS, SCALAR_FIELDS, defaults, and columns from schemas/
+  migrate.py         layer 2 (new): ordered schema migrations applied by repair migrate
   replay.py          layer 0-4 (new): runs the pipeline against a fixture bundle with a FakeClock
 schemas/             layer 2-7 shapes (JSON Schema)
 knowledge/           layer 8
@@ -128,8 +152,9 @@ STATUS.md            layer 7, generated
   a verb name, a schema field, and a doc heading.
 - **Cohesive**: each layer has one job and one artifact type. Parsers do not merge; the store does not check;
   checks do not repair; the situation does not decide.
-- **Modular**: a layer can be replaced without touching the others (a fourth source adds a parser, a
-  collector, a dossier, and a rank; nothing else changes because the schema and the registry are the seams).
+- **Modular**: a layer can be replaced without touching the others (a fourth source is one registry entry,
+  a parser, a fetch function, a dossier, and a bundle; nothing else changes because the schema and the
+  registries are the seams, and `ts scaffold` writes the entry and the stubs).
 - **Interconnected**: every artifact links up (why it matters) and down (what it is made of) by id: a check
   names its playbook verb; a lesson names its test and its dossier; a backlog item names its check; an
   intervention names its commit; a record names its observations; an observation names its evidence.

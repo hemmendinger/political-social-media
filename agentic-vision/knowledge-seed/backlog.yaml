@@ -10,22 +10,23 @@ items:
   - id: B-001
     title: "CNN archive: ambiguous repost handles (glued RT @handle prefix)"
     area: data-quality
-    priority: P0
+    priority: P1
     status: open
     phase: 2
     problem: >
       The CNN archive stores a repost as `RT @<handle><text>` with no separator, so when the text starts with
       a word character the handle boundary is ambiguous. The merge never lets cnn override a handle known from
-      the API or trumpstruth, so the damage is confined to cnn-only rows: 1,172 reblogs today
-      (stats.cnn_ambiguous_handles). For those rows reblog_of_acct may be wrong and content_text may be
-      missing its first word.
+      the API or trumpstruth, so the damage is confined to cnn-only rows. Measured 2026-09-12: 1,157 of the
+      1,172 rows the stat counts are self-reposts resolved by the exact-prefix rule (residual risk: a longer
+      handle sharing the prefix); 15 have another handle glued, of which 8 are already known handles, 2 have a
+      known handle as a proper prefix, and 5 are unknown (B-054 splits the stat).
     options:
-      - {name: known-handle dictionary, cost: S, note: "longest known handle that is a prefix; mark field_sources.reblog_of_acct = cnn-guess otherwise; offline"}
-      - {name: trumpstruth cross-reference, cost: M, note: "one status-page request per row, persisted; fixes the few hundred historical cases"}
-      - {name: API account lookup, cost: L, note: "6 req/min, desktop only; last resort for the unresolved"}
-    acceptance: "stats.cnn_ambiguous_handles.count == 0 and no cnn-only reblog has a handle that is not a known account"
-    cost: {build: M, requests: "0 for option 1; ~1 per unresolved row for option 2", wall: "minutes", profile: "any (option 1); desktop or cloud (option 2)"}
-    blocked_by: []
+      - {name: known-handle dictionary, cost: S, note: "longest known handle that is a prefix (fixes the 2 today); mark field_sources.reblog_of_acct = cnn-guess for the rest; offline"}
+      - {name: trumpstruth cross-reference, cost: S, note: "one search per unresolved row (about 13 requests today), persisted, with repair provenance"}
+      - {name: API account lookup, cost: M, note: "6 req/min, desktop only; last resort"}
+    acceptance: "stats.cnn_ambiguous_handles.count == 0 after B-054 (the 15, not the 1,172), and no cnn-only reblog has a handle that is not a known Truth Social account"
+    cost: {build: S, requests: "0 for option 1; ~13 for option 2", wall: "minutes", profile: any}
+    blocked_by: ["B-054"]
     evidence: ["stats.cnn_ambiguous_handles", "knowledge/sources/cnn.md quirk 2026-09-11", "tests/fixtures/cnn_archive_sample.json"]
     decision: null
     opened: 2026-09-11
@@ -65,7 +66,7 @@ items:
       differences. A full API walk (about 1,830 pages at 5 requests per minute, about 6 hours, resumable)
       verifies every historical post and adds canonical fields.
     options:
-      - {name: repair api-backfill from the desktop, cost: L, note: "commits in chunks; any archived post the live account no longer returns becomes a deletion with unknown timing (deleted_upper = observed_at)"}
+      - {name: repair api-backfill from the desktop, cost: L, note: "resumable state sources.api.backfill{phase walk|verify|done, max_id, pages}; walk about 1,830 pages at 12 s; verify absent records with single GETs; raw_api stripped by default (--keep-raw) so 37k records do not bloat; commits every 500 records so the bot interleaves; any archived post the live account no longer returns becomes a deletion with deleted_upper = observed_at"}
     acceptance: "coverage.presumed_live_count == 0 and present_count_drift within tolerance"
     cost: {build: M, requests: "~1,830 + verifies", wall: "~6 h", profile: desktop}
     blocked_by: ["D-008"]
@@ -456,6 +457,654 @@ items:
     opened: 2026-09-12
     closed: null
 
+  - id: B-029
+    title: 'Deletion lookback gap: the removed search only covers posts created in the last 14 days'
+    area: coverage
+    priority: P0
+    status: open
+    phase: 0
+    problem: 'trumpstruth''s /search date filter applies to the post''s creation date, not its removal date (the 2026-01-01..09-11
+      window returned 88 of the 98 removals known from the 2022 window). The incremental collector searches only the
+      last 14 days, so a removal of any post older than 14 days is never seen. 35 of the 98 deletions on record were
+      older than 14 days at removal; going forward about a third of deletions would be missed and lifetime series
+      would be right-censored at 14 days.
+
+      '
+    options:
+    - name: search since 2022-01-01 on every run while total removals stay under about 500
+      cost: S
+      note: 1 page today (98 results per 100-row page); processed_removed_ids prevents re-fetching status pages; record
+        the sweep window on the run record
+    - name: 14-day daily plus a full sweep on Sundays
+      cost: S
+      note: cheaper as the removal count grows into several pages
+    acceptance: coverage.removal_search.last_full_sweep is within 7 days on every run; a replay bundle with a removal
+      of a 40-day-old post produces the deletion event
+    cost:
+      build: S
+      requests: +0 to +4 per run
+      wall: null
+      profile: any
+    blocked_by:
+    - D-017
+    evidence:
+    - scripts/collect_trumpstruth.py:337-341
+    - tests/fixtures/trumpstruth_search_removed_2026.html (88) vs MISTAKES.md (98)
+    - data/deletions.jsonl ages
+    decision: D-017
+    opened: 2026-09-12
+    closed: null
+  - id: B-030
+    title: Commit an incident record when a cloud run fails
+    area: situation
+    priority: P0
+    status: open
+    phase: 0
+    problem: 'On a non-zero exit the workflow''s commit step is skipped, so the failure run record, the failing checks.json,
+      and any collected data die with the runner. The ledger on main can only ever record success; a sandboxed agent
+      cannot tell a red run from a dropped schedule.
+
+      '
+    acceptance: 'collect.yml has an if: always() step that commits data/incidents/<run_id>.json and STATUS.md even
+      on failure (never data/posts on a hard-check failure); ts doctor reads it'
+    cost:
+      build: S
+      requests: null
+      wall: null
+      profile: cloud
+    blocked_by:
+    - B-103
+    evidence:
+    - .github/workflows/collect.yml:36-57
+    - scripts/collect.py:118-124
+    decision: D-014
+    opened: 2026-09-12
+    closed: null
+  - id: B-031
+    title: Structured error envelope with leg phase on run records
+    area: verbs
+    priority: P1
+    status: open
+    phase: 1
+    problem: A failure is a 500-character string with no URL, status, body digest, or phase; a Cloudflare challenge
+      page (200, no container) is indistinguishable from markup drift.
+    acceptance: ParseError and HttpError carry url, status, body sha256 and a 2 KB head; run records carry error{type,message,url,status,sha256,head,phase}
+    cost:
+      build: S
+      requests: null
+      wall: null
+      profile: any
+    blocked_by: []
+    evidence:
+    - scripts/collect.py:48-61
+    - scripts/parsers.py:47
+    decision: null
+    opened: 2026-09-12
+    closed: null
+  - id: B-032
+    title: Per-leg request budgets and undercollection guards
+    area: sources
+    priority: P1
+    status: open
+    phase: 1
+    problem: 'MAX_REMOVED_PAGES=50 times 100 results times one status page each is about two hours at 1.5 s, past
+      the 25-minute job timeout, with no in-repo trace. Several green-but-empty paths exist: a card whose account
+      fails to parse is counted as another account; a removed-search hit is marked processed even if its status page
+      did not say removed.
+
+      '
+    acceptance: each leg declares a request budget; exhaustion is recorded as a truncation on the run record; other_account
+      ratio, listing-max lag, and removed-search mismatch are anomalies with soft checks
+    cost:
+      build: M
+      requests: null
+      wall: null
+      profile: any
+    blocked_by:
+    - B-014
+    evidence:
+    - scripts/collect_trumpstruth.py:42,162-167,196-197,309-321
+    decision: null
+    opened: 2026-09-12
+    closed: null
+  - id: B-033
+    title: Union merge for append-only ledgers, rebase abort between push retries, JSON lock with liveness
+    area: coordination
+    priority: P1
+    status: open
+    phase: 1
+    problem: 'A desktop run and a cloud run that both append to deletions.jsonl or runs/*.jsonl guarantee a rebase
+      conflict; the retry loop has no git rebase --abort, so all three attempts fail. data/.lock holds a bare pid,
+      is not gitignored, and a held lock exits like a collector failure.
+
+      '
+    acceptance: .gitattributes marks the append-only ledgers merge=union; the workflow aborts a failed rebase before
+      retrying and records a push_race incident; the lock is JSON with pid liveness and is gitignored
+    cost:
+      build: S
+      requests: null
+      wall: null
+      profile: any
+    blocked_by:
+    - B-028
+    evidence:
+    - .github/workflows/collect.yml:50-56
+    - scripts/collect.py:206-222
+    decision: null
+    opened: 2026-09-12
+    closed: null
+  - id: B-034
+    title: Structural fingerprints checked on every fetched page
+    area: simulation
+    priority: P1
+    status: open
+    phase: 1
+    problem: Markup drift is discovered only when a page yields under min_yield or a parser raises; a page that changed
+      but still parses is invisible.
+    acceptance: parsers.fingerprint(kind, text) lists the classes and keys each parser depends on; fixtures store
+      theirs in the manifest; every production page is compared and a difference is a markup_changed anomaly, never
+      an exception
+    cost:
+      build: M
+      requests: null
+      wall: null
+      profile: any
+    blocked_by:
+    - B-013
+    - B-014
+    evidence:
+    - 06-simulation-and-verification.md section 3
+    decision: null
+    opened: 2026-09-12
+    closed: null
+  - id: B-035
+    title: 'ts ask: named, versioned questions with an answer envelope and computed caveats'
+    area: analysis
+    priority: P1
+    status: open
+    phase: 2
+    problem: 'Analysis is ad-hoc SQL over views whose columns are documented only in build_db.py; an answer carries
+      no bounds, coverage, caveats, or data version, so a journalist''s number cannot be reproduced or qualified.
+
+      '
+    acceptance: ts ask deleted_within --start --end returns confirmed/possible/excluded counts, both time-zone windows
+      with the seam count, the coverage subset, computed caveats, and the data commit; six questions registered; golden
+      answers tested
+    cost:
+      build: M
+      requests: null
+      wall: null
+      profile: any
+    blocked_by:
+    - B-036
+    - B-111
+    evidence:
+    - lens:analysis
+    - 09-economy.md section 2
+    decision: null
+    opened: 2026-09-12
+    closed: null
+  - id: B-036
+    title: Interval-honest deletion columns and the detection floor
+    area: analysis
+    priority: P0
+    status: open
+    phase: 0
+    problem: 'v_posts_et.lifetime_min is an upper bound (deleted_upper minus creation) under a point name, and every
+      one of the 98 deletions has deleted_lower equal to creation time, so a query for deletions within an hour returns
+      a structural zero that reads as evidence. The narrowest interval any source can resolve is about 76 minutes;
+      94 of 98 removal times are minute precision. The weekly report prints lifetime_min and deletion_window_min as
+      two identical columns.
+
+      '
+    acceptance: v_posts_et exposes lifetime_lo_min, lifetime_hi_min, lower_basis, upper_basis, upper_precision; lifetime_min
+      is a deprecated alias for one release; v_coverage carries detection_floor_min; the weekly report labels the
+      bound
+    cost:
+      build: S
+      requests: null
+      wall: null
+      profile: any
+    blocked_by: []
+    evidence:
+    - scripts/build_db.py:136-145
+    - data/posts (98 of 98 lower == created)
+    - data/deletions.jsonl (min width 76 min)
+    decision: null
+    opened: 2026-09-12
+    closed: null
+  - id: B-037
+    title: Engagement snapshot semantics (age, kind, source) and reblog exclusion
+    area: analysis
+    priority: P2
+    status: open
+    phase: 2
+    problem: All 37,226 engagement rows are cnn; 35,909 were observed more than 14 days after creation (late baselines);
+      5,366 of 5,597 reblog rows have favourites 0 because the archive reports zeros for reposts. engagement_stats
+      mixes them.
+    acceptance: v_engagement_latest carries age_at_observation_min, snapshot_kind, source; engagement_stats excludes
+      reblogs by default and reports the breakdown with caveats
+    cost:
+      build: S
+      requests: null
+      wall: null
+      profile: any
+    blocked_by:
+    - B-111
+    evidence:
+    - data/engagement/2026-09.csv
+    - scripts/metrics.py:238-262
+    decision: null
+    opened: 2026-09-12
+    closed: null
+  - id: B-038
+    title: Epistemic golden cases in the test suite
+    area: simulation
+    priority: P2
+    status: open
+    phase: 2
+    problem: No test guards against an over-confident answer; the synthetic dataset in conftest has no deletion shaped
+      like the real ones (lower == created), no cnn-only repost pair, no UTC seam post, no late-baseline engagement
+      row.
+    acceptance: conftest group E covers each uncertainty mode; tests/test_epistemics.py asserts the three-valued verdicts
+      and caveat counts; golden answers in tests/golden/answers.json
+    cost:
+      build: M
+      requests: null
+      wall: null
+      profile: any
+    blocked_by:
+    - B-035
+    evidence:
+    - tests/conftest.py:53-183
+    decision: null
+    opened: 2026-09-12
+    closed: null
+  - id: B-039
+    title: Module header convention and a generated module map
+    area: knowledge
+    priority: P2
+    status: open
+    phase: 2
+    problem: Which module reads or writes what, and whether it touches the network, is learned by reading it.
+    acceptance: every scripts/*.py docstring starts with a five-line header (Layer, Reads, Writes, Network, Entry);
+      ts dictionary --map renders the generated module map block; a coherence test enforces the header
+    cost:
+      build: S
+      requests: null
+      wall: null
+      profile: any
+    blocked_by:
+    - B-114
+    evidence:
+    - lens:coldstart
+    decision: null
+    opened: 2026-09-12
+    closed: null
+  - id: B-040
+    title: Watchdog workflow filing the doctor verdict as a GitHub issue
+    area: situation
+    priority: P3
+    status: open
+    phase: 3
+    problem: An agent without console access still cannot see a diagnosis if the incident commit itself failed (push
+      race).
+    acceptance: a 6-hourly workflow runs ts doctor --json and creates or updates one issue per failure class
+    cost:
+      build: S
+      requests: null
+      wall: null
+      profile: cloud
+    blocked_by:
+    - B-108
+    - B-030
+    evidence:
+    - lens:incident
+    decision: null
+    opened: 2026-09-12
+    closed: null
+  - id: B-041
+    title: 'Time-zone-explicit windows: utc_date, the seam count, and both bounds on every answer'
+    area: analysis
+    priority: P1
+    status: open
+    phase: 1
+    problem: Month files are UTC partitions while analysis days are Eastern; a cheap read of one month file gets a
+      window off by the seam posts, and nothing says so.
+    acceptance: v_posts_et has utc_date; v_confidence has utc_seam; metrics.window() returns both bounds and the seam
+      count; the dictionary states the partition zone
+    cost:
+      build: S
+      requests: null
+      wall: null
+      profile: any
+    blocked_by:
+    - B-036
+    evidence:
+    - docs/SPEC.md section 3
+    - README.md:64-66
+    decision: null
+    opened: 2026-09-12
+    closed: null
+  - id: B-042
+    title: checks.json carries run_id and checked_at
+    area: situation
+    priority: P0
+    status: open
+    phase: 0
+    problem: checks.json is not tied to the run that produced it, and on exit 2 it is lost with the runner.
+    acceptance: checks.json v2 has run_id and checked_at; the incident record embeds it
+    cost:
+      build: S
+      requests: null
+      wall: null
+      profile: any
+    blocked_by: []
+    evidence:
+    - scripts/check_data.py:314
+    decision: null
+    opened: 2026-09-12
+    closed: null
+
+  - id: B-043
+    title: Source registry and the shared Leg skeleton
+    area: sources
+    priority: P1
+    status: open
+    phase: 1
+    problem: 'A source''s identity is scattered over about 25 literal sites in six modules: two rank tables in merge.py,
+      a hidden lowest-rank default for unknown field_sources entries, hard-coded deletion signals, source == branches,
+      VALID_SOURCES in check_data, SOURCE_ORDER and an if/elif chain in collect.py, and the paced-host table in common.py.
+      Adding a fourth source means editing about 14 files by hand, and forgetting one raises KeyError or fails every
+      record with a hard check.
+
+      '
+    acceptance: scripts/sources.py declares each source once (name, ranks, order, hosts and pacing, headers, deletion
+      signal, state defaults, collector, dossier path, fixture prefix); merge, check_data, collect, and Http read
+      it; a shared Leg runs the merge/checkpoint/run-record loop so a collector is fetch-and-parse only; the fourth-source
+      benchmark in 10-migration-plan.md drops to five files
+    cost:
+      build: M
+      requests: null
+      wall: null
+      profile: any
+    blocked_by:
+    - B-011
+    - B-105
+    evidence:
+    - scripts/merge.py:63,66,190,212,240,271,316-321,408-415
+    - scripts/check_data.py:28
+    - scripts/collect.py:32,85-92
+    - scripts/common.py:345-350
+    decision: null
+    opened: 2026-09-12
+    closed: null
+  - id: B-044
+    title: 'Schema version and ts repair migrate: shape changes as planned migrations'
+    area: knowledge
+    priority: P1
+    status: open
+    phase: 1
+    problem: 'missing_fields is a hard check and merge deep-copies existing records, so adding a required record field
+      fails the cloud run (exit 2) for all 37,002 existing records until an ad-hoc script rewrites 55 month files
+      with no receipt.
+
+      '
+    acceptance: the record schema carries x-schema-version; state.json carries schema_version; scripts/migrate.py
+      holds ordered, reasoned migrations; ts repair migrate plans (files, records, diff size) and applies through
+      store.save_posts with an intervention record; a hard check fires when data is behind the code's version
+    cost:
+      build: S
+      requests: null
+      wall: null
+      profile: any
+    blocked_by:
+    - B-105
+    - B-109
+    evidence:
+    - scripts/check_data.py:82-85
+    - scripts/merge.py:384
+    decision: null
+    opened: 2026-09-12
+    closed: null
+  - id: B-045
+    title: Refuse requests to unregistered hosts instead of pacing them at 0 s
+    area: coordination
+    priority: P1
+    status: open
+    phase: 1
+    problem: Http.get sleeps 0 s for any host not in the three-entry pacing table, so a new collector written without
+      touching common.py runs unthrottled against a site that has never been asked.
+    acceptance: an unregistered host raises before the first request unless the source registry declares it with an
+      interval; a test proves it
+    cost:
+      build: S
+      requests: null
+      wall: null
+      profile: any
+    blocked_by: []
+    evidence:
+    - scripts/common.py:345-350,422-424
+    decision: null
+    opened: 2026-09-12
+    closed: null
+  - id: B-046
+    title: Metric registry with SQL parity
+    area: analysis
+    priority: P2
+    status: open
+    phase: 2
+    problem: A metric is three sites in metrics.py, three in weekly.py, two tests with hard-coded lists, and a starter
+      SQL whose count is asserted as exactly 11; the SQL and Python implementations of the same idea (engagement percentiles)
+      already disagree.
+    acceptance: '@metric descriptors (name, section, shape, columns, caveats, since, sql, parity) drive the report,
+      the CSVs, the starter set, and a parity test; the == 11 assertion is gone'
+    cost:
+      build: M
+      requests: null
+      wall: null
+      profile: any
+    blocked_by:
+    - B-111
+    evidence:
+    - scripts/metrics.py:19-23,305-318
+    - scripts/weekly.py:74-260
+    - tests/test_query.py:129-130
+    decision: null
+    opened: 2026-09-12
+    closed: null
+  - id: B-047
+    title: Strict observations in tests and replay
+    area: simulation
+    priority: P2
+    status: open
+    phase: 2
+    problem: merge_partial reads keys by name and ignores the rest, so a parser field that is misspelled or never
+      registered vanishes silently (retruthed, snippet_text, followers_count already do).
+    acceptance: merge_partial(strict=True) raises UnknownField for a key that is not a schema field, a registered
+      signal, or a registered private key; tests and replay run strict; production stays lenient and counts unknown
+      keys as an anomaly
+    cost:
+      build: S
+      requests: null
+      wall: null
+      profile: any
+    blocked_by:
+    - B-043
+    evidence:
+    - scripts/merge.py:378
+    - scripts/collect_trumpstruth.py:45-56
+    - scripts/collect_api.py:61-63
+    decision: null
+    opened: 2026-09-12
+    closed: null
+  - id: B-048
+    title: 'ts scaffold source|field|check|metric: one verb that touches every seam'
+    area: verbs
+    priority: P2
+    status: open
+    phase: 2
+    problem: Extending the system is a checklist held in the agent's head; a half-finished extension is pushable.
+    acceptance: the verb writes the registry entry, stubs, test stub, fixture slot, knowledge stub, and migration
+      when needed, then regenerates the generated blocks; every stub carries a fill-me marker that ts verify refuses
+    cost:
+      build: M
+      requests: null
+      wall: null
+      profile: any
+    blocked_by:
+    - B-043
+    - B-044
+    - B-046
+    evidence:
+    - lens:extend
+    decision: null
+    opened: 2026-09-12
+    closed: null
+  - id: B-049
+    title: Sub-resource fetch hook on the source registry (transcripts, mirrors, spot checks)
+    area: sources
+    priority: P2
+    status: open
+    phase: 3
+    problem: A field that needs a second request (the transcript from a trumpstruth VTT track, a media mirror) has
+      no hook; the evidence is already in a fixture.
+    acceptance: a Source may declare SubResource(field, url_from, parse, host, min_interval, when, cap); the Leg fetches
+      them after the merge under the same pacing and budget; B-006 and B-007 are implemented through it
+    cost:
+      build: M
+      requests: 1 per sub-resource
+      wall: null
+      profile: any
+    blocked_by:
+    - B-043
+    evidence:
+    - tests/fixtures/trumpstruth_status_41686_original_video.html (<track src=...vtt>)
+    decision: null
+    opened: 2026-09-12
+    closed: null
+
+  - id: B-050
+    title: 'merge.forget_deletion and merge.forget_source: the inverse of a signal'
+    area: verbs
+    priority: P1
+    status: open
+    phase: 1
+    problem: The merge is monotone (deleted_upper = min, trumpstruth_removed_at set once, an event emitted once per
+      source) and has no inverse, so every repair is an edit-in-place through one-off scripts.
+    acceptance: pure functions beside the merge rules return a record with a signal's effects removed; every repair
+      plan is forget then re-observe; a property test proves forget(merge(r, s)) restores the pre-signal fields
+    cost:
+      build: S
+      requests: null
+      wall: null
+      profile: any
+    blocked_by: []
+    evidence:
+    - scripts/merge.py:297-349,418
+    - lens:repair
+    decision: null
+    opened: 2026-09-12
+    closed: null
+  - id: B-051
+    title: Repair-state invariants in check_data
+    area: verbs
+    priority: P0
+    status: open
+    phase: 0
+    problem: A half-finished repair passes every hard check today (event removed but record still deleted; record
+      reset but event kept; deleted with a null upper bound).
+    acceptance: hard deleted_without_event, present_with_deletion_fields, deleted_without_upper; soft deletion_bounds_drifted_from_event;
+      each with a descriptor and a bundle that fails on the half-state
+    cost:
+      build: S
+      requests: null
+      wall: null
+      profile: any
+    blocked_by: []
+    evidence:
+    - scripts/check_data.py:197-206
+    - lens:repair (scratch experiment)
+    decision: null
+    opened: 2026-09-12
+    closed: null
+  - id: B-052
+    title: ts repair undo and ts pause
+    area: coordination
+    priority: P1
+    status: open
+    phase: 1
+    problem: Undo is git archaeology; a desktop repair longer than the cron gap races the bot on state.json with no
+      way to hold the cloud collector.
+    acceptance: an applied repair is one commit touching only data/, with before and after shas in the intervention
+      record; ts repair undo <id> reverts it and refuses when a later intervention touched the same targets; ts pause
+      commits data/paused.json and the cloud collector exits 0 without writing while it exists; ts pause --off removes
+      it
+    cost:
+      build: S
+      requests: null
+      wall: null
+      profile: any
+    blocked_by:
+    - B-109
+    evidence:
+    - lens:repair
+    - .github/workflows/collect.yml:50-56
+    decision: null
+    opened: 2026-09-12
+    closed: null
+  - id: B-053
+    title: Carry write-once provenance forward across a history redo
+    area: data-quality
+    priority: P1
+    status: open
+    phase: 1
+    problem: redo-history deletes the ledgers and re-collects, so first_seen_at, first_seen_source, last_verified_live_at,
+      and event detected_at are regenerated as today's values.
+    acceptance: repair redo-history extracts the carry-forward set before moving the ledgers to .trash and re-applies
+      it after the rebuild; a bundle proves first_seen_at survives
+    cost:
+      build: S
+      requests: null
+      wall: null
+      profile: any
+    blocked_by:
+    - B-109
+    evidence:
+    - docs/OPERATIONS.md:102-105
+    - scripts/merge.py:388-390
+    decision: null
+    opened: 2026-09-12
+    closed: null
+  - id: B-054
+    title: Split the cnn_ambiguous_handles stat into its two populations
+    area: data-quality
+    priority: P0
+    status: open
+    phase: 0
+    problem: 'The stat counts every cnn-sourced reblog whose text starts with a word character: 1,172 today. But the
+      parser resolves the exact prefix RT @realDonaldTrump first, so 1,157 of those are self-reposts whose only residual
+      risk is a longer handle sharing the prefix, and 15 have another handle glued; of the 15, 8 are handles already
+      known from the API or trumpstruth (probably correct) and 2 have a known handle as a proper prefix (probably
+      wrong). The number misdirected B-001 toward hundreds of lookups.
+
+      '
+    acceptance: stats carry cnn_self_repost_prefix_assumed (1,157) and cnn_ambiguous_handles (15, shrinking); B-001
+      acceptance reads ambiguous == 0
+    cost:
+      build: S
+      requests: null
+      wall: null
+      profile: any
+    blocked_by: []
+    evidence:
+    - scripts/check_data.py:292-300
+    - scripts/parsers.py:783-787
+    - '2026-09-12 count: 1157 self, 15 other, 8 known, 2 known-prefix'
+    decision: null
+    opened: 2026-09-12
+    closed: null
+
 # ---- the vision's own work items (10-migration-plan.md) ----
 
   - id: B-101
@@ -525,7 +1174,7 @@ items:
     status: open
     phase: 0
     problem: The record shape lives in four places; checks carry no meaning or playbook.
-    acceptance: "schemas/ validated in tests; every check has a descriptor; docs/generated/{record,checks}.md exist and match"
+    acceptance: "schemas/ validated in tests; every check has a descriptor; the record table in SPEC section 2 and the check tables in OPERATIONS section 4 are generated blocks that match"
     cost: {build: M, requests: null, wall: null, profile: any}
     blocked_by: []
     evidence: ["05-invariants-and-schema.md"]
@@ -570,7 +1219,7 @@ items:
     status: open
     phase: 1
     problem: No evidence trail per record; no diagnosis; no what-changed.
-    acceptance: "each verb documented in docs/generated/verbs.md and covered by a test against the smoke bundle"
+    acceptance: "each verb documented in the generated verb block of docs/OPERATIONS.md section 5 and covered by a test against the smoke bundle"
     cost: {build: M, requests: null, wall: null, profile: any}
     blocked_by: ["B-102", "B-014", "B-105"]
     evidence: ["03-verbs.md", "04-ledgers-and-provenance.md section 6"]
@@ -660,7 +1309,7 @@ items:
     status: open
     phase: 2
     problem: SPEC sections 2, 3, 9, 12 and OPERATIONS 3, 4 are hand-maintained copies of code facts.
-    acceptance: "docs/generated/ exists and is checked; the hand-written sections are links"
+    acceptance: "the tables in those sections are <!-- generated:NAME --> blocks rewritten in place by ts dictionary --write from the schemas and registries, and a coherence test diffs them; no separate generated directory"
     cost: {build: M, requests: null, wall: null, profile: any}
     blocked_by: ["B-105", "B-110"]
     evidence: ["11-doc-deltas.md section 2"]
@@ -716,6 +1365,6 @@ items:
 dropped:
     - {from: docs/dead-code-review.md, item: "unused imports in tests (5)", note: "trivial; fix in passing, no item"}
     - {from: docs/dead-code-review.md, item: "parse_feed, parse_stats, make_cursor test-only", note: "kept as library surface; parse_stats becomes live if D-009 wires the total check"}
-    - {from: docs/dead-code-review.md, item: "write-only state keys last_run_at etc.", note: "kept as operator-visible diagnostics; documented in docs/generated/state.md"}
+    - {from: docs/dead-code-review.md, item: "write-only state keys last_run_at etc.", note: "kept as operator-visible diagnostics; documented in the generated blocks in state.md"}
     - {from: docs/dead-code-review.md, item: "KeyError arm in check_data", note: "trivial; fix in passing"}
     - {from: docs/dead-code-review.md, item: "unread record fields lang, card_title, pinned, reblog_of_created_at", note: "cheap to keep; the schema marks their role; no action"}

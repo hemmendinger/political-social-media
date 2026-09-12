@@ -5,21 +5,111 @@
   "description": "One line of data/interventions.jsonl: a deliberate, non-routine change to data/ or state.json made by a person or an agent (a repair, a reset, a hand edit). Routine collector runs are NOT interventions; they are run records. The point is that the next agent can see what was done, why, by whom, how to undo it, and whether it is finished. Append-only.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["id", "at", "actor", "profile", "verb", "target", "reason", "plan", "applied", "before", "after", "undo", "status"],
+  "required": [
+    "id",
+    "at",
+    "actor",
+    "profile",
+    "verb",
+    "target",
+    "reason",
+    "plan",
+    "applied",
+    "before",
+    "after",
+    "undo",
+    "status"
+  ],
   "properties": {
-    "id": { "type": "string", "pattern": "^int-\\d{8}T\\d{6}Z-[0-9a-f]{4}$", "description": "Same shape as run ids with an int- prefix." },
-    "at": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$" },
-    "actor": { "type": "string", "description": "Free text identity: 'human:<name>', 'agent:claude-code', 'bot:truth-collector'." },
-    "profile": { "type": "string", "enum": ["cloud", "desktop", "sandbox"] },
-    "verb": { "type": "string", "description": "The repair verb or plan name, e.g. repair.regenerate-deletion, repair.rewalk-ids, repair.reset-source, repair.rewrite-records, manual." },
-    "target": { "type": "object", "description": "What was touched: ts_ids, trumpstruth ids, state keys, files.", "additionalProperties": true },
-    "reason": { "type": "string", "description": "One to three sentences. Link the lesson, decision, backlog item, or anomaly that motivated it." },
-    "plan": { "type": "string", "description": "Path to the plan file the dry-run produced (e.g. output/plans/<id>.json) or 'inline'." },
-    "applied": { "type": "boolean" },
-    "before": { "type": "object", "description": "Summary of the state before: counts, check results, git commit.", "additionalProperties": true },
-    "after": { "type": "object", "description": "Summary after: counts, check results, git commit.", "additionalProperties": true },
-    "undo": { "type": "string", "description": "How to reverse it: usually 'git revert <sha>' plus any state.json key to restore." },
-    "status": { "type": "string", "enum": ["planned", "applied", "verified", "reverted"] },
-    "links": { "type": "array", "items": { "type": "string" }, "description": "Lesson ids, decision ids, backlog ids, commit shas." }
+    "id": {
+      "type": "string",
+      "pattern": "^int-\\d{8}T\\d{6}Z-[0-9a-f]{4}$",
+      "description": "Same shape as run ids with an int- prefix."
+    },
+    "at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+    },
+    "actor": {
+      "type": "string",
+      "description": "Free text identity: 'human:<name>', 'agent:claude-code', 'bot:truth-collector'."
+    },
+    "profile": {
+      "type": "string",
+      "enum": [
+        "cloud",
+        "desktop",
+        "sandbox"
+      ]
+    },
+    "verb": {
+      "type": "string",
+      "description": "The repair verb or plan name, e.g. repair.regenerate-deletion, repair.rewalk-ids, repair.reset-source, repair.rewrite-records, manual."
+    },
+    "target": {
+      "type": "object",
+      "description": "What was touched: ts_ids, trumpstruth ids, state keys, files.",
+      "additionalProperties": true
+    },
+    "reason": {
+      "type": "string",
+      "description": "One to three sentences. Link the lesson, decision, backlog item, or anomaly that motivated it."
+    },
+    "plan": {
+      "type": "string",
+      "description": "Path to the plan file the dry-run produced (e.g. output/plans/<id>.json) or 'inline'."
+    },
+    "applied": {
+      "type": "boolean"
+    },
+    "before": {
+      "type": "object",
+      "description": "Summary of the state before: counts, check results, and git_sha of the commit the plan was computed against.",
+      "additionalProperties": true
+    },
+    "after": {
+      "type": "object",
+      "description": "Summary after: counts, check results, and git_sha of the commit that carries the applied change (with --commit).",
+      "additionalProperties": true
+    },
+    "undo": {
+      "type": "string",
+      "description": "How to reverse it: `ts repair undo <id>` (which reverts after.git_sha and restores retractions), plus any state.json key to restore."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "applied",
+        "verified",
+        "reverted"
+      ]
+    },
+    "links": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Lesson ids, decision ids, backlog ids, commit shas."
+    },
+    "retractions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "ledger",
+          "line"
+        ],
+        "properties": {
+          "ledger": {
+            "type": "string"
+          },
+          "line": {
+            "type": "object"
+          }
+        }
+      },
+      "description": "Every ledger line this intervention removed, copied verbatim, so nothing is ever merely gone."
+    }
   }
 }

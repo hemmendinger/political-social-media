@@ -23,9 +23,10 @@ python -m scripts.ts help             # the verbs, with cost and side effects
    `--dry-run`; every verb prints its cost.
 3. Your profile decides what you may do (see table). Sandboxes never touch `main` or the real `data/`.
 4. Nothing computed is lost: anomalies go to `data/anomalies.jsonl`, repairs to `data/interventions.jsonl`.
-5. Uncertainty is data: deletion is an interval; archive-only posts are presumed live; use `v_confidence`.
-6. Schemas in `schemas/` are the contract; checks live in the registry; docs under `docs/generated/` are
-   generated. `ts verify` fails if they disagree.
+5. Uncertainty is data: deletion is an interval (every lower bound is creation time today; the floor is
+   about 76 min); archive-only posts are presumed live; answer with `ts ask`, filter with `v_confidence`.
+6. Schemas in `schemas/` are the contract; sources, checks, metrics, verbs, and questions are registries;
+   the fact tables in the docs are generated blocks. `ts verify` fails if any of them disagree.
 7. Every fix leaves evidence, a test, a lesson (`knowledge/lessons/`), and a dossier line
    (`knowledge/sources/`). `ts note` scaffolds them.
 8. Python 3.9 syntax everywhere (the desktop runs 3.9; the cloud runs 3.12). LF line endings. Stdlib only in
@@ -44,7 +45,7 @@ python -m scripts.ts help             # the verbs, with cost and side effects
 ## Verbs
 
 `status` `diff` `doctor` `explain <ts_id>` `check` `collect` `capture` `repair <plan>` `build` `query`
-`report` `dictionary` `verify` `replay <bundle>` `note` `scratch` `help` — one line each in `ts help`; full
+`ask <question>` `report` `dictionary` `verify` `replay <bundle>` `note` `scaffold` `pause` `scratch` `help` — one line each in `ts help`; full
 specifications in `docs/agentic-vision/03-verbs.md`.
 
 ## Never
@@ -57,18 +58,18 @@ specifications in `docs/agentic-vision/03-verbs.md`.
 - Commit `data/raw/`, `data/truths.sqlite`, or scratch roots.
 - Skip, disable, or quarantine a test to get green.
 - Leave a fact about a source in a chat or commit message only; it goes in the dossier.
-- Change a record field, a check name, or a verb name without its schema or registry entry.
+- Change a record field, a check name, a source, or a verb without its schema or registry entry (use `ts scaffold`).
 
 ## Where things are, by question
 
 | Question | Read |
 |---|---|
 | What is the state right now? | `STATUS.md` (generated from `output/status.json`) |
-| Why is a check firing and what do I do? | its line in `STATUS.md` (reading + verb); registry in `scripts/check_data.py`; `docs/generated/checks.md` |
+| Why is a check firing and what do I do? | its line in `STATUS.md` (reading + verb); the registry in `scripts/check_data.py`; the generated check tables in `docs/OPERATIONS.md` section 4 |
 | Why does this record say that? | `ts explain <ts_id>` |
 | What happened in the last run? | `ts diff`; `data/runs/YYYY-MM.jsonl` |
 | What is a source like, and how does it fail? | `knowledge/sources/<source>.md` |
-| What fields does a record have? | `schemas/post-record.schema.json`; `docs/generated/record.md` |
+| What fields does a record have? | `schemas/post-record.schema.json`; the generated table in `docs/SPEC.md` section 2 |
 | What are the exact module contracts? | `docs/SPEC.md` |
 | What is known but not scheduled? | `knowledge/backlog.yaml` (`ts status` shows P0) |
 | What was decided, and what is open? | `knowledge/decisions/` (open ones appear in `STATUS.md`) |

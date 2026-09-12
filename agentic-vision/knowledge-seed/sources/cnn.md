@@ -49,10 +49,12 @@ separator.
 ## Quirks (facts about the world, each dated)
 
 - 2026-09-11: De-duplicates reposts. Of the four self-reposts posted and deleted on 2026-09-08 (117238301772357460, 117238326295991805, 117238345561593751, 117238414290995787), the archive kept only 117238345561593751; trumpstruth captured all four with removal times. Flag `cnn_dedup_risk` in `v_confidence`.
-- 2026-09-11: Glues the `RT @handle` prefix to the text (`RT @realDonaldTrumpThe Failing New York Magazine...`), so the handle boundary is ambiguous when the text starts with a word character. The parser special-cases `RT @realDonaldTrump` and otherwise takes the longest `[A-Za-z0-9_]{1,30}` run. 1,172 cnn-only reblogs are affected (`cnn_ambiguous_handles`; B-001). The merge never lets cnn override a handle known from the API or trumpstruth.
+- 2026-09-11: Glues the `RT @handle` prefix to the text (`RT @realDonaldTrumpThe Failing New York Magazine...`), so the handle boundary is ambiguous when the text starts with a word character. The parser special-cases `RT @realDonaldTrump` and otherwise takes the longest `[A-Za-z0-9_]{1,30}` run. The stat `cnn_ambiguous_handles` counts 1,172 rows today, but 1,157 of them are self-reposts resolved by the exact-prefix rule and only 15 have another handle glued (8 already known handles, 2 with a known handle as a proper prefix, 5 unknown), measured 2026-09-12 (B-054, B-001). The merge never lets cnn override a handle known from the API or trumpstruth.
 - 2026-09-11: Cannot see quotes or replies; every cnn `kind` disagreement with a higher-ranked source is expected background in the anomaly ledger.
 - 2026-09-11: Its `created_at` is a proper UTC timestamp and outranks trumpstruth's Eastern-text time for `created_at_utc`.
 - 2026-09-11: Row count (36,236 on 2026-09-11) is below the API's `statuses_count` (no replies, de-duplicated reposts) and below trumpstruth's total.
+- 2026-09-12: Engagement counts for reposts are zeros: 5,366 of 5,597 reblog engagement rows have favourites 0. Reblog engagement is not measured by this source; `engagement_stats` should exclude reblogs (B-037).
+- 2026-09-12: 35,909 of 37,226 engagement rows were observed more than 14 days after the post's creation (one late baseline per historical post from the first import); only posts under 14 days old get tracked snapshots. `snapshot_kind` distinguishes them (B-037).
 - 2026-09-12: One download appends about 328 engagement rows because every post under 14 days old gets a row per hour; this, not new posts, is the main growth of `data/engagement/` (`09-economy.md`; B-025).
 
 ## Failure modes and what they look like

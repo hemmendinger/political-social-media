@@ -68,20 +68,27 @@ routes from `index.jsonl`, `clock_start` from the run record, `seed/` from the g
 parser, replays until green, and promotes the bundle into `tests/bundles/` with a `proves` line. The
 failure becomes a permanent regression test in one motion (Law 13).
 
-## 3. Canaries: see drift before it breaks
+## 3. Fingerprints on every fetch, canaries weekly
 
-`pytest -m live` today runs a few opt-in network tests. The vision adds one structured canary per source,
-still opt-in (`ts doctor --live` runs them, and a weekly `canary.yml` workflow runs them on Sundays):
+Two mechanisms, one pure function. `parsers.fingerprint(kind, text)` returns the structural summary a parser
+depends on: for a trumpstruth listing the count of `div.status` cards and the presence of each CSS class the
+parser reads (`status__external-link`, `status__reblog-indicator`, `alert--deletion`,
+`status-details-table__key`, `search-result`, `status__deleted-badge`), the details-table keys, the feed
+namespace; for the CNN file the row key set; for the API the status object key set. The fixture manifest
+stores each fixture's fingerprint.
 
-- Fetch the page named in the fixture manifest.
-- Compare its *structure* with the fixture: the count of `div.status` cards, the presence of every CSS
-  class the parser depends on (`status__external-link`, `status__reblog-indicator`, `alert--deletion`,
-  `status-details-table__key`, `search-result`, `status__deleted-badge`), the details-table keys, the feed
-  namespace, the CNN row keys.
-- Report `unchanged`, `changed: <what>` (a class missing, a new key), or `unreachable`, without raising.
+- **Every production fetch** is fingerprinted and compared with its fixture's fingerprint (B-034). A
+  difference is an anomaly `markup_changed` (with the missing and added names), never an exception: the
+  parser still runs, and the run stays green if it yields. This catches a class rename the parser tolerates
+  today and a page that changed but still parses, days before a listing finally yields under `min_yield`. A
+  200 with an empty fingerprint is the signature of a challenge page (`ts doctor` class `challenge_page`).
+- **Weekly canaries** (`canary.yml`, Sundays; also `ts doctor --live --canaries`) fetch the page named in
+  each manifest row and compare it with the fixture, so drift is seen even in a week with no collection.
+  A change opens a backlog item (`ts note backlog --from-canary`) with the diff as evidence.
 
-A canary that reports `changed` opens a backlog item automatically (`ts note backlog --from-canary`) with
-the diff as evidence, so drift is known days before a listing page finally yields under `min_yield`.
+Bundles to ship in phase 1 also include `removal-of-old-post` (a 40-day-old post appears in a full removed
+sweep and becomes a deletion event, the regression test for B-029) and `challenge-page` (a 200 with no
+container produces an incident with class `challenge_page`, not `markup_drift`).
 
 ## 4. `ts verify`: the pre-push checklist
 
@@ -109,7 +116,19 @@ Already true and to be kept as a coherence test where cheap:
 - `check_data.run_checks` takes `now`.
 - `situation.build()` takes the clock and the commit sha as arguments.
 
-## 6. What verification costs the agent
+## 6. Epistemic golden cases
+
+The synthetic dataset in `tests/conftest.py` has no record shaped like the real uncertainty modes. A group E
+is added (B-038): a deletion with `deleted_lower == created_at_utc` and `deleted_upper` 80 minutes later (the
+shape of all 98 real deletions), an api-tightened lower bound, a cnn-only repost pair sharing a target with one
+sibling missing, a present post from 2025-12 never verified, a post at 2026-08-31T23:30-04:00 (the UTC seam),
+a late-baseline engagement row, a reblog with a glued cnn handle. `tests/test_epistemics.py` asserts that
+`deleted_within` partitions `v_deletions` into confirmed, possible, and excluded; that the August-shaped case
+yields 0 confirmed and 1 possible; that caveat counts equal the `v_confidence` counts; and that every
+registered question reproduces its golden answer in `tests/golden/answers.json` (`ts ask --update-golden`
+rewrites it after a deliberate change, reviewed like any diff).
+
+## 7. What verification costs the agent
 
 Before: read `OPERATIONS.md` section 5, guess whether a change is safe, run `pytest -q`, push, wait for the
 cloud run at :07 or :37, read the console. About 3,000 tokens and up to 30 minutes of wall time per attempt.

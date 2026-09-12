@@ -80,6 +80,8 @@ authentication. Coverage starts 2022-02-14 (the first post).
 - 2026-09-11: The feed caps dated queries at 10 items (`trumpstruth_feed_dated_2025-12-01.xml`).
 - 2026-09-11: Removal tracking starts in March 2026: the full removed-only search over 2022-01-01..2026-09-11 returned 98 posts, all removed 2026-03 to 2026-09 (6 / 44 / 16 / 8 / 14 / 6 / 4 per month). Deletions before March 2026 are unknown to every free source (B-003).
 - 2026-09-11: The `confirmed removed` text is minute precision; when the Capture Date's `<time datetime>` falls within the same minute the parser uses that precise value.
+- 2026-09-12: The `/search` date filter applies to the **post's creation date**, not the removal date: the 2026-01-01..09-11 removed-only search returned 88 results while the 2022-01-01 search returned 98, and all 98 were removed in 2026. Consequence: a removed search over the last N days finds only removals of posts younger than N days; 35 of the 98 known deletions were older than 14 days at removal (B-029, L-006, D-017).
+- 2026-09-12: Detection floor. The narrowest deletion interval on record is 76 minutes, the median 742; 94 of 98 removal times are minute precision. Every deletion's lower bound equals its creation time because no API sighting has ever preceded a removal (B-036).
 - 2026-09-11: Search results carry a `status__deleted-badge`, a snippet, and for reposts `RT: https://truthsocial.com/users/<acct>/statuses/<id>`; the collector uses only the trumpstruth id from search results and fetches the status page for everything else.
 - 2026-09-11: A listing page 1 with fewer than 50 cards is treated as markup drift (`MIN_YIELD_PAGE1`), because the site has always returned 100.
 - 2026-09-11: Cursor format for the listing: base64 of `{"status_created_at":"YYYY-MM-DD HH:MM:SS","_pointsToNextItems":true}`; the site interprets the timestamp in its own zone; callers pass UTC plus 5 hours to be safe.
@@ -91,7 +93,9 @@ authentication. Coverage starts 2022-02-14 (the first post).
 | Markup change | leg `ok=false`, `error.type=ParseError` naming the parser; or `yield_below_min` anomaly | `ts doctor` says `markup_drift`; `ts capture` the URL as a new fixture; adjust the parser; keep the old fixture test if the old markup can recur |
 | Site slow or down | `error.type=HttpError|TransportError` after 4 attempts | `ts doctor` says `source_down`; nothing to do unless it persists across runs |
 | Silent under-collection | green legs with `new=0` for many runs while the account is active | `ts doctor --live` compares the live listing's max id with `max_trumpstruth_id` |
-| Site removes a post we hold | appears in the 14-day removed search; status page merged as removed | expected; a deletion event and an interval |
+| Site removes a post we hold | appears in the removed search only if the post's creation date is inside the search window (see the creation-date quirk); status page merged as removed | expected; a deletion event and an interval |
+| Removal semantics change (search returns live posts as removed, or stops honoring `removed=only`) | many removed-search hits whose status page has no `Removed from platform` row | the vision's `removed_search_mismatch` anomaly (B-032); never mark an id processed unless the page confirmed removal |
+| Search grows past the request budget | leg truncated with `budget_exhausted` (B-032); today it would run into the 25-minute job timeout with no trace | narrow the window or raise the budget from the desktop |
 
 ## Endpoints
 

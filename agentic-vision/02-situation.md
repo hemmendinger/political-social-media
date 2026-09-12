@@ -27,13 +27,15 @@ Schema: `schemas/status.schema.json`. Top-level sections, in reading order:
 | Section | Content | Source |
 |---|---|---|
 | `meta` | `generated_at`, `run_id`, `profile`, `commit`, `schema_version` | the run |
-| `health` | `verdict` (`green`, `yellow`, `red`) and `reasons[]`: red = a hard check fired or the last run had a leg with `ok=false` for a source that was not expected to fail; yellow = a soft check outside its expected background, or freshness past threshold; green otherwise | checks.json, run records, descriptors |
+| `health` | `verdict` (`green`, `yellow`, `red`) and `reasons[]`: red = a hard check fired, an incident record is newer than the last successful run, or the last run had a leg with `ok=false` for a source that was not expected to fail; yellow = a soft check outside its expected background, freshness past threshold, or schedule delivery under 50%; green otherwise | checks.json, incidents, run records, descriptors |
+| `cadence` | `runs_expected_24h` (from the cron), `runs_actual_24h` (run records), `ratio`; GitHub delivered 2 of about 16 slots on the first day (B-024) | run records |
+| `checkout` | `head`, `behind_bot_commits`, `behind_bot_minutes`, `bot_last_run` from `git` (after `git fetch` where the profile allows it), so a sandbox agent knows it is looking at stale data before editing anything the bot owns | git |
 | `mission` | the four mission numbers with their previous value (last run) and 30-day trend | ledgers |
 | `freshness` | `newest_post_at`, `age_min`; per source: `last_ok_at`, `age_min`, `last_leg` (`ok`, `requests`, `new`, `updated`, `notes`), `expected` (whether this source is expected to work in this profile) | run records, state.json |
 | `drift` | each coverage stat with `value`, `threshold`, `expected_background`, `trend_7d` | checks.json stats over the last 7 days (kept in `output/history/checks-YYYY-MM-DD.jsonl`, one line per run) |
 | `checks` | `hard[]`, `soft[]`, each `{name, value, threshold, reading, playbook, since_firing}` | checks.json + descriptors |
 | `anomalies_24h` | counts by kind and the top three `ts_id`s per kind | anomalies.jsonl |
-| `pending` | `backlog_p0[]`, `interventions_open[]` (status planned or applied but not verified), `decisions_open[]` | knowledge/ |
+| `pending` | `backlog_p0[]`, `interventions_open[]` (status planned or applied but not verified), `decisions_open[]`, `incidents_open[]` (incident records newer than the last successful run) | knowledge/, data/incidents/ |
 | `coverage` | `deletions_tracked_since`, `api_verified_share`, `two_source_share`, `presumed_live_count`, `guessed_handle_count` | records |
 | `last_change` | `new_posts`, `updated_posts`, `deletions_found`, `anomalies`, `checks_started[]`, `checks_stopped[]`, `commit` | ts diff since previous run |
 | `next` | one to three verbs, chosen by the same rules as `ts doctor` | derived |
@@ -45,9 +47,11 @@ Rendered from `status.json` by a fixed template (`templates/STATUS.md`). The fir
 ```
 # STATUS  (generated 2026-09-12T04:58Z by run 20260912T045806Z-7e76, profile cloud, commit 9b7af34)
 
-HEALTH: YELLOW  — soft: single_source_recent_posts (53; background <=60), spike_days (2 days; real bursts)
+HEALTH: YELLOW  — soft: single_source_recent_posts (53; background <=60), spike_days (2 days; real bursts); schedule delivery 12%
 MISSION: completeness 36,997 / ~36,554 API (+443 archive-only)  |  deletion latency median 87.9 min (30 d)
          provenance: 2-source 83.1%, api-verified 0.05%  |  honesty flags: presumed-live 36,884, guessed-handle 1,172
+
+INCIDENTS: none open.   CADENCE: 2 of 16 scheduled runs in 24 h (12%)   CHECKOUT: at bot head (0 behind)
 
 FRESHNESS: newest post 2026-09-12T03:53Z (65 min ago)  [ok < 12 h]
   trumpstruth  ok  65 min ago   7 req  +4 new  6 updated   max_id 41698
@@ -70,7 +74,7 @@ LAST CHANGE (since run 20260912T001255Z-5139): +4 records, 10 updated, 0 deletio
 NEXT: nothing required.  (ts diff for details; ts doctor if anything above surprises you)
 ```
 
-Below the first screen, in order and each one line per item: the last 5 runs (one line per run with its
+Below the first screen, in order and each one line per item: open incidents with their diagnosis, the last 5 runs (one line per run with its
 legs), the last 10 anomalies, open backlog by priority, the four mission numbers as a 30-day sparkline in
 text, and a link list (AGENTS.md, the dossiers, the check registry, the verb list).
 

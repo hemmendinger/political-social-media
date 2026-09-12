@@ -17,6 +17,10 @@ Goal: an agent can orient in three commands, nothing computed is lost, and the d
 | B-105 | `schemas/` at the root (from `agentic-vision/schemas/`); stdlib validator; `_validate_record_schema` reads the schema; check registry with descriptors; `checks.json` v2 (`firing` objects added, strings kept) | M |
 | B-103 | `scripts/situation.py`: `output/status.json` and `STATUS.md` after exports; `output/history/checks-*.jsonl`; bot commits `STATUS.md` | M |
 | B-104 | `AGENTS.md` from `templates/AGENTS.md` | S |
+| B-029 (D-017) | widen the removed search (since 2022-01-01 while under about 500 removals) and record the `sweep` on the run record; the cheapest accuracy win in the plan | S |
+| B-030, B-042 | incident records committed `if: always()`; `checks.json` carries `run_id` and `checked_at` | S |
+| B-036 | `lifetime_lo_min` / `lifetime_hi_min`, bound basis and precision columns, `detection_floor_min` in coverage; the weekly report labels the bound | S |
+| B-051, B-054 | repair-state invariants (a half-finished repair fails a hard check); split the ambiguous-handle stat (1,157 self-reposts versus 15 glued handles) | S |
 | B-013, B-028, B-015 | fixture manifest; ignore `data/.lock`; persist `max_trumpstruth_id` per id | S |
 | C1 to C33 | the doc corrections in `11-doc-deltas.md` section 1 (the restructurings wait for phase 2) | S |
 | D-007, D-008, D-009, D-013 | decide (recommendations in `knowledge-seed/decisions.md`); they gate B-025, B-003/B-004, B-012, and the pandas removal | maintainer |
@@ -46,11 +50,15 @@ Goal: any red run can be reproduced offline and any repair is one command with a
 | B-117 (D-014) | commit successful legs when one leg fails | S |
 | B-018, B-019, B-020, B-021, B-016, B-017, B-023 | the audit's correctness items: standalone check parity; write ordering; torn-line recovery; content_text provenance; exit 3 for the lock; refuse unknown sources; drop `removed=include` | S each |
 | B-024, B-026, B-027 | measure cron delivery in `status.json`; load posts once; expose caps as flags | S each |
+| B-031, B-032, B-033, B-034 | error envelope with leg phase; request budgets and undercollection guards; union merge, rebase abort, JSON lock; fingerprints on every fetch | S to M each |
+| B-041 | `utc_date`, `utc_seam`, `metrics.window()` with both bounds | S |
+| B-050, B-052, B-053 | `forget_deletion` / `forget_source`; `repair undo` and `ts pause`; carry-forward across `redo-history` | S each |
 | B-011 | share the collector helpers (do it while touching all three merge loops) | S |
 
 Acceptance:
 ```
 python -m scripts.ts verify --quick                       # green, under 30 s
+python -m scripts.ts replay tests/bundles/removal-of-old-post --json | grep '"deletions_found": 1'
 python -m scripts.ts replay tests/bundles/red-parse-error --json | grep '"diagnosis": "markup_drift"'
 python -m scripts.ts repair regenerate-deletion --ts-id 117238345561593751 --data-root /tmp/scratch  # plan only, exit 4
 python -m scripts.ts explain 117238345561593751 | head -40
@@ -66,19 +74,23 @@ Goal: the system remembers in the right places, analyses carry their caveats, an
 |---|---|---|
 | B-112 | populate `knowledge/` from `knowledge-seed/` (dossiers, decisions, lessons, backlog); retire `TODO.md`, `MISTAKES.md`, `docs/dead-code-review.md` to pointers; `ts note` | S |
 | B-111 | `v_confidence`, `v_coverage`, `caveats` on every metric, weekly renders them | M |
-| B-114 | `ts dictionary`; `docs/generated/{record,checks,verbs,state}.md`; SPEC sections 2, 3, 9, 12 and OPERATIONS 3, 4 become links; README to 40 lines | M |
+| B-114 | `ts dictionary --write` and the generated blocks inside SPEC, OPERATIONS, README, the fixtures README, and AGENTS.md; README to 40 lines | M |
+| B-043, B-044, B-045 | the source registry and the shared Leg; schema version and `repair migrate`; refuse unregistered hosts | M, S, S |
 | B-113 | canaries and `canary.yml` | M |
 | B-115 | `repair.yml`; desktop `--commit` path | S |
 | B-116 (D-010) | untrack `posts.csv`; `output/history`; engagement throttle change (B-025 under D-007) | S |
-| B-001 | resolve ambiguous handles (option 1 offline, then option 2) as the first real `repair` plan with an intervention record | M |
+| B-001 | resolve the 15 glued handles (dictionary first, then one trumpstruth search each) as the first real `repair` plan with an intervention record | S |
 | B-022 | decide and document empty-list semantics; property test | S |
 | B-012 (D-009) | wire the trumpstruth total check | S |
+| B-035, B-037, B-038 | `ts ask` with the question registry and answer envelope; engagement snapshot semantics; epistemic golden cases | M |
+| B-046, B-047, B-048 | metric registry with SQL parity; strict observations in tests and replay; `ts scaffold` | M, S, M |
+| B-039 | module headers and the generated module map | S |
 
 Acceptance:
 ```
 python -m scripts.ts verify                               # includes coherence tests against knowledge/
 python -m scripts.ts query --sql "select count(*) from v_confidence where guessed_handle=1"   # 0 after B-001
-git diff --stat docs/generated/                           # empty after ts dictionary --write
+python -m scripts.ts dictionary                          # prints no diff: every generated block matches its registry
 ```
 
 ## Phase 3: coverage and reach
@@ -90,8 +102,10 @@ Goal: close the historical gaps the sources allow, from the desktop, as declared
 | B-003 | `repair api-backfill` (desktop, chunked commits, resumable); deletions before March 2026 become known with unknown timing | M |
 | B-002 | historical id crawl from the desktop with `--max-ids` | S |
 | B-004 | desktop poller as a scheduled task calling `ts collect --sources api --commit` | S |
-| B-005, B-006, B-007, B-008 | dashboard from `status.json`; media mirroring; transcripts; Factba.se spot checks | M each |
+| B-049 | sub-resource hook on the source registry | M |
+| B-005, B-006, B-007, B-008 | dashboard from `status.json`; media mirroring and transcripts through the sub-resource hook; Factba.se spot checks | M each |
 | B-010 (D-006) | desktop Python upgrade; drop the 3.9 constraint and the matrix job | S |
+| B-040 | watchdog workflow filing the doctor verdict as an issue | S |
 | retire the old entry points | `python -m scripts.<x>` prints a one-line pointer to the verb, then is removed | S |
 
 Acceptance: `coverage.presumed_live_count == 0`, `v_confidence.cnn_dedup_risk` count 0, and the four
@@ -115,8 +129,9 @@ Six tasks, each timed as reads, writes, network requests, and wall clock, before
 | Diagnose a red run to a root cause | 4 files + the Actions console, about 3,500 tokens; often impossible from a sandbox | `ts doctor` + one artifact, about 800 tokens (phase 1) |
 | Reproduce a red run offline | not possible | `ts replay --from-raw`, under 1 minute (phase 1) |
 | Regenerate one deletion | 6 files read, 3 hand edits, no receipt | one command with `--dry-run`, an intervention record (phase 1) |
-| Answer "how many deletions within an hour in August, and how sure?" | build, query, then read README caveats; confidence unstated | `ts query` on `v_deletions` joined to `v_confidence`; caveats returned (phase 2) |
-| Add a fourth source | 9 places to edit by hand | parser + collector + rank + dossier + bundle; schema and registry catch the rest (phase 2) |
+| Answer "how many deletions within an hour in August, and how sure?" | build, query, read build_db.py for column meaning, answer 0 (wrong: every lower bound is creation time; the floor is 76 min) | after phase 0: `lifetime_lo_min`/`hi_min` make the interval visible; after phase 2: `ts ask deleted_within --start 2026-08-01 --end 2026-08-31 --param minutes=60` returns 0 confirmed, 6 possible, 0 excluded, with the detection floor and the lookback gap as caveats |
+| Add a fourth source | about 14 files and 25 literal sites by hand; an unregistered host is paced at 0 s; a forgotten rank table raises KeyError | `ts scaffold source` writes the registry entry, stubs, fixture slot, dossier stub; a parser and a fetch function are the only hand-written code (phase 2) |
+| Add a record field | 12 files and about 20 sites; a required field fails the hard check for all 37,002 records | one schema property with `x-` keys plus a migration; `ts repair migrate` rewrites the data with a receipt (phase 1) |
 
 ## 7. What this plan does not do
 

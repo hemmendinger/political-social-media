@@ -18,9 +18,8 @@ knowledge/
   sources/trumpstruth.md
   sources/cnn.md
 docs/
-  SPEC.md                      the module contract (kept; sections 2, 3, 9 become links to generated files)
-  OPERATIONS.md                the playbook (kept; sections 3, 4 become links; section 5 rewritten as verbs)
-  generated/                   record.md, checks.md, verbs.md, state.md (from schemas and registries)
+  SPEC.md                      the module contract (kept; its fact tables become generated blocks rewritten in place)
+  OPERATIONS.md                the playbook (kept; sections 2, 4, 5 carry generated blocks; section 5 recipes become verbs)
   agentic-vision/              this directory, moved under docs/ once the migration is underway
 ```
 
@@ -35,7 +34,7 @@ docs/
 | 0 | `STATUS.md` first screen | 60 lines | the situation |
 | 1 | `01-system-model.md` | one page | the tower and the vocabulary |
 | 1 | `knowledge/sources/*.md` | one page each | everything known about one source |
-| 2 | `docs/SPEC.md`, `docs/generated/*` | reference | exact contracts |
+| 2 | `docs/SPEC.md` (with its generated blocks) | reference | exact contracts |
 | 2 | `docs/OPERATIONS.md` | reference | the playbook, as verbs |
 | 3 | `knowledge/lessons/`, `knowledge/decisions/`, `knowledge/backlog.yaml` | on demand, by id | history and rationale |
 
@@ -67,7 +66,7 @@ Every fix that touches a parser, the merge, or a check follows one loop, and `ts
 4. **Dossier**: if the cause was source behavior, the quirk line goes into the dossier with the date and the
    fixture; the lesson links to it.
 5. **Backlog**: the item that tracked it is closed with `--evidence`, or a new item is opened for follow-up.
-6. **Docs**: generated files regenerate; hand-written tiers change only if a rule or a verb changed.
+6. **Docs**: `ts dictionary --write` regenerates the blocks in place; hand-written prose changes only if a rule or a verb changed.
 
 `ts verify` runs the coherence tests, so a lesson without a test, a fixture without a manifest entry, or a
 descriptor without a playbook cannot be pushed.

@@ -45,6 +45,10 @@ today is misled by each of them.
 | C30 | `tests/fixtures/README.md` | lists 20 of 24 fixtures | four used fixtures are missing (41514, 41515, `search_removed_2026-08-28_to_09-11`, `search_removed_page2_empty`) | add rows; then replace with the generated manifest |
 | C31 | `requirements.txt:3`; `docs/SPEC.md:16` | pandas "analysis only" | imported by nothing; installed on every cloud run | move to `requirements-dev.txt` or remove (D-013) |
 | C32 | `.gitignore` | (nothing) | `data/.lock` is not ignored; a crashed desktop run leaves a file that `git add data` would commit | add `data/.lock` |
+| C34 | `docs/OPERATIONS.md:24-25` | the run records are "the first thing to read when something looks off" | a failed run's record never reaches `main` (the commit step is skipped on a non-zero exit); the ledger records only successes | say so; the vision commits an incident record on failure (B-030) |
+| C35 | `docs/SPEC.md:264-266` ("removed search for the last `removed_days` days"); `docs/OPERATIONS.md:16` | the search is described as a window over removals | the site filters by the post's creation date, so the 14-day window finds only removals of posts younger than 14 days; 35 of 98 known deletions were older than that at removal | state the semantics; change the default per D-017 (B-029) |
+| C36 | `scripts/build_db.py:136-140`; `output/reports/2026-W37.md:60-63` | `lifetime_min` reads as a lifetime | it is an upper bound; every deletion's lower bound is its creation time; the report prints it next to an identical `deletion_window_min` | rename to `lifetime_hi_min`, add `lifetime_lo_min`, label the bound in the report (B-036) |
+| C37 | `docs/SPEC.md:300-303`; `output/metrics.json` | `posts_by_day` reports a `reply` column | `kind = 'reply'` can only come from the api leg, which has never run in the cloud; the column is a structural zero, not a count | the caveat `reply_unobservable_window` on the metric (B-111) |
 | C33 | `docs/OPERATIONS.md:99-100`; `TODO.md:44` | "17 hours" for the id walk | with `MAX_IDS_PER_RUN=200` it is about 209 runs (about 21 CI hours if done by cron); the cap is a constant, not a flag | say so; expose the cap (`09-economy.md` section 3) |
 
 Code findings from the same audit that are not doc errors but belong in the backlog (they are listed in
@@ -61,17 +65,16 @@ which the site ignores.
 
 | Document | Becomes | Keeps | Loses (moved to) |
 |---|---|---|---|
-| `README.md` | a 40-line front page for humans arriving from GitHub: one paragraph, the three sources in three lines, "how to use the data" (three commands), and links to `AGENTS.md`, `STATUS.md`, the dossiers | the project statement; setup | the Sources table (dossiers), Data conventions (`docs/generated/record.md` and the dossiers), Integrity (`docs/generated/checks.md`), Known issues (`knowledge/backlog.yaml`), Layout (`AGENTS.md`) |
-| `docs/SPEC.md` | the module contract for implementers, sections 0, 1, 4, 5, 6, 7, 8, 10, 11 kept and corrected | the prose rules that cannot be generated (parsers, merge rules, collectors) | section 2 (a link to the schema and `docs/generated/record.md`), section 3 file formats and state keys (generated from schemas), section 9 (generated from the registry), section 12 (generated from the workflows, or dropped in favor of the files themselves) |
-| `docs/OPERATIONS.md` | the playbook, rewritten as verbs: section 1 unchanged in content; section 2 replaced by one line per source linking its dossier; section 3 replaced by the generated state key table and the ownership table from `08-roles-and-coordination.md`; section 4 generated from the registry; section 5 rewritten so every recipe is one `ts` command with `--dry-run`; sections 6 and 7 moved to `knowledge/decisions/` | the run order; the red-run classification (now `ts doctor`'s diagnoses, documented) | hand-edit recipes |
+| `README.md` | a 40-line front page for humans arriving from GitHub: one paragraph, the sources table as a generated block, "how to use the data" (three commands), and links to `AGENTS.md`, `STATUS.md`, the dossiers | the project statement; setup | Data conventions (the SPEC section 2 block and the dossiers), Integrity (the OPERATIONS section 4 blocks), Known issues (`knowledge/backlog.yaml`), Layout (`AGENTS.md`) |
+| `docs/SPEC.md` | the module contract for implementers; the prose rules stay hand-written and corrected; the fact tables become generated blocks | the prose rules that cannot be generated (parsers, merge rules, collectors) | nothing leaves; section 2's table, section 3's formats and state keys, section 9's check list, section 11's metric list, and a module map in section 0 are rewritten in place by `ts dictionary --write`; section 12 is dropped in favor of the workflow files themselves |
+| `docs/OPERATIONS.md` | the playbook, rewritten as verbs: section 1 unchanged in content; section 2 a generated sources block plus one dossier link per source; section 3 the generated state key block and the ownership table from `08-roles-and-coordination.md`; section 4 generated check blocks; section 5 rewritten so every recipe is one `ts` command with `--dry-run`, with the generated verb block; sections 6 and 7 moved to `knowledge/decisions/` | the run order; the red-run classification (now `ts doctor`'s diagnoses, documented) | hand-edit recipes |
 | `TODO.md` | two lines pointing at `knowledge/backlog.yaml` | nothing | everything (B-001 to B-010) |
 | `MISTAKES.md` | two lines pointing at `knowledge/lessons/` and the dossiers | nothing | build errors (L-001 to L-004); source-side anomalies (dossier quirk lines) |
 | `docs/dead-code-review.md` | deleted | nothing | actionable rows become B-011 to B-013; the rest are recorded as dropped in the backlog file |
-| `tests/fixtures/README.md` | generated from `tests/fixtures/manifest.json` | the capture-date discipline | the hand-maintained table |
+| `tests/fixtures/README.md` | its table becomes a generated block from `tests/fixtures/manifest.json` | the capture-date discipline | the hand-maintained table |
 | `AGENTS.md` (new) | the door; `templates/AGENTS.md` | | |
 | `STATUS.md` (new, generated) | the situation | | |
 | `knowledge/` (new) | dossiers, decisions, lessons, backlog | | |
-| `docs/generated/` (new) | `record.md`, `checks.md`, `verbs.md`, `state.md` | | |
 | `docs/agentic-vision/` | this directory, moved under `docs/` once phase 0 lands; `10-migration-plan.md` is the live plan until the backlog absorbs it | | |
 
 ## 3. Workflow deltas
@@ -86,6 +89,13 @@ which the site ignores.
 - Commit successful legs even when one leg failed (D-014): `ts collect` exits 1 but writes; the commit
   step runs when the checks passed (`result.checks.ok`), and the run record carries the failed leg. Today a
   single failed leg discards the whole run's work in the cloud.
+- An `if: always()` step after the commit step adds only `data/incidents/` and `STATUS.md` and pushes, so a
+  failed run leaves its incident record and a red `STATUS.md` on `main` (B-030).
+- `git rebase --abort || true` between push attempts, and a `push_race` incident on the third failure
+  (B-033).
+- `.gitattributes`: `data/deletions.jsonl merge=union`, `data/runs/*.jsonl merge=union`,
+  `data/engagement/*.csv merge=union`, `data/anomalies.jsonl merge=union`, `data/interventions.jsonl
+  merge=union` (order does not matter; `check_data` enforces uniqueness).
 
 `test.yml`:
 - `run: python -m scripts.ts verify --ci` (coherence tests, unit tests, smoke replay, 3.9 syntax check).

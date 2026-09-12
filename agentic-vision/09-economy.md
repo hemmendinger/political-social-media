@@ -15,6 +15,7 @@ number is derived rather than measured, it says so.
 | Wall clock | the run; the agent waiting | normal cloud run 5 to 51 s of collector time; `pytest` 1.8 s; `build_db` 2.6 to 3.9 s (51 MB sqlite); `check` 2.2 to 2.8 s; exports 5.6 s; posts are JSON-loaded from disk three times per run (`run_checks`, `build`, `write_posts_csv`, about 1.3 s each) | repeated loads; pacing sleeps |
 | Deletion detection latency | the mission | nominal 30 min; observed cron delivery 2 of about 16 scheduled slots in the first 8 hours (effective cadence 2 to 5 hours); the trumpstruth removal time is itself an upper bound | GitHub's scheduler, not our code |
 | Maintainer attention | the maintainer | reading the Actions console; hand edits with no receipt | no `doctor`; no intervention ledger |
+| Deletion coverage | the mission | the removed search covers only posts created in the last 14 days (the site filters by creation date); 35 of 98 known deletions were older than that at removal | a window chosen for cost that costs almost nothing to widen (B-029) |
 
 ## 2. Reading costs, before and after (Law 15)
 
@@ -25,7 +26,7 @@ artifacts exist and the agent starts from `AGENTS.md`.
 |---|---|---|---|
 | Is the system healthy right now? | about 1,800 (checks.json 133 lines, tail of runs, 15 lines of state.json, OPERATIONS section 4 to interpret) | about 600 (first screen of `STATUS.md`) | Law 4 |
 | Why is the workflow red? | about 3,500 plus the Actions console, which a sandbox often cannot read | about 800 (`ts doctor` output with evidence and the next verb; the raw capture artifact if needed) | Laws 5, 6 |
-| What fields does a post have, and what do they mean? | about 1,200 (SPEC section 2 and README conventions) | about 900 (`docs/generated/record.md`, which also carries provenance rules per field) | Law 7 |
+| What fields does a post have, and what do they mean? | about 1,200 (SPEC section 2 and README conventions) | about 900 (the generated block in SPEC section 2, which also carries the merge rule and sources per field) | Law 7 |
 | How do I regenerate one deletion safely? | about 2,500 across 6 files, then 3 hand edits | about 300 (`ts help repair`, then one command with `--dry-run`) | Laws 5, 12 |
 | Why does this record say that? | not answerable without reading merge.py and grepping ledgers (about 3,000) | about 400 (`ts explain <ts_id>`) | Law 8 |
 | What is this source like and how does it fail? | about 1,500 spread over README, OPERATIONS, MISTAKES, SPEC | about 700 (one dossier) | Law 13 |
@@ -47,6 +48,8 @@ Each of these is a one-line change or a profile rule, and together they remove m
 | Load posts once per run and pass the list to `run_checks`, `build`, and the CSV writer | about 2.6 s per run | S | `collect.run_all` |
 | `MAX_IDS_PER_RUN` and `removed_days`, `max_pages`, `max_verify` exposed as verb flags with the constants as defaults | an id re-walk on the desktop takes one run at a larger cap instead of 209 cron runs (about 21 CI hours) | S | `ts collect --max-ids` |
 | Fail fast on a guaranteed 403: `max_attempts=1` for the probe request | the 36 s becomes 12 s even where probing is kept | S | `collect_api` |
+| Search removals since 2022-01-01 on every run (D-017) instead of the last 14 days | recovers about a third of future deletions for 0 to 4 extra requests per run (98 results fit in one page of 100 today; `processed_removed_ids` prevents re-fetching status pages) | S | `collect_trumpstruth.run(removed_days=...)` |
+| Per-leg request budgets (B-032) | a semantic change at the source cannot run a leg into the 25-minute timeout every run with no trace; the truncation is a recorded number | S | `Http` |
 
 ## 4. Repository growth: what to stop committing (D-010)
 
