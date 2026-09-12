@@ -491,7 +491,8 @@
       "x-provenance": "the signal that first set deleted; never changes",
       "x-merge": "existence",
       "x-csv": true,
-      "x-since": "2026-09-11"
+      "x-since": "2026-09-11",
+      "description": "The signal that first set deleted: 'trumpstruth' (a removed status page) or 'api404' (a 404 on a single-status verify). Note the spelling: the partial key that carries the signal is api_404 with an underscore; the stored value is api404 without."
     },
     "trumpstruth_id": {
       "type": [

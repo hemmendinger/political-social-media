@@ -31,11 +31,11 @@ the backlog id that carries it (B-062), so the vision's own audit obeys the rule
 | C14 | `docs/SPEC.md:223-224` (rule 4) | "if two sources differ by more than 2 s, anomaly" | only when the *lower-ranked* source differs (`merge.py:221-225`); a higher-ranked or same-source value replaces silently at any distance; same for rules 3, 5, 6 | state the asymmetry; the vision records winning overwrites too (`04-ledgers-and-provenance.md`) |
 | C15 | `docs/SPEC.md` section 7 | (nothing) | a field with no `field_sources` entry is treated as `cnn`, the lowest rank (`merge.py:190,212,240,271`) | document the default |
 | C16 | `docs/SPEC.md:269` | api merges "with `last_verified_live_at = observed_at`" as a partial field | no collector sets it on a partial; `merge.py:308` reads a dead input; the value is set inside `_apply_live_sighting` | correct the wording; remove the dead read |
-| C17 | `docs/SPEC.md:62`; `merge.py:319-321` | `deleted_source` = `api404` | the partial key is `api_404` (underscore); the stored value is `api404` | state both spellings in the schema description (done in `schemas/post-record.schema.json`) |
+| C17 | `docs/SPEC.md:62`; `merge.py:319-321` | `deleted_source` = `api404` | the partial key is `api_404` (underscore); the stored value is `api404` | state both spellings (the `deleted_source` description in `schemas/post-record.schema.json` now does) |
 | C18 | `docs/SPEC.md:258`; `collect_trumpstruth.py:11-12` | SPEC: persisted "after each page"; the docstring: "after every id fetched" | state is saved per id but `max_trumpstruth_id` is assigned only after both loops (`collect_trumpstruth.py:244`); a crash mid-walk re-fetches the same ids next run (bounded by the 200 cap) | document the actual behavior, then fix the code (B-015) |
 | C19 | `docs/SPEC.md:298` | indexes list | omits `ix_engagement_ts_id_observed_at` (`build_db.py:103`) | add |
 | C20 | `docs/SPEC.md:112-113` | FakeClock | omits `advance(seconds)` (`common.py:168`) | add |
-| C21 | `docs/SPEC.md:308` | weekly writes "one csv per table" | 8 CSVs; `overnight_share`, `longest_silence`, `edits` get none | say which |
+| C21 | `docs/SPEC.md:309` | weekly writes "one csv per table" | 8 CSVs; `overnight_share`, `longest_silence`, `edits` get none | say which |
 | C22 | `docs/OPERATIONS.md:20` | hard checks "stop the run" | `write_exports` still runs after failed checks (`collect.py:115-116`); on the desktop the sqlite, csv, and metrics are rebuilt from bad data | say "block the commit"; the vision skips exports on hard failure |
 | C23 | `docs/OPERATIONS.md:85-86` | after an `HttpError` "the next run resumes from state" | in the cloud, exit 1 skips the commit step, so state and the other legs' results never reach `main`; only desktop runs resume | say so; the vision commits successful legs even when one leg fails (D-014) |
 | C24 | `docs/OPERATIONS.md:104` | validate against `data/raw/truth_archive.json` | nothing writes `data/raw/` (`Context.raw_dir` unused); the file must be downloaded by hand | say so until raw capture exists |
@@ -50,12 +50,12 @@ the backlog id that carries it (B-062), so the vision's own audit obeys the rule
 | C34 | `docs/OPERATIONS.md:24-25` | the run records are "the first thing to read when something looks off" | a failed run's record never reaches `main` (the commit step is skipped on a non-zero exit); the ledger records only successes | say so; the vision commits an incident record on failure (B-030) |
 | C35 | `docs/SPEC.md:259-260` ("removed search for the last `removed_days` days"); `docs/OPERATIONS.md:17` | the search is described as a window over removals | the site filters by the post's creation date, so the 14-day window finds only removals of posts younger than 14 days; 35 of 98 known deletions were older than that at removal | state the semantics; change the default per D-017 (B-029) |
 | C36 | `scripts/build_db.py:136-140`; `output/reports/2026-W37.md:60-63` | `lifetime_min` reads as a lifetime | it is an upper bound; every deletion's lower bound is its creation time; the report prints it next to an identical `deletion_window_min` | rename to `lifetime_hi_min`, add `lifetime_lo_min`, label the bound in the report (B-036) |
-| C37 | `docs/SPEC.md:300-303`; `output/metrics.json` | `posts_by_day` reports a `reply` column | `kind = 'reply'` can only come from the api leg, which has never run in the cloud; the column is a structural zero, not a count | the caveat `reply_unobservable_window` on the metric (B-111) |
-| C33 | `docs/OPERATIONS.md:99-100`; `TODO.md:44` | "17 hours" for the id walk | with `MAX_IDS_PER_RUN=200` it is about 209 cron runs (about 17.7 h of collector time at 305 s per capped run, days of calendar time); the cap is a constant, not a flag | say so; expose the cap (`09-economy.md` section 3) |
+| C37 | `docs/SPEC.md:300-303`; `output/metrics.json` | `posts_by_day` reports a `reply` column | `kind = 'reply'` can only come from the api parser, which has only succeeded in two desktop runs; the column is a structural zero, not a count | the caveat `reply_unobservable_window` on the metric (B-111) |
+| C33 | `TODO.md:40` ("17 hours"); `docs/OPERATIONS.md:99-100` (the per-run cap only) | "17 hours" for the id walk | with `MAX_IDS_PER_RUN=200` it is about 209 cron runs (about 17.7 h of collector time at 305 s per capped run, days of calendar time); the cap is a constant, not a flag | say so; expose the cap (`09-economy.md` section 3) |
 
 Code findings from the same audit that are not doc errors but belong in the backlog (they are listed in
-`10-migration-plan.md`): exit code 1 is overloaded (lock held versus collector raised); a typo in
-`--sources` runs nothing and then fails `missing_run_row`; `check_data` standalone runs a smaller check set
+`10-migration-plan.md`): exit code 1 is overloaded (lock held versus collector raised); a `--sources` value in which no name matches runs nothing and then fails `missing_run_row` (a typo in one of
+several names silently drops that leg); `check_data` standalone runs a smaller check set
 than the cloud run (no `run_id`, no `api_statuses_count`, no `now`); api and cnn legs append engagement
 rows and deletion events before `save_posts`, so a crash between the writes leaves orphan rows (the
 trumpstruth leg orders its writes correctly); append-only files have no torn-last-line recovery;
@@ -71,7 +71,7 @@ which the site ignores.
 | `docs/SPEC.md` | the module contract for implementers; the prose rules stay hand-written and corrected; the fact lists become generated blocks | the prose rules that cannot be generated (parsers, merge rules, collectors) | nothing leaves; section 1's source and precedence bullets, section 2's table, section 3's formats and state keys, section 9's check list, section 11's metric list, and a new module map in section 0 are rewritten in place by `ts dictionary --write`; section 12 is dropped in favor of the workflow files themselves |
 | `docs/OPERATIONS.md` | the playbook, rewritten as verbs: section 1 unchanged in content; section 2 a generated sources block plus one dossier link per source; section 3 the generated state key block and the ownership table from `08-roles-and-coordination.md`; section 4 generated check blocks; section 5 rewritten so every recipe is one `ts` command with `--dry-run`, with the generated verb block; sections 6 and 7 moved to `knowledge/decisions/` | the run order; the red-run classification (now `ts doctor`'s diagnoses, documented) | hand-edit recipes |
 | `TODO.md` | two lines pointing at `knowledge/backlog.json` | nothing | everything (B-001 to B-010) |
-| `MISTAKES.md` | two lines pointing at `knowledge/lessons/` and the dossiers | nothing | build errors (L-001 to L-004); source-side anomalies (dossier quirk lines) |
+| `MISTAKES.md` | two lines pointing at `knowledge/lessons/` and the dossiers | nothing | the build entries and the ReTruthed anomaly (L-001 to L-004); the other source-side anomalies (dossier quirk lines) |
 | `docs/dead-code-review.md` | deleted | nothing | actionable rows become B-011 to B-013; the rest are recorded as dropped in the backlog file |
 | `tests/fixtures/README.md` | its table becomes a generated block from `tests/fixtures/manifest.json` | the capture-date discipline | the hand-maintained table |
 | `AGENTS.md` (new) | the door; `templates/AGENTS.md` | | |
@@ -87,7 +87,7 @@ which the site ignores.
 - `git add data output STATUS.md`.
 - A step after Collect, `if: failure() || steps.collect.outputs.health != 'green'`, uploads `data/raw/<run_id>`
   as an artifact named by the run id.
-- The api leg is not run in the cloud (profile rule), so the 6-hour re-probe and its 36 s disappear.
+- The api leg is not run in the cloud (profile rule), so the 6-hour re-probe (4 requests and 36 s on the run that probes) disappears.
 - Commit successful legs even when one leg failed (D-014): `ts collect` exits 1 but writes; the commit
   step runs when the checks passed (`result.checks.ok`), and the run record carries the failed leg. Today a
   single failed leg discards the whole run's work in the cloud.

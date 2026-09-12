@@ -59,7 +59,7 @@ literal sets:
 | sources | `scripts/sources.py`: `Source(name, rank, created_at_rank, order, hosts: {host: min_interval}, headers, fallback_on_403, deletion_signal: Signal(key, upper_from, deleted_source), live_sighting, meta_fields, state_defaults, collector, dossier, fixture_prefix)` (B-043) | `SOURCE_RANK`, `CREATED_AT_RANK`, the hidden `cnn` default for unknown provenance, `VALID_SOURCES`, `SOURCE_ORDER` and the if/elif in `collect.py`, the paced-host table, the `source ==` branches in `merge.py` | the sources table in the README, the precedence line in SPEC, `Http` pacing (an unregistered host is refused, never paced at 0 s: B-045), the `Leg` skeleton that runs the merge, checkpoint, engagement, and run-record loop so a collector is fetch-and-parse only |
 | checks | `CHECKS` (section 2) | inline string formatting, thresholds as literals | `checks.json` objects, the OPERATIONS section 4 tables, the `STATUS.md` readings |
 | metrics | `@metric(name, section, shape, columns, caveats, since, sql, parity)` (B-046) | three sites in `metrics.py`, three in `weekly.py`, two hard-coded test lists, the `== 11` starter-query assertion | the report, the CSVs, the starter query set, and a SQL-versus-Python parity test |
-| verbs | `REGISTRY` in `scripts/ts.py` (`03-verbs.md`) | seven `main()` functions | `ts help`, the verb block in OPERATIONS section 5 and in `AGENTS.md` |
+| verbs | `REGISTRY` in `scripts/ts.py` (`03-verbs.md`) | six `main()` functions | `ts help`, the command tables in OPERATIONS section 1 and the README, the verb list in `AGENTS.md` |
 | questions | `QUESTIONS` in `scripts/ask.py` (section 3.6) | ad-hoc SQL | `ts ask` listing, golden answers |
 
 The source registry also carries a pseudo-source `repair` at rank 0: a value written by a repair plan is
@@ -233,7 +233,8 @@ seam_posts}, answer, bounds, n, coverage, caveats, method, provenance: {data_com
 figure quoted to a journalist can be reproduced or shown to have changed. Initial questions:
 `deleted_within`, `volume --compare before | after DATE | trailing N`, `deletions --by created | removed`,
 `top_reblogged` (`--include-guessed` off by default, excluded count reported), `engagement`, `hours`,
-`bursts`. Ad-hoc SQL through `ts query` stays as the escape hatch and travels in the same envelope. Golden
+`bursts`. Ad-hoc SQL through `ts query` (today's `query.py`, beside the `weekly.py` report) stays as the escape hatch and
+travels in the same envelope. Golden
 answers over synthetic cases shaped like the real data (B-038) guard against regressions in honesty.
 
 ## 4. Coherence tests (Law 16)
@@ -290,7 +291,8 @@ facts stay where they are and become generated blocks:
 `ts dictionary --write` rewrites every block in place from its source (`record-table`, `media-item-table`,
 `sources-table`, `precedence-line`, `state-keys`, `checks-hard`, `checks-soft`, `checks-stats`, `verbs`,
 `questions`, `fixtures-table`, `module-map`); `ts dictionary` with no flag prints the diff. Blocks live in
-`docs/SPEC.md` (a new module map in section 0; the existing bullets and tables of sections 1, 2, 3, 9, 11), `docs/OPERATIONS.md` sections 2, 4, 5,
-`README.md` (sources table), `tests/fixtures/README.md`, and `AGENTS.md` (verbs). A coherence test
+`docs/SPEC.md` (a new module map in section 0; the existing bullets and tables of sections 1, 2, 3, 9, 11), `docs/OPERATIONS.md` (the sources table in section 2, the state-key prose of section 3 becoming a table, the
+check tables of section 4, the command table of section 1), `README.md` (sources and command tables),
+`tests/fixtures/README.md`, and `AGENTS.md` (verbs). A coherence test
 regenerates them and fails on any difference, so a fact cannot be edited by hand in a generated block and a
 registry cannot change without its documentation.

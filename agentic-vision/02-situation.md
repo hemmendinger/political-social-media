@@ -47,8 +47,8 @@ Rendered from `status.json` by a fixed template (`templates/STATUS.md`). The fir
 ```
 # STATUS  (generated 2026-09-12T04:58Z by run 20260912T045806Z-7e76, profile cloud, commit 9b7af34)
 
-HEALTH: YELLOW  — soft: single_source_recent_posts (53; background <=60), spike_days (2 days; real bursts); schedule delivery 12%
-MISSION: completeness 37,002 records (36,904 present, 98 deleted) / API 36,554 (+350 present)  |  deletion latency median 87.9 min (30 d)
+HEALTH: YELLOW  — soft: single_source_recent_posts (53; background a few dozen, threshold 60 proposed), spike_days (2 days; real bursts); schedule delivery 12%
+MISSION: completeness 37,002 records (36,904 present, 98 deleted) / API 36,554 (+350 present)  |  deletion latency median 90.1 min (30 d, n=6)
          provenance: 2-source 83.1%, api-verified 0.05%  |  honesty flags: presumed-live 36,884, guessed-handle 1,172
 
 INCIDENTS: none open.   CADENCE: 2 of 16 scheduled runs in 24 h (12%)   CHECKOUT: at bot head (0 behind)
@@ -62,12 +62,12 @@ DRIFT:  present vs api statuses_count  350  (threshold 365, background ~350, 7 d
         cnn_ambiguous_handles          1,172 (B-001, shrinking only via repair resolve-handles)
 
 CHECKS FIRING:
-  soft single_source_recent_posts = 53   reading: posts 1 to 30 days old seen by one source (in practice cnn-only reposts near the id-walk boundary); a few dozen are normal;
+  soft single_source_recent_posts = 53   reading: posts 1 to 30 days old seen by one source (in practice cnn-only reposts near the id-walk boundary); "a few dozen" is the documented background, the <=60 threshold is the descriptor's proposal;
        a jump means a source is missing posts.   verb: ts doctor
   soft spike_days = 2026-07-26 (57), 2026-08-04 (69)   reading: real bursts; a parser duplicating cards would also land here
        (duplicate_id is clean).   verb: none
 
-PENDING:  P0 backlog: none.  Open interventions: none.  Open decisions: D-002 (cnn cadence), D-003 (api collector role)
+PENDING:  P0 backlog: none.  Open interventions: none.  Open decisions: D-007 (cnn cadence), D-008 (api collector role)
 
 LAST CHANGE (since run 20260912T001255Z-5139): +4 records, 10 updated, 0 deletions, anomalies n/a (ledger not yet built), checks unchanged.
 

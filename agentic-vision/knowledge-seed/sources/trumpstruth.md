@@ -28,7 +28,7 @@ fixtures:
   - tests/fixtures/trumpstruth_search_query_trump.html     # query search with a result-count line
   - tests/fixtures/trumpstruth_stats.html                  # totals by kind, coverage dates
   - tests/fixtures/trumpstruth_feed.xml                    # RSS, 100 items, truth:originalId
-  - tests/fixtures/trumpstruth_feed_dated_2025-12-01.xml   # the feed caps dated queries at 10 items
+  - tests/fixtures/trumpstruth_feed_dated_2025-12-01.xml   # 10 items for a day that has exactly 10 posts; consistent with the 10-item cap MISTAKES.md reports, not proof of it
 parsers:
   - scripts/parsers.py::parse_listing
   - scripts/parsers.py::parse_status_page
@@ -36,7 +36,7 @@ parsers:
   - scripts/parsers.py::parse_next_cursor
   - scripts/parsers.py::make_cursor
   - scripts/parsers.py::parse_feed        # no production caller
-  - scripts/parsers.py::parse_stats       # no production caller (see D-009)
+  - scripts/parsers.py::parse_stats       # no production caller (dead-code review section 3); the vision's D-009 would wire it
 collector: scripts/collect_trumpstruth.py
 state_keys:
   - max_trumpstruth_id: highest status id resolved sequentially; the next run starts after it; lower it to re-walk (repair rewalk-ids). NOTE: assigned only at the end of the walk (collect_trumpstruth.py:244), so a crash mid-walk re-fetches (B-015)
@@ -74,14 +74,14 @@ authentication. Coverage starts 2022-02-14 (the first post).
 ## Quirks (facts about the world, each dated and addressable)
 
 - Q-tt-01 (2026-09-11): Listing pages render a repost as a `status__reblog-indicator` (`<strong>Donald J. Trump</strong> ReTruthed`) followed by the **target** post's card reused verbatim (same trumpstruth id, ts_id, time, content). The repost's own ts_id and time never appear on listing pages; they exist only on the repost's status page (details table `TRUTH Social status ID`, `Original Post Date`). Evidence: `trumpstruth_listing_2026-09-09_cursor.html` (5 indicators, one reused target 41640). Handled by: `parse_listing` returns the card as the target with `retruthed: True`; the collector resolves every new id sequentially to get reposts (L-004).
-- Q-tt-02 (2026-09-11): `Capture Date` on a status page is the site's last processing time, and removed pages are re-processed (93 of 98 removed posts carried September capture dates months after removal). It is not evidence of life. Handled by: the deletion lower bound never uses it (L-003; `merge.py::_apply_deletion_signal`).
+- Q-tt-02 (2026-09-11): `Capture Date` on a status page is the site's last processing time, and removed pages are re-processed (all 98 removed posts carry September 2026 capture dates, 90 of them a month or more after removal; MISTAKES.md's "93 of 98" counts the deletions whose buggy lower bound landed after their removal). It is not evidence of life. Handled by: the deletion lower bound never uses it (L-003; `merge.py::_apply_deletion_signal`).
 - Q-tt-03 (2026-09-11): The site stores reposted authors' originals as entries of their own (41515 is MichaelCohen212's post 117190624268499306, the target of Trump's repost 41514). Handled by: parsers return `account`; collectors skip other authors and count them in `notes` and `other_account_ids`. Consequence: the stats-page total overstates Trump's own count.
 - Q-tt-04 (2026-09-11): The listing ignores `removed=` and date parameters; only `/search` honors them, and with an empty query a date range is required. The collector still sends `removed=include` on the listing (harmless, B-023).
 - Q-tt-05 (2026-09-11): The feed caps dated queries at 10 items (`trumpstruth_feed_dated_2025-12-01.xml`).
 - Q-tt-06 (2026-09-11): Removal tracking starts in March 2026: the full removed-only search over 2022-01-01..2026-09-11 returned 98 posts, all removed 2026-03 to 2026-09 (6 / 44 / 16 / 8 / 14 / 6 / 4 per month). Deletions before March 2026 are unknown to every free source (B-003).
 - Q-tt-07 (2026-09-11): The `confirmed removed` text is minute precision; when the Capture Date's `<time datetime>` falls within the same minute the parser uses that precise value.
 - Q-tt-08 (2026-09-12): The `/search` date filter applies to the **post's creation date**, not the removal date: the 2026-01-01..09-11 removed-only search returned 88 results while the 2022-01-01 search returned 98, and all 98 were removed in 2026. Consequence: a removed search over the last N days finds only removals of posts younger than N days; 35 of the 98 known deletions were older than 14 days at removal (B-029, L-006, D-017).
-- Q-tt-09 (2026-09-12): Detection floor. The narrowest deletion interval on record is 76 minutes, the median 742; 94 of 98 removal times are minute precision. Every deletion's lower bound equals its creation time because no API sighting has ever preceded a removal (B-036).
+- Q-tt-09 (2026-09-12): Detection floor. The narrowest deletion interval on record is 76 minutes, the median about 705; 94 of 98 removal times are minute precision. Every deletion's lower bound equals its creation time because no API sighting has ever preceded a removal (B-036).
 - Q-tt-10 (2026-09-11): Search results carry a `status__deleted-badge`, a snippet, and for reposts `RT: https://truthsocial.com/users/<acct>/statuses/<id>`; the collector uses only the trumpstruth id from search results and fetches the status page for everything else.
 - Q-tt-11 (2026-09-11): A listing page 1 with fewer than 50 cards is treated as markup drift (`MIN_YIELD_PAGE1`), because the site has always returned 100.
 - Q-tt-12 (2026-09-11): Cursor format for the listing: base64 of `{"status_created_at":"YYYY-MM-DD HH:MM:SS","_pointsToNextItems":true}`; the site interprets the timestamp in its own zone; the docstring says callers pass UTC plus 5 hours, but no production caller of `make_cursor` exists (only tests).
@@ -91,7 +91,7 @@ authentication. Coverage starts 2022-02-14 (the first post).
 | Failure | Symptom in run records / checks | First move |
 |---|---|---|
 | Markup change | today: a run record with `ok=false` and `notes="ParseError: ..."` (a listing under 50 cards raises the same `ParseError`); in the vision: `error.type=ParseError` with the URL and phase, or a `yield_below_min` anomaly | `ts doctor` says `markup_drift`; `ts capture` the URL as a new fixture; adjust the parser; keep the old fixture test if the old markup can recur |
-| Site slow or down | `error.type=HttpError|TransportError` after 4 attempts | `ts doctor` says `source_down`; nothing to do unless it persists across runs |
+| Site slow or down | today `ok=false` with `notes="HttpError: ..."` or `"TransportError: ..."` after 4 attempts; in the vision `error.type` with the URL and phase | `ts doctor` says `source_down`; nothing to do unless it persists across runs |
 | A 5xx or connection blip on one status page during the walk | nothing today: the id is skipped and the mark advances past it (B-074, L-010); in the vision an anomaly `walk_retry` and a `pending_ids` entry | let the next run drain `pending_ids`; if it keeps failing, `ts repair rewalk-ids --from N --to N` |
 | Silent under-collection | green legs with `new=0` for many runs while the account is active | `ts doctor --live` compares the live listing's max id with `max_trumpstruth_id` |
 | Site removes a post we hold | appears in the removed search only if the post's creation date is inside the search window (see the creation-date quirk); status page merged as removed | expected; a deletion event and an interval |

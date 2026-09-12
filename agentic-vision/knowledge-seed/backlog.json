@@ -284,7 +284,7 @@
       "priority": "P2",
       "status": "open",
       "phase": 1,
-      "problem": "Byte-identical helpers in three collectors; a leg record change must be made three times.",
+      "problem": "_new_run_counts is byte-identical in the three collectors; _build_row, _source_state, and the engagement-row builder (api and cnn) are near-identical copies; a leg record change must be made three times.",
       "acceptance": "one definition in scripts/common.py; tests unchanged",
       "cost": {
         "build": "S",
@@ -485,8 +485,8 @@
       },
       "blocked_by": [],
       "evidence": [
-        "scripts/collect_api.py:144-147,231-233",
-        "scripts/collect_archive.py:358-361,380-382"
+        "scripts/collect_api.py:144-147 (deletion append), :231-233 (engagement append before save_posts)",
+        "scripts/collect_archive.py:115-118, :137-139 (before save_posts at :140)"
       ],
       "decision": null,
       "opened": "2026-09-12",
@@ -509,7 +509,7 @@
       },
       "blocked_by": [],
       "evidence": [
-        "scripts/store.py:50-67,142-159,238-240"
+        "scripts/store.py:57-67 (_load_jsonl), :129-130, :243-250, :162-180 (load_engagement)"
       ],
       "decision": null,
       "opened": "2026-09-12",
@@ -755,7 +755,7 @@
       ],
       "evidence": [
         "scripts/collect_trumpstruth.py:337-341",
-        "tests/fixtures/trumpstruth_search_removed_2026.html (88) vs MISTAKES.md (98)",
+        "tests/fixtures/trumpstruth_search_removed_2026.html (86 distinct removals of the 98 known from the 2022 window; the 12 missing were created 2025-11/12)",
         "data/deletions.jsonl ages"
       ],
       "decision": "D-017",
@@ -795,7 +795,7 @@
       "priority": "P1",
       "status": "open",
       "phase": 1,
-      "problem": "A failure is a 500-character string with no URL, status, body digest, or phase; a Cloudflare challenge page (200, no container) is indistinguishable from markup drift.",
+      "problem": "A failure is a 500-character string with no body digest or phase; HttpError carries status and url but only its message text reaches the record; ParseError carries nothing; a Cloudflare challenge page (200, no container) is indistinguishable from markup drift.",
       "acceptance": "ParseError and HttpError carry url, status, body sha256 and a 2 KB head; run records carry error{type,message,url,status,sha256,head,phase}",
       "cost": {
         "build": "S",
@@ -1156,7 +1156,7 @@
       "priority": "P1",
       "status": "open",
       "phase": 1,
-      "problem": "Http.get sleeps 0 s for any host not in the three-entry pacing table, so a new collector written without touching common.py runs unthrottled against a site that has never been asked.",
+      "problem": "Http._pace sleeps 0 s for any host absent from the four-entry pacing table (truthsocial.com 12 s, the two trumpstruth hosts 1.5 s, ix.cnn.io 0 s), so a new collector written without touching common.py runs unthrottled against a site that has never been asked.",
       "acceptance": "an unregistered host raises before the first request unless the source registry declares it with an interval; a test proves it",
       "cost": {
         "build": "S",
@@ -1166,7 +1166,7 @@
       },
       "blocked_by": [],
       "evidence": [
-        "scripts/common.py:345-350,422-424"
+        "scripts/common.py:345-350,421-424"
       ],
       "decision": null,
       "opened": "2026-09-12",
@@ -1372,7 +1372,7 @@
       ],
       "evidence": [
         "docs/OPERATIONS.md:102-105",
-        "scripts/merge.py:388-390"
+        "scripts/merge.py:388-390 (first_seen_*), :336 (last_verified_live_at), :421 (detected_at)"
       ],
       "decision": null,
       "opened": "2026-09-12",
@@ -1497,9 +1497,10 @@
         "B-055"
       ],
       "evidence": [
-        "scripts/collect_trumpstruth.py:39-42",
+        "scripts/collect_trumpstruth.py:40-43",
         "scripts/collect_archive.py:21",
-        "scripts/collect_api.py:24,80"
+        "scripts/collect_api.py:24,80",
+        "scripts/common.py:345-350"
       ],
       "decision": null,
       "opened": "2026-09-12",
@@ -1695,7 +1696,7 @@
       "area": "coordination",
       "priority": "P0",
       "phase": 0,
-      "problem": "Every entry point defaults to the real data root and the real network, and nothing knows where it runs; a sandbox agent following the README would crawl trumpstruth and rewrite data/.",
+      "problem": "Every CLI entry point defaults to the real data root, and collect, the only one that uses the network, always builds real transports; nothing knows where it runs, so a sandbox agent following the README would crawl trumpstruth and rewrite data/.",
       "acceptance": "profiles.json at the repo root declares hosts, api, write_data, commit, repair, and data_root per profile; the dispatcher resolves the profile before parsing arguments and prints it; in sandbox the default data root is a scratch copy under $TMPDIR keyed by HEAD and the transport is an empty FakeTransport, so a refusal names the exact URL; --data-root ./data in sandbox is refused (exit 3); the desktop marker lives outside the tree (never under data/, which the bot's git add data would commit) or TS_PROFILE",
       "cost": {
         "build": "S",
@@ -1747,7 +1748,7 @@
       "area": "coordination",
       "priority": "P1",
       "phase": 1,
-      "problem": "test.yml ignores data/**; a hand-edited month file merged from a branch passes CI and the bot's next run exits 2 on it.",
+      "problem": "test.yml's paths-ignore (lines 5-7) keeps data/** pushes from running the tests, and the pull-request trigger runs only pytest, which never validates the tracked data; a hand-edited month file merged from a branch passes CI and the bot's next run exits 2 on it.",
       "acceptance": "a workflow on any pull request or non-main push touching data/ fails unless check_data is green, an intervention record accompanies the change, and no forbidden file is included; CODEOWNERS routes data/ changes to the maintainer; branch protection per D-012",
       "cost": {
         "build": "S",
@@ -2369,7 +2370,7 @@
       "priority": "P2",
       "status": "blocked",
       "phase": 2,
-      "problem": "12.7 MB rewritten per run; no time series for trends.",
+      "problem": "12.7 MB rewritten per run and committed anew whenever the post set changed; no compact time series for trends.",
       "acceptance": "posts.csv untracked and generated on demand (ts build --csv; a 90-day posts-recent.csv of about 0.7 MB if a download URL is wanted); metrics-window.json every run and metrics-trailing.json once a day; repository growth under 200 KB per day",
       "cost": {
         "build": "S",

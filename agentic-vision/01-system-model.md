@@ -85,14 +85,14 @@ where renaming would churn the tests; the vocabulary governs docs, verbs, file n
 | **incident** | The committed record of a run that did not land, with legs, error, checks, fingerprints, and a diagnosis. | `red run` |
 | **failure class** | One of the fixed diagnoses `ts doctor` can return. | |
 | **leg phase** | Where inside a leg something happened (`listing`, `resolve:<id>`, `removed_search:<range>:page<n>`, ...). | |
-| **fingerprint** | The structural summary of a page a parser depends on (classes, keys, counts), stored per fixture and compared on every fetch. | `canary` (a weekly live comparison), `drift` (the difference) |
+| **fingerprint** | The structural summary of a page a parser depends on (classes, keys, counts), stored per fixture and compared on every fetch. | `drift` (the existing docs' word for the difference); `canary` is the vision's word for the weekly live comparison |
 | **budget** | The per-host request cap inside one leg; exhaustion is a recorded truncation. | `cap` (a module constant or a `run()` parameter default; cnn has none) |
 | **sweep** | One removed-search window actually covered by a leg, recorded on its run record. | |
 | **seam** | Records whose UTC month partition and Eastern analysis day disagree. | |
 | **forget** | The pure inverse of a merge signal on one record (`forget_deletion`, `forget_source`); a repair is forget, then re-observe. | `edit-in-place`, `one-off script` |
 | **re-observation** | A targeted fetch of one page by its own id, merged like any observation, to refill what was forgotten. | |
 | **retraction** | A ledger line removed by a repair, copied verbatim into the intervention record. | `delete the line` |
-| **lease** | `data/lease.json`, committed, with holder and expiry; the cloud collector exits without writing while it is unexpired. What other actors must see lives in git with an expiry; the local **lock** (pid liveness, gitignored) is only this machine's. | `pause`, `.lock` shared through git |
+| **lease** | `data/lease.json`, committed, with holder and expiry; the cloud collector exits without writing while it is unexpired. What other actors must see lives in git with an expiry; the local **lock** (in the vision: JSON with pid liveness, gitignored; today: a bare pid judged stale by mtime, not gitignored) is only this machine's. | `pause`, `.lock` shared through git |
 | **capability manifest** | `profiles.json`, tracked: per profile, the hosts, api access, data writes, commit rights, repair rights, and default data root. | prose tables of what each profile may do |
 | **observation ledger** | `data/observations/<source>/YYYY-MM.jsonl`: idempotent sightings appended by an actor that must not rewrite records, folded by the next collect anywhere. | |
 | **carry-forward set** | Provenance a rebuild cannot regenerate (`first_seen_*`, which are write-once; `last_verified_live_at`, which only grows; event `detected_at`) extracted before a rebuild and re-applied after. | |
@@ -124,15 +124,16 @@ layer.
 
 ```
 scripts/
-  common.py          layer 0-1 plumbing: Clock, Transport, Http, Context, time helpers
+  common.py          layer 0-1 plumbing: SystemClock and FakeClock (duck-typed), the Transport protocol, Http, Context, time helpers
   parsers.py         layer 1: evidence -> observation (pure)
   merge.py           layer 2: observation + record -> record, anomalies, deletion event (pure)
-  store.py           layers 2 and 4: the only module that reads or writes data/
+  store.py           layers 2 and 4: the only module that writes the tracked text under data/ (check_data reads month files directly; build_db writes the gitignored sqlite)
   collect_*.py       layer 1-4 orchestration per source (a leg)
   check_data.py      layer 3: the check registry and run_checks
   build_db.py        layer 5: data/ -> sqlite views
   metrics.py         layer 5: sqlite -> JSON-able metrics with caveats
   weekly.py, query.py  layer 5 renderers
+  validate_backfill.py one-off cross-source validation (layer 5)
   collect.py         layer 6 today; becomes the `collect` verb
   ts.py              layer 6 dispatcher (new): verbs, envelope, profiles, guards
   situation.py       layer 7 (new): builds status.json and STATUS.md from layers 3-5 and 8

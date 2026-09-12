@@ -66,8 +66,8 @@ The audit behind this design surfaced things worth knowing even if none of the v
 - The desktop's two API runs, the only fresh engagement counts ever taken, wrote zero rows: the throttle
   compared against CNN rows written minutes earlier. Every entry point defaults to the real data root and the
   real network, with no notion of where it runs. (`08` section 3b, B-072, B-066)
-- The deletion side of the merge is monotone and the merge has no inverse, so every repair today is
-  edit-in-place through a one-off script, and a half-finished repair passes every hard check. (`03` Repair,
+- The deletion side of the merge is monotone and the merge has no inverse, so the documented repair procedure
+  is edit-in-place through a one-off script, and a half-finished repair passes every hard check. (`03` Repair,
   B-050, B-051)
 - A source's name is a string literal on about 37 lines across eight modules; an unregistered host is paced
   at 0 s; adding a required record field would fail the hard check for all 37,002 records with no migration
@@ -82,6 +82,15 @@ The audit behind this design surfaced things worth knowing even if none of the v
   imported by nothing; `posts.csv` (12.7 MB) is rewritten and committed every run. (`09` section 3)
 - 37 places where the docs disagree with the code or each other, including the cron, the backfill cost, the
   `--backfill` flag's scope, and an inert check presented as live. (`11` section 1)
+
+## How this directory was checked
+
+Every factual assertion these documents make about the current repository was extracted and adversarially
+verified against the code, data, workflows, and existing docs by independent agents on 2026-09-12: 1,033
+claims, of which 812 were confirmed as stated and 221 were corrected in place (mostly line numbers, counts,
+and overstated wording; the design conclusions survived). Proposals were not scored, only statements about
+how things are today. The measured numbers quoted here are from this repository at commit `9b7af34` and
+depend on the machine where they were taken.
 
 ## How to use this directory
 

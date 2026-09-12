@@ -168,14 +168,15 @@ searched is recorded as `sweep` on the run record. Each leg declares a request b
 recorded as a truncation, never reached as a job timeout (B-032). On any non-zero exit the verb writes
 `data/incidents/<run_id>.json` before returning, so the failure is committed even when the data is not. Cost: printed
 per leg from the run records (today: trumpstruth 3 to 7 requests and 3 to 10 s on a normal run; cnn 1 request
-and about 6 s when not skipped; the backfill about 15 minutes).
+and about 6 s when not skipped; the backfill measured at 12.5 minutes and 477 requests).
 
 **`ts lease take --reason "..." --until ISO [--intervention ID]` / `ts lease release`**
 Commits `data/lease.json` (`{holder, profile, host, taken_at, expires_at, reason, intervention}`); while it
 is unexpired the cloud collector exits 0 without writing (a `leased` run record, no incident) and `STATUS.md`
 shows LEASED with the holder and expiry. The way to hold the bot during a long desktop repair or the API
 backfill instead of racing it on `state.json` (B-069). Coordination state other actors must see lives in git
-with an expiry; the local lock (JSON, pid liveness, gitignored) is only this machine's.
+with an expiry; the local lock (JSON, pid liveness, gitignored once B-028 lands; today a bare pid file that is
+not ignored) is only this machine's.
 
 **`ts commit [--run RUN_ID] [--incidents-only] [--dry-run]`**
 The single path by which data reaches `main` (B-067): refuses in `sandbox`; refuses when anything outside

@@ -10,9 +10,9 @@ number is derived rather than measured, it says so.
 |---|---|---|---|
 | Agent attention (tokens read) | every session | 180 lines across 3 data files to answer "is it healthy?"; about 190 lines across 4 files plus the Actions console to classify a red run; 50 to 80 lines for "what fields does a post have?"; about 125 lines across 6 files plus three hand edits to regenerate one deletion (see `facts` in section 5) | overlapping docs; no situation artifact; playbooks written as prose |
 | HTTP requests to rate-limited hosts | the sources; our reputation with them | trumpstruth: 3 to 7 per normal run, 202 when the id walk is capped; cnn: 1 per download (about 20 MB); api from the cloud: 4 requests and 36 s of pure sleep per probe every 6 h, always a 403 | the blocked API probe; the id-walk cap |
-| GitHub Actions minutes | the maintainer's quota | 37 to 80 s per collect run, of which up to 36 s is the API probe sleeping; about 1 billable minute per push for tests (2-job matrix, 28 to 37 s each) | the API probe; `pip install pandas` every run (pandas is imported by nothing) |
-| Repository growth | every clone, every checkout | `data/posts` 57.3 MB; `output/posts.csv` 12.7 MB rewritten and committed on every run that changes anything; `output/metrics.json` 1,653 lines with a 12 to 150 line diff even when 0 posts were added; engagement snapshots about 328 rows (19.5 KB) per CNN download, up to 234 KB per day into a tracked CSV; pack 10.5 MiB after 15 commits | committing derived outputs; the 2-hour CNN cadence producing hourly engagement rows for every post under 14 days old |
-| Wall clock | the run; the agent waiting | normal cloud run 9 to 51 s of collector time (5 s is a desktop run); `pytest` 1.8 s; `build_db` 2.6 to 3.9 s (51 MB sqlite); `check` about 2 to 3 s; exports about 4 to 6 s (all environment-dependent); posts are JSON-loaded from disk three times per run (`run_checks`, `build`, `write_posts_csv`, about 1.3 s each) | repeated loads; pacing sleeps |
+| GitHub Actions minutes | the maintainer's quota | 37 to 80 s per collect run, of which up to 36 s is the API probe sleeping; about a minute of runner time per push for tests (2-job matrix, 19 to 28 s per job; billable only if the repository were private) | the API probe; `pip install pandas` every run (pandas is imported by nothing) |
+| Repository growth | every clone, every checkout | `data/posts` 57.3 MB; `output/posts.csv` 12.7 MB rewritten on every run and committed anew whenever the post set changed (3 of the first 4 bot commits); `output/metrics.json` 1,653 lines with a 10 to 150 line diff on every commit (12 to 14 lines when 0 posts were added); engagement snapshots about 328 rows (19.5 KB) per CNN download (one per download, at most every 2 h), up to 234 KB per day into a tracked CSV; pack 10.5 MiB after 15 commits | committing derived outputs; the 2-hour CNN cadence producing hourly engagement rows for every post under 14 days old |
+| Wall clock | the run; the agent waiting | normal cloud run 9 to 51 s of collector time (5 s is a desktop run); `pytest` 1.8 s; `build_db` 2.6 to 3.9 s (51 MB sqlite); `check` about 2 to 3 s; exports about 4 to 6 s (all environment-dependent); posts are JSON-loaded from disk once per collector leg and three more times in the check and export phase (`run_checks`, `build`, the CSV export), up to six loads per run at about 1.3 s each | repeated loads; pacing sleeps |
 | Deletion detection latency | the mission | nominal 30 min; observed cron delivery 2 of about 16 scheduled slots in the first 8 hours (effective cadence 2 to 5 hours); the trumpstruth removal time is itself an upper bound | GitHub's scheduler, not our code |
 | Maintainer attention | the maintainer | reading the Actions console; hand edits with no receipt | no `doctor`; no intervention ledger |
 | Deletion coverage | the mission | the removed search covers only posts created in the last 14 days (the site filters by creation date); 35 of 98 known deletions were older than that at removal | a window chosen for cost that costs almost nothing to widen (B-029) |
@@ -24,13 +24,13 @@ artifacts exist and the agent starts from `AGENTS.md`.
 
 | Question | Today | After | How |
 |---|---|---|---|
-| Is the system healthy right now? | about 1,800 (checks.json 133 lines, tail of runs, 15 lines of state.json, OPERATIONS section 4 to interpret) | about 600 (first screen of `STATUS.md`) | Law 4 |
+| Is the system healthy right now? | about 1,800 (checks.json 133 lines, tail of runs, the top of state.json's 141 lines, OPERATIONS section 4 to interpret) | about 600 (first screen of `STATUS.md`) | Law 4 |
 | Why is the workflow red? | about 3,500 plus the Actions console, which a sandbox often cannot read | about 800 (`ts doctor` output with evidence and the next verb; the raw capture artifact if needed) | Laws 5, 6 |
 | What fields does a post have, and what do they mean? | about 1,200 (SPEC section 2 and README conventions) | about 900 (the generated block in SPEC section 2, which also carries the merge rule and sources per field) | Law 7 |
 | How do I regenerate one deletion safely? | about 2,500 across 6 files, then 3 hand edits | about 300 (`ts help repair`, then one command with `--dry-run`) | Laws 5, 12 |
 | Why does this record say that? | not answerable without reading merge.py and grepping ledgers (about 3,000) | about 400 (`ts explain <ts_id>`) | Law 8 |
 | What is this source like and how does it fail? | about 1,500 spread over README, OPERATIONS, MISTAKES, SPEC | about 700 (one dossier) | Law 13 |
-| What should I work on? | about 1,200 (TODO.md plus OPERATIONS section 7, and the two disagree) | about 200 (`STATUS.md` pending block, then one backlog item) | Law 13 |
+| What should I work on? | about 1,200 (TODO.md plus OPERATIONS section 7, two disjoint lists) | about 200 (`STATUS.md` pending block, then one backlog item) | Law 13 |
 
 Total for a typical "orient, diagnose, fix one thing" session: roughly 12,000 tokens of reading today
 versus roughly 3,500 after, with fewer wrong turns (the drift list in `11-doc-deltas.md` shows how many of
@@ -47,10 +47,10 @@ Each of these is a one-line change or a profile rule, and together they remove m
 | CNN daily at 09:00 UTC plus `--force-cnn` on demand (D-007) | 11 downloads of about 20 MB per day; engagement growth falls from about 234 KB per day to about 20 KB | S | `collect_archive.SKIP_INTERVAL` |
 | Load posts once per run and pass the list to `run_checks`, `build`, and the CSV writer | about 2.6 s per run | S | `collect.run_all` |
 | `MAX_IDS_PER_RUN` (a trumpstruth constant) and `removed_days`, `max_pages`, `max_verify` (run() parameter defaults of the trumpstruth and api collectors) exposed as verb flags with the same defaults | an id re-walk on the desktop takes one run at a larger cap instead of about 209 cron runs (about 17.7 h of collector time at 305 s per capped run) | S | `ts collect --max-ids` |
-| Fail fast on a guaranteed 403: `max_attempts=1` for the probe request | the 36 s becomes 12 s even where probing is kept | S | `collect_api` |
+| Fail fast on a guaranteed 403: `max_attempts=1` for the probe request | the 36 s of pacing sleep becomes 0 s even where probing is kept (the 12 s pace applies between consecutive requests) | S | `collect_api` |
 | Search removals since 2022-01-01 on every run (D-017) instead of the last 14 days | recovers about a third of future deletions for 0 to 4 extra requests per run (98 results fit in one page of 100 today; `processed_removed_ids` prevents re-fetching status pages) | S | `collect_trumpstruth.run(removed_days=...)` |
 | Compact `checks.json` (`months_present` as `{first, last, count, gaps}`) and render integer lists in `state.json` on one line | about 800 tokens off every cold read of the two files an agent opens first (B-056) | S | `check_data`, `store.save_state` |
-| Rewrite only the month files a run touched, and load the store once (B-057) | a 200-id walk stops performing up to 20 full 55-file rewrites (about 25 s); the run's diff touches only what changed | S | `store.save_posts(months=...)`, `Context.posts()` |
+| Rewrite only the month files a run touched, and load the store once (B-057) | a 200-id walk stops performing up to 20 full 55-file rewrites (about 3 s each here, so roughly a minute); the run's diff touches only what changed | S | `store.save_posts(months=...)`, `Context.posts()` |
 | `ts collect --plan`: a zero-request preview from a policy table (B-058) | an agent knows what a run will do and roughly cost before spending anything; skip rules become data with a `next_due` | M | `scripts/policy.py` |
 | Per-leg request budgets (B-032) | a semantic change at the source cannot run a leg into the 25-minute timeout every run with no trace; the truncation is a recorded number | S | `Http` |
 
@@ -58,13 +58,14 @@ Each of these is a one-line change or a profile rule, and together they remove m
 
 | File | Today | Proposal |
 |---|---|---|
-| `output/posts.csv` (12.7 MB) | committed on every run that changes anything; each commit adds a new blob (git delta-compresses, but a 12.7 MB text file with one changed line still costs a scan per checkout and grows the pack) | stop committing; `ts build --csv` writes it on demand (0.4 s); if a download URL is wanted, commit a 90-day `posts-recent.csv` (about 2,000 rows, 0.7 MB) instead |
+| `output/posts.csv` (12.7 MB) | committed on every run that changes anything; each commit adds a new blob (git delta-compresses, but a 12.7 MB text file with one changed line still costs a scan per checkout and grows the pack) | stop committing; `ts build --csv` writes it on demand (0.4 s); if a download URL is wanted, commit a 90-day `posts-recent.csv` (about 2,400 rows, 1.0 MB) instead |
 | `output/metrics.json` | rewritten every run; its 7-day window slides, so the diff is never empty | split: `metrics-window.json` (about 4 KB) every run, `metrics-trailing.json` once a day at the ET day boundary |
-| `data/engagement/*.csv` | one row per post per hour for every post under 14 days old, from CNN | one baseline row at first sight plus one row per day for posts under 14 days, plus one at 14 days; the api leg from the desktop keeps the hourly rule because it is the only source of fresh counts |
+| `data/engagement/*.csv` | one row per post per hour for every post under 14 days old, from CNN | one baseline row at first sight plus one row per day for posts under 14 days, plus one at 14 days; the api leg from the desktop keeps the hourly rule because it is the only source that samples counts at observation time (with upvotes and downvotes) |
 | `output/history/status-YYYY-MM.jsonl` (new) | not yet | about 350 bytes per run, the time series behind trends, cadence, and `since_firing`; works in a shallow clone; folded yearly |
 | `data/raw/` | never written | written in the cloud, never committed, uploaded as an artifact only on a non-green run |
 
-Expected effect: repository growth per day falls from roughly 1 to 3 MB (dominated by posts.csv blobs and
+Expected effect: the working-tree churn per day falls from roughly 1 to 3 MB of rewritten files (posts.csv, the
+metrics diff, engagement rows; git delta-compresses the pack, so packed growth is smaller and dominated by the
 engagement rows) to under 200 KB.
 
 ## 5. The cost line and the budget

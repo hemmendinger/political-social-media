@@ -8,7 +8,7 @@ reachable_from:
   cloud: no (Cloudflare 403 on every request from GitHub runners since the first cloud run 2026-09-11, with both urllib and the curl_cffi browser-impersonating transport)
   desktop: yes (home connection)
   sandbox: unknown; assume no
-rate_limit: about 6 requests per minute unauthenticated, then 429 with Retry-After (L-002); the client paces 1 request per 12 s, honors Retry-After (cap 120 s), never loops on 429; 403 triggers the curl_cffi fallback for the host
+rate_limit: about 6 requests per minute unauthenticated, then 429 with Retry-After (L-002); the client paces 1 request per 12 s, honors Retry-After (cap 120 s, default 30 s) and retries a 429 at most four attempts in total before raising HttpError; 403 triggers the curl_cffi fallback for the host
 cost_per_run: desktop 1-8 requests (probe page, up to 4 more pages of 20, up to 3 verifies), 2-3 s each plus 12 s pacing; cloud (blocked) 4 requests and 36 s of sleep per probe, one probe per 6 h (the vision's cloud profile skips the leg entirely)
 fixtures:
   - tests/fixtures/api_statuses_2026-09-04_to_09-11.json   # 180 statuses: originals, quotes, reblogs (one of MichaelCohen212), cards, media, account block
@@ -29,7 +29,8 @@ state_keys:
 ## What it is
 
 The Mastodon-derived JSON API behind truthsocial.com, used unauthenticated with a Chrome user agent,
-`Accept: application/json`, and `Referer: https://truthsocial.com/@realDonaldTrump`. Account id
+`Accept: application/json, text/plain, */*`, `Accept-Language: en-US,en;q=0.9`, and
+`Referer: https://truthsocial.com/@realDonaldTrump`. Account id
 `107780257626128497`. It is the only source that says whether a post exists *now*, and the only source of
 `last_verified_live_at`. All 98 deletions on record so far came from trumpstruth; no `api404` deletion has
 been recorded yet, because the API has only been reachable from the desktop for two runs.
@@ -53,7 +54,7 @@ been recorded yet, because the API has only been reachable from the desktop for 
 
 - Q-api-01 (2026-09-11): Unauthenticated rate limit measured at about 6 requests per minute; a burst of manual checks produced a 429 on the first scripted request (L-002). `Retry-After` is honored.
 - Q-api-02 (2026-09-11): Cloudflare returns 403 to GitHub Actions runners for every request, including through curl_cffi impersonating Chrome. The desktop is unaffected. Consequence: the cloud record is complete for posts and deletions (trumpstruth + cnn); engagement snapshots and live verification happen only when the desktop runs a collection.
-- Q-api-03 (2026-09-11): `statuses_count` (36,554) is lower than our `present` count (36,904, diff 350) because the archives keep posts deleted before March 2026 that nothing has flagged; and differs from CNN (36,236, no replies, de-duplicated reposts) and trumpstruth (37,105, includes other accounts' originals). Tracked as `present_count_drift` with a 1% tolerance.
+- Q-api-03 (2026-09-11): `statuses_count` (36,554) is lower than our `present` count (36,904, diff 350) because the archives keep posts deleted before March 2026 that nothing has flagged; and differs from the upstream totals the maintainer recorded on 2026-09-11 in MISTAKES.md: CNN 36,236 (no replies, de-duplicated reposts; our import held 36,241 that day) and trumpstruth 37,105 (includes other accounts' originals). Tracked as `present_count_drift` with a 1% tolerance.
 - Q-api-04 (2026-09-11): Every `account` object is stripped before storage (`raw_api` keeps the rest); the stored `deleted_source` value for an API deletion is `api404` while the partial key is `api_404`.
 - Q-api-05 (2026-09-11): A live 200 for a record marked `deleted` flips it back to `present` (anomaly `resurrected`); the deletion fields are retained. This has not happened in the data yet.
 
@@ -63,8 +64,8 @@ been recorded yet, because the API has only been reachable from the desktop for 
 
 | Failure | Symptom in run records / checks | First move |
 |---|---|---|
-| 403 (cloud) | leg `notes=unreachable: 403`, `ok=true`, 4 requests, 36 s | expected in `cloud`; the vision skips the leg by profile |
-| 429 | handled by the client; visible only as sleep time in `cost.slept_seconds` | nothing; do not lower the pacing |
+| 403 (cloud) | leg `notes=unreachable: 403`, `ok=true`, 4 requests, 36 s from `started_at` to `finished_at` (three 12 s pacing waits) | expected in `cloud`; the vision skips the leg by profile |
+| 429 | handled by the client; today visible only as extra `requests` on the run record (each retry counts), in the vision as `cost.slept_s` | nothing; do not lower the pacing |
 | Network error | `TransportError`, marked unreachable for 6 h | `ts doctor` says `source_down`; retry from the desktop later |
 | Schema change | `KeyError` per status, counted in `errors` | capture a new fixture; adjust `api_status_to_partial` |
 

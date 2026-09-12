@@ -7,14 +7,14 @@ verified: 2026-09-11
 reachable_from:
   cloud: yes
   desktop: yes
-  sandbox: unknown (needs --live)
+  sandbox: unknown (in the vision, needs --live)
 rate_limit: none; one GET per download; no auth; conditional GET with If-None-Match (etag) returns 304 when unchanged
 cost_per_run: 1 request of about 20 MB, 3-6 s, at most once every 2 h (SKIP_INTERVAL; D-007 proposes daily); each download appends about 328 engagement rows (about 19.5 KB) for posts under 14 days old
 fixtures:
-  - tests/fixtures/cnn_archive_sample.json   # 420 rows: newest 400, the deleted self-repost 117238345561593751, oldest 20
+  - tests/fixtures/cnn_archive_sample.json   # 420 rows: the newest 400 (which include the deleted self-repost 117238345561593751 as row 39) and the oldest 20
 parsers:
   - scripts/parsers.py::cnn_row_to_partial
-collector: scripts/collect_archive.py   # module name predates the vocabulary; verbs and docs say cnn
+collector: scripts/collect_archive.py   # the module is named archive while the source id is cnn (both since the first commit); verbs and docs say cnn
 state_keys:
   - etag: sent as If-None-Match; delete to force a download
   - last_ok_at: read by the 2-hour skip gate
@@ -28,8 +28,8 @@ state_keys:
 
 A single cumulative JSON file, `https://ix.cnn.io/data/truth-social/truth_archive.json`, CC0, refreshed
 about every 5 minutes, maintained by Matt Stiles and hosted by CNN. About 36,250 rows on 2026-09-12. One
-row per post with id, created time, text, media URLs, and engagement counts. It excludes replies and
-de-duplicates repeated reposts of the same target, and it stores a repost as `RT @<handle><text>` with no
+row per post with id, created time, text, media URLs, and engagement counts. Per README.md and MISTAKES.md it excludes replies and de-duplicates repeated reposts of the same target (the
+2026-09-08 case is the one observed instance), and it stores a repost as `RT @<handle><text>` with no
 separator.
 
 ## What it knows and does not know
@@ -52,7 +52,7 @@ separator.
 - Q-cnn-02 (2026-09-11): Glues the `RT @handle` prefix to the text (`RT @realDonaldTrumpThe Failing New York Magazine...`), so the handle boundary is ambiguous when the text starts with a word character. The parser special-cases `RT @realDonaldTrump` and otherwise takes the longest `[A-Za-z0-9_]{1,30}` run. The stat `cnn_ambiguous_handles` counts 1,172 rows today, but 1,157 of them are self-reposts resolved by the exact-prefix rule and only 15 have another handle glued (8 of those handles appear in api- or trumpstruth-sourced fields elsewhere in the data, 2 have such a handle as a proper prefix, 5 appear nowhere else), measured 2026-09-12 (B-054, B-001). Parser: `scripts/parsers.py:783-793`. The merge never lets cnn override a handle known from the API or trumpstruth.
 - Q-cnn-03 (2026-09-11): Cannot see quotes or replies; every cnn `kind` disagreement with a higher-ranked source is expected background in the anomaly ledger.
 - Q-cnn-04 (2026-09-11): Its `created_at` is a proper UTC timestamp and outranks trumpstruth's Eastern-text time for `created_at_utc`.
-- Q-cnn-05 (2026-09-11): Row count (36,236 on 2026-09-11) is below the API's `statuses_count` (no replies, de-duplicated reposts) and below trumpstruth's total.
+- Q-cnn-05 (2026-09-11): Row count (36,236 upstream per MISTAKES.md; 36,241 at our first import on 2026-09-11) is below the API's `statuses_count` (no replies, de-duplicated reposts) and below trumpstruth's total.
 - Q-cnn-06 (2026-09-12): Engagement counts for reposts are zeros: 5,366 of 5,597 reblog engagement rows have favourites 0. Reblog engagement is not measured by this source; `engagement_stats` should exclude reblogs (B-037).
 - Q-cnn-07 (2026-09-12): 35,909 of 37,226 engagement rows were observed more than 14 days after the post's creation (one late baseline per historical post from the first import); only posts under 14 days old get tracked snapshots. `snapshot_kind` distinguishes them (B-037).
 - Q-cnn-08 (2026-09-12): One download appends about 328 engagement rows because every post under 14 days old gets a row per hour; this, not new posts, is the main growth of `data/engagement/` (`09-economy.md`; B-025).
@@ -61,8 +61,8 @@ separator.
 
 | Failure | Symptom in run records / checks | First move |
 |---|---|---|
-| File unreachable | leg `error.type=HttpError`; posts still arrive via trumpstruth | `ts doctor` says `source_down`; wait |
-| Format change | `KeyError` per row counted in `errors`; `new=0` with `imported=N` in notes | capture a fresh sample as a fixture; adjust `cnn_row_to_partial` |
+| File unreachable | today: leg `ok=false` with `notes="HttpError: ..."` (429 or 5xx after retries) or `TransportError: ...` (network); in the vision `error.type`; posts still arrive via trumpstruth | `ts doctor` says `source_down`; wait |
+| Format change | per-row exceptions counted in `errors` with the row skipped; a missing `id` raises `ParseError` and fails the leg; `new_posts=0` with `imported=N` in notes | capture a fresh sample as a fixture; adjust `cnn_row_to_partial` |
 | Etag never changes | every leg `not modified` while trumpstruth finds new posts | delete `cnn.etag` (`repair reset-source --source cnn --key etag`) and see if the upstream refresh stalled |
 
 ## Endpoints

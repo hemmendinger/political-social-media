@@ -1,7 +1,7 @@
 # 07. Knowledge: where the system remembers, and how memory accretes
 
 Serves Laws 13, 15, 16, and the "agent-accretive" definition. The repository already remembers well by the
-standards of small projects (dated `MISTAKES.md`, a fixtures README that is an evidence log, a SPEC that is a
+standards of small projects (`MISTAKES.md`, dated in its build section, a fixtures README that is an evidence log, a SPEC that is a
 real contract). The leaks are structural: knowledge is stored as prose in files organized by document type
 rather than by the thing the knowledge is about, and nothing links a lesson to the test that enforces it.
 
@@ -50,7 +50,7 @@ No fact is stated in two tiers. Tier 0 links down; tier 3 links up (a lesson nam
 | Today | Becomes | Notes |
 |---|---|---|
 | `MISTAKES.md` "Build" entries (heredoc failure x2, the 429 burst, the Capture Date bound) | `L-001` to `L-004` (L-005 is new) | L-003 (Capture Date is not a liveness bound) links to `tests/test_merge.py` and the `deletion-found` bundle; L-004 is the ReTruthed mislabel; L-002 (429) becomes a line in the api dossier rate-limit block |
-| `MISTAKES.md` "Data anomalies (source side)" (7 entries) | quirk lines in the three dossiers, each dated with its fixture | these are facts about the world, not mistakes |
+| `MISTAKES.md` "Data anomalies (source side)" (9 entries, three of them undated) | quirk lines in the three dossiers, each dated with its fixture (the ReTruthed entry is also lesson L-004) | these are facts about the world, not mistakes |
 | `TODO.md` items 1 to 3 and the seven deferred features | `B-001` to `B-010` in `backlog.json` with acceptance and cost | B-001 (ambiguous handles) acceptance: `stats.cnn_ambiguous_handles.count == 0`; B-003 (historical deletions) blocked by D-008 |
 | `OPERATIONS.md` section 6 (six one-line design decisions) | `D-001` to `D-006`, status accepted, dated 2026-09-11 | context and consequences filled from SPEC and README |
 | `OPERATIONS.md` section 7 (two open decisions) | `D-007` cnn cadence, `D-008` api collector role, status proposed | both surface in `STATUS.md` pending until decided |
@@ -91,7 +91,7 @@ The vision surfaces these as `proposed` records so they appear in `STATUS.md` un
 
 | Id | Question | Recommendation |
 |---|---|---|
-| D-007 | CNN download cadence (2 h vs daily) | daily at 09:00 UTC plus `--force-cnn` on demand; the etag already makes most fetches 304 |
+| D-007 | CNN download cadence (2 h vs daily) | daily at 09:00 UTC plus `--force-cnn` on demand; the etag never saves a download today because the archive refreshes upstream every 5 minutes (all four recorded downloads returned 200) |
 | D-008 | Role of the api collector given the cloud 403 | keep, desktop-only by profile; never probe from cloud; the historical deletion backfill (B-003) depends on it |
 | D-009 | Wire or remove the trumpstruth total check | wire: one stats-page request per run is cheap and the check is the only independent completeness signal besides the API |
 | D-010 | Commit `output/posts.csv` (13 MB rewritten every run) | stop committing it; publish it as a release asset weekly from the desktop, or generate on demand with `ts build --csv` (see `09-economy.md`) |

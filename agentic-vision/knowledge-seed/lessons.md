@@ -1,7 +1,7 @@
 # Lesson index (seed for knowledge/lessons/)
 
 One line per lesson; each becomes an `L-nnn-<slug>.md` from `templates/lesson.md` with `encoded_in`
-pointing at the test that prevents a recurrence. L-001 to L-004 migrate `MISTAKES.md`; L-005 to L-010 are from the
+pointing at the test that prevents a recurrence. L-001 to L-004 migrate `MISTAKES.md` (three build entries and the ReTruthed anomaly); L-005 to L-010 are from the
 2026-09-12 audit.
 
 | Id | Date | Component | Source | What went wrong | Rule | Encoded in |

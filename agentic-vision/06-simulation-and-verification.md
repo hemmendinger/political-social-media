@@ -51,8 +51,10 @@ pull request like any other change.
 
 Two rules make a replay trustworthy. **A harness fault is louder than a source fault**: `FakeTransport`
 raises `BundleIncomplete`, a `BaseException`, for a missing route or an exhausted list, naming the URL and the
-routes tried, so the collectors' catch-all `except Exception` cannot turn an incomplete bundle into a green run
-with fewer records (B-075); `run_all` writes the failure record and re-raises, and `ts replay` exits 3. And
+routes tried, so the collectors' per-item catch-all `except Exception` (which today turns any failure into an `errors`
+count on a green leg) cannot turn an incomplete bundle into a green run with fewer records (B-075); `run_all`,
+which today swallows a collector exception into a failure record and continues, lets `BundleIncomplete`
+through after writing the record, and `ts replay` exits 3. And
 **the first replay found a bug**: with 500 four times on status 41686 and 200 on 41687, the walk sets
 `max_trumpstruth_id` to 41687 and never fetches 41686 again (B-074, L-010), which is exactly the class of
 silent loss a production run cannot reveal.
@@ -71,7 +73,8 @@ Bundles to ship in phase 1 (each small, under 2 MB):
 
 ## 2. From a red run to a bundle
 
-`ts replay --from-raw data/raw/<run_id>` (or from the downloaded workflow artifact) builds a bundle:
+Once capture exists (B-106), `ts replay --from-raw data/raw/<run_id>` (or from the downloaded workflow
+artifact) builds a bundle:
 routes from `index.jsonl`, `clock_start` from the run record, `seed/` from the git commit before the run
 (found today by timestamp; with the `Run-Id` trailer of `02-situation.md`, by `git log --grep`). The agent then reproduces the failure offline, fixes the
 parser, replays until green, and promotes the bundle into `tests/bundles/` with a `proves` line. The
@@ -107,11 +110,11 @@ Fixed order, stop at first failure, print what ran and what it cost:
 | Step | Command | Time | `--quick` |
 |---|---|---|---|
 | 1 | `python -m pytest -q tests/test_coherence.py` | 2 s | yes |
-| 2 | `python -m pytest -q` (305+ tests) | about 15 s | changed modules only (`pytest --lf` and the tests naming the changed modules) |
+| 2 | `python -m pytest -q` (307 tests) | about 2 s locally (a CI job is about 30 s, mostly setup) | changed modules only (`pytest --lf` and the tests naming the changed modules) |
 | 3 | `ts replay tests/bundles/smoke` | 5 s | yes |
 | 4 | `ts check` on the real `data/` | 3 s | yes |
 | 5 | round trip: `save_posts(load_posts())` byte-identical | 5 s | no |
-| 6 | `ts status --refresh` and `git diff --stat STATUS.md output/status.json` (a change here is not an error, it is shown so the agent knows the situation moved) | 3 s | yes |
+| 6 | `ts status --refresh` and `git diff --stat STATUS.md output/status.json` (both exist once B-103 lands; a change here is not an error, it is shown so the agent knows the situation moved) | 3 s | yes |
 | 7 | `python -m compileall -q scripts` under Python 3.9 syntax rules (a small AST check for `match`, `X | Y`, walrus-free is not required) | 1 s | yes |
 | 8 | fix receipt: if the diff touches a parser, the merge, a collector, or a check, the commit message draft (or `--trailers`) names a lesson, quirk, fixture, backlog, or `Knowledge: none` with a reason (B-063); a warning, not a failure | 0 s | yes |
 
@@ -122,12 +125,14 @@ Fixed order, stop at first failure, print what ran and what it cost:
 Already mostly true, and enforced by `tests/test_determinism.py` (B-076): an AST walk over `scripts/*.py`
 fails on `datetime.now`, `utcnow`, `date.today`, `time.time`, `secrets.*`, `random.*`, and on `urllib.request`
 or `curl_cffi` imports outside `scripts/common.py`, with an allowlist for `SystemClock`, `new_run_id`,
-`acquire_lock`, and `validate_backfill`. The bundle manifest lists every clock-derived URL (the removed-search
+`acquire_lock`, `validate_backfill`, `check_data._resolve_now`'s CLI default, and `build_db`'s `time.monotonic`
+timing (the last two are the bypasses the audit found). The bundle manifest lists every clock-derived URL (the removed-search
 window, the CNN skip decision) so an author knows what `clock_start` pins.
 
 - No module reads the wall clock or the network except through `Context.clock` and `Context.http`.
 - `new_run_id` takes the clock; the random suffix is replaced in replay by a fixed one from the manifest.
-- `save_posts` and every ledger write are byte-deterministic (sorted keys, compact separators, LF).
+- `save_posts` and every JSONL ledger write are byte-deterministic (sorted keys, compact separators, LF); the
+  engagement CSV has a fixed column order and LF.
 - `check_data.run_checks` takes `now`.
 - `situation.build()` takes the clock and the commit sha as arguments.
 
@@ -147,6 +152,6 @@ rewrites it after a deliberate change, reviewed like any diff).
 ## 7. What verification costs the agent
 
 Before: read `OPERATIONS.md` section 5, guess whether a change is safe, run `pytest -q`, push, wait for the
-cloud run at :07 or :37, read the console. About 3,000 tokens and up to 30 minutes of wall time per attempt.
+next cloud run (:07 or :37, or a manual dispatch), read the console. About 3,000 tokens and up to 30 minutes of wall time per attempt.
 After: `ts verify --quick` (under 30 s, one screen of output), then push. A production failure is reproduced
 with `ts replay --from-raw` in under a minute instead of being reasoned about from a truncated note.

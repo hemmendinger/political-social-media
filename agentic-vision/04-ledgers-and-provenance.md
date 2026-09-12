@@ -114,7 +114,7 @@ errors, notes}`. Vision adds, all optional so old lines still validate:
 | `sweep` | the removed-search window this leg covered, `{start_date, end_date, pages, results}`; `v_coverage` derives the observable-lifetime limit from it (B-029) |
 | `budget` | `{host: {limit, used}}`; a truncation entry when a limit was hit (B-032) |
 | `cost` | `{requests, requests_by_host, bytes_in, slept_s, wall_s, files_written, bytes_written}` measured, plus `estimate` from `--plan` when one was made (B-055, B-058) |
-| `facts` | what the leg measured, as data: `{listing_max_id, imported_rows, statuses_count, followers_count, ...}`; `notes` stays free text for humans (B-065) |
+| `facts` | what the leg measured, as data: `{listing_max_id, imported_rows, statuses_count, followers_count, ...}`; today `statuses_count` reaches `state.json` but the rest live only in `notes`, which stays free text for humans (B-065) |
 | `raw_dir` | `data/raw/<run_id>/` when captures were kept |
 | `truncated` | caps that applied (`ids_per_run=200`) |
 
@@ -124,7 +124,8 @@ errors, notes}`. Vision adds, all optional so old lines still validate:
 transport and, after each response, writes the body and one index line: when set, `Http.get` writes each response as
 `<raw_dir>/<n>-<host>-<slug>.<ext>` plus one `index.jsonl` line `{n, url, status, headers, file, at}`. Policy:
 
-- `cloud`: on for every run (about 1 MB per run; trumpstruth pages are 100 to 300 KB), kept in the runner's
+- `cloud`: on for every run (about 1 MB per run without a CNN download, about 21 MB with one; trumpstruth
+  listing pages are about 290 KB, status and search pages 15 to 27 KB), kept in the runner's
   workspace only; uploaded as a workflow artifact when the job fails or when `ts doctor` reports anything but
   `healthy`; never committed.
 - `desktop` and `sandbox`: on with `--capture`; `data/raw/` is gitignored already.

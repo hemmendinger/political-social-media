@@ -46,7 +46,7 @@ Goal: any red run can be reproduced offline and any repair is one command with a
 
 | Item | What | Build |
 |---|---|---|
-| B-106 | raw capture through `Context.raw_dir`; `index.jsonl`; artifact upload when not green; 7-day prune | S |
+| B-106 | raw capture through the existing but unused `Context.raw_dir`; `index.jsonl`; artifact upload when not green; 7-day prune | S |
 | B-107 | `ts replay` with bundles (six ship), golden diff, `--from-raw`, `--update-golden` | M |
 | B-108 | `ts explain`, `ts doctor` (nine diagnoses), `ts diff` | M |
 | B-109 | `ts repair` with the seven plans, plan/apply, `data/interventions.jsonl`; OPERATIONS section 5 recipes become one command each | M |
@@ -161,7 +161,7 @@ Six tasks, each timed as reads, writes, network requests, and wall clock, before
 | Orient: is it healthy, what changed, what is pending? | 3 data files + 1 doc, about 1,800 tokens | 1 file, about 600 tokens (phase 0) |
 | Diagnose a red run to a root cause | 4 files + the Actions console, about 3,500 tokens; often impossible from a sandbox | `ts doctor` + one artifact, about 800 tokens (phase 1) |
 | Reproduce a red run offline | not possible | `ts replay --from-raw`, under 1 minute (phase 1) |
-| Regenerate one deletion | 6 files read, 3 hand edits, no receipt | one command with `--dry-run`, an intervention record (phase 1) |
+| Regenerate one deletion | about six files read, 3 hand edits, no receipt | one command with `--dry-run`, an intervention record (phase 1) |
 | Answer "how many deletions within an hour in August, and how sure?" | build, query, read SPEC section 10 or build_db.py for column meaning (neither says `lifetime_min` is an upper bound), answer 0 (wrong: every lower bound is creation time; the narrowest observed interval is 76 min) | after phase 0: `lifetime_lo_min`/`hi_min` make the interval visible; after phase 2: `ts ask deleted_within --start 2026-08-01 --end 2026-08-31 --param minutes=60` returns 0 confirmed, 6 possible, 0 excluded, with the detection floor and the lookback gap as caveats |
 | Add a fourth source | about 37 literal lines across eight modules and a dozen files by hand; an unregistered host is paced at 0 s; a source missing from a rank table raises KeyError the first time its non-empty value meets another source's | `ts scaffold source` writes the registry entry, stubs, fixture slot, dossier stub; a parser and a fetch function are the only hand-written code (phase 2) |
 | Add a record field | 11 to 16 files and about 20 non-test sites; a required field fails the hard check for all 37,002 records | one schema property with `x-` keys plus a migration; `ts repair migrate` rewrites the data with a receipt (phase 1) |
