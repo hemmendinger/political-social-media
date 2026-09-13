@@ -232,7 +232,7 @@
       "original": {
         "n": 153,
         "favourites": {
-          "median": 9819,
+          "median": 9821,
           "p90": 16306
         },
         "reblogs": {
@@ -248,15 +248,15 @@
         "n": 11,
         "favourites": {
           "median": 11673,
-          "p90": 17029
+          "p90": 17149
         },
         "reblogs": {
           "median": 3190,
-          "p90": 4699
+          "p90": 4731
         },
         "replies": {
           "median": 491,
-          "p90": 1648
+          "p90": 1769
         }
       },
       "reblog": {
