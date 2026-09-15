@@ -2,15 +2,6 @@
   "window": {
     "posts_by_day": [
       {
-        "et_date": "2026-09-08",
-        "original": 16,
-        "quote": 1,
-        "reblog": 5,
-        "reply": 0,
-        "total": 22,
-        "deleted": 4
-      },
-      {
         "et_date": "2026-09-09",
         "original": 7,
         "quote": 0,
@@ -57,11 +48,20 @@
       },
       {
         "et_date": "2026-09-14",
-        "original": 18,
-        "quote": 1,
+        "original": 23,
+        "quote": 5,
         "reblog": 0,
         "reply": 0,
-        "total": 19,
+        "total": 28,
+        "deleted": 0
+      },
+      {
+        "et_date": "2026-09-15",
+        "original": 0,
+        "quote": 0,
+        "reblog": 0,
+        "reply": 0,
+        "total": 0,
         "deleted": 0
       }
     ],
@@ -82,31 +82,21 @@
       4,
       2,
       3,
-      11,
-      2,
+      10,
+      0,
       4,
-      9,
-      13,
       6,
-      5,
-      2
+      4,
+      2,
+      2,
+      11
     ],
     "overnight_share": {
       "overnight": 3,
-      "total": 97,
-      "share": 0.030927835051546393
+      "total": 84,
+      "share": 0.03571428571428571
     },
     "bursts": [
-      {
-        "start_et": "2026-09-08T20:41:25-04:00",
-        "end_et": "2026-09-08T20:53:04-04:00",
-        "count": 8,
-        "kinds": {
-          "original": 4,
-          "quote": 1,
-          "reblog": 3
-        }
-      },
       {
         "start_et": "2026-09-10T07:54:04-04:00",
         "end_et": "2026-09-10T08:10:44-04:00",
@@ -123,107 +113,59 @@
           "original": 8,
           "quote": 6
         }
-      }
-    ],
-    "deletions": [
-      {
-        "ts_id": "117238301772357460",
-        "created_at_et": "2026-09-08T20:41:56-04:00",
-        "kind": "reblog",
-        "lifetime_min": 80.71666672825813,
-        "deletion_window_min": 80.71666672825813,
-        "deleted_source": "trumpstruth",
-        "snippet": "The Failing New York Magazine wrote a story that I wasn’t down at the World Trade Center after the Tragedy of September "
       },
       {
-        "ts_id": "117238326295991805",
-        "created_at_et": "2026-09-08T20:48:10-04:00",
-        "kind": "reblog",
-        "lifetime_min": 92.21666671335697,
-        "deletion_window_min": 92.21666671335697,
-        "deleted_source": "trumpstruth",
-        "snippet": "The Failing New York Magazine wrote a story that I wasn’t down at the World Trade Center after the Tragedy of September "
-      },
-      {
-        "ts_id": "117238345561593751",
-        "created_at_et": "2026-09-08T20:53:04-04:00",
-        "kind": "reblog",
-        "lifetime_min": 87.91666656732559,
-        "deletion_window_min": 87.91666656732559,
-        "deleted_source": "trumpstruth",
-        "snippet": "The Failing New York Magazine wrote a story that I wasn’t down at the World Trade Center after the Tragedy of September "
-      },
-      {
-        "ts_id": "117238414290995787",
-        "created_at_et": "2026-09-08T21:10:33-04:00",
-        "kind": "reblog",
-        "lifetime_min": 80.4666667431593,
-        "deletion_window_min": 80.4666667431593,
-        "deleted_source": "trumpstruth",
-        "snippet": "The Failing New York Magazine wrote a story that I wasn’t down at the World Trade Center after the Tragedy of September "
+        "start_et": "2026-09-14T23:52:13-04:00",
+        "end_et": "2026-09-14T23:54:14-04:00",
+        "count": 8,
+        "kinds": {
+          "original": 4,
+          "quote": 4
+        }
       }
     ],
-    "top_reblogged_accounts": [
-      {
-        "account": "realDonaldTrump",
-        "count": 5
-      }
-    ],
+    "deletions": [],
+    "top_reblogged_accounts": [],
     "link_domains": [],
     "media_mix": {
-      "no_media": 35,
-      "image_only": 27,
-      "video_only": 35,
+      "no_media": 31,
+      "image_only": 24,
+      "video_only": 29,
       "mixed": 0,
       "media_items_by_type": {
-        "image": 34,
-        "video": 35
+        "image": 31,
+        "video": 29
       }
     },
     "engagement_stats": {
       "original": {
-        "n": 82,
+        "n": 71,
         "favourites": {
-          "median": 12706,
-          "p90": 21153
+          "median": 12137,
+          "p90": 21190
         },
         "reblogs": {
-          "median": 3033,
+          "median": 3020,
           "p90": 5045
         },
         "replies": {
           "median": 745,
-          "p90": 2636
+          "p90": 2466
         }
       },
       "quote": {
-        "n": 10,
+        "n": 13,
         "favourites": {
-          "median": 11673,
+          "median": 8981,
           "p90": 17560
         },
         "reblogs": {
-          "median": 3190,
+          "median": 2542,
           "p90": 4828
         },
         "replies": {
           "median": 450,
           "p90": 2427
-        }
-      },
-      "reblog": {
-        "n": 2,
-        "favourites": {
-          "median": 0,
-          "p90": 3
-        },
-        "reblogs": {
-          "median": 0,
-          "p90": 0
-        },
-        "replies": {
-          "median": 0,
-          "p90": 0
         }
       }
     },
@@ -239,15 +181,6 @@
   },
   "trailing": {
     "posts_by_day": [
-      {
-        "et_date": "2026-07-14",
-        "original": 32,
-        "quote": 5,
-        "reblog": 0,
-        "reply": 0,
-        "total": 37,
-        "deleted": 0
-      },
       {
         "et_date": "2026-07-15",
         "original": 14,
@@ -742,6 +675,15 @@
         "reply": 0,
         "total": 39,
         "deleted": 0
+      },
+      {
+        "et_date": "2026-09-08",
+        "original": 16,
+        "quote": 1,
+        "reblog": 5,
+        "reply": 0,
+        "total": 22,
+        "deleted": 4
       }
     ],
     "hour_histogram": [
@@ -754,45 +696,28 @@
       20,
       40,
       36,
-      91,
       89,
-      134,
+      74,
+      120,
       105,
       90,
-      130,
+      129,
       70,
-      94,
-      78,
+      95,
+      80,
       127,
-      123,
-      60,
-      109,
-      104,
+      121,
+      69,
+      113,
+      107,
       29
     ],
     "overnight_share": {
       "overnight": 69,
-      "total": 1598,
-      "share": 0.043178973717146435
+      "total": 1583,
+      "share": 0.043588123815540114
     },
     "bursts": [
-      {
-        "start_et": "2026-07-14T10:27:51-04:00",
-        "end_et": "2026-07-14T10:41:05-04:00",
-        "count": 15,
-        "kinds": {
-          "original": 15
-        }
-      },
-      {
-        "start_et": "2026-07-14T11:16:08-04:00",
-        "end_et": "2026-07-14T11:30:58-04:00",
-        "count": 11,
-        "kinds": {
-          "original": 8,
-          "quote": 3
-        }
-      },
       {
         "start_et": "2026-07-16T00:50:05-04:00",
         "end_et": "2026-07-16T01:06:24-04:00",
@@ -1394,6 +1319,16 @@
         "kinds": {
           "original": 15
         }
+      },
+      {
+        "start_et": "2026-09-08T20:41:25-04:00",
+        "end_et": "2026-09-08T20:53:04-04:00",
+        "count": 8,
+        "kinds": {
+          "original": 4,
+          "quote": 1,
+          "reblog": 3
+        }
       }
     ],
     "deletions": [
@@ -1513,12 +1448,48 @@
         "deletion_window_min": 168.44999961555004,
         "deleted_source": "trumpstruth",
         "snippet": "I am looking forward to being back in the Great State of New York tomorrow, where Highly Respected and very popular Nass"
+      },
+      {
+        "ts_id": "117238301772357460",
+        "created_at_et": "2026-09-08T20:41:56-04:00",
+        "kind": "reblog",
+        "lifetime_min": 80.71666672825813,
+        "deletion_window_min": 80.71666672825813,
+        "deleted_source": "trumpstruth",
+        "snippet": "The Failing New York Magazine wrote a story that I wasn’t down at the World Trade Center after the Tragedy of September "
+      },
+      {
+        "ts_id": "117238326295991805",
+        "created_at_et": "2026-09-08T20:48:10-04:00",
+        "kind": "reblog",
+        "lifetime_min": 92.21666671335697,
+        "deletion_window_min": 92.21666671335697,
+        "deleted_source": "trumpstruth",
+        "snippet": "The Failing New York Magazine wrote a story that I wasn’t down at the World Trade Center after the Tragedy of September "
+      },
+      {
+        "ts_id": "117238345561593751",
+        "created_at_et": "2026-09-08T20:53:04-04:00",
+        "kind": "reblog",
+        "lifetime_min": 87.91666656732559,
+        "deletion_window_min": 87.91666656732559,
+        "deleted_source": "trumpstruth",
+        "snippet": "The Failing New York Magazine wrote a story that I wasn’t down at the World Trade Center after the Tragedy of September "
+      },
+      {
+        "ts_id": "117238414290995787",
+        "created_at_et": "2026-09-08T21:10:33-04:00",
+        "kind": "reblog",
+        "lifetime_min": 80.4666667431593,
+        "deletion_window_min": 80.4666667431593,
+        "deleted_source": "trumpstruth",
+        "snippet": "The Failing New York Magazine wrote a story that I wasn’t down at the World Trade Center after the Tragedy of September "
       }
     ],
     "top_reblogged_accounts": [
       {
         "account": "realDonaldTrump",
-        "count": 63
+        "count": 68
       },
       {
         "account": "AndrewHGiuliani",
@@ -1559,36 +1530,36 @@
     ],
     "link_domains": [],
     "media_mix": {
-      "no_media": 783,
-      "image_only": 680,
-      "video_only": 134,
+      "no_media": 774,
+      "image_only": 664,
+      "video_only": 144,
       "mixed": 1,
       "media_items_by_type": {
-        "image": 794,
-        "video": 137
+        "image": 762,
+        "video": 147
       }
     },
     "engagement_stats": {
       "original": {
-        "n": 1371,
+        "n": 1355,
         "favourites": {
-          "median": 9621,
-          "p90": 19700
+          "median": 9675,
+          "p90": 19770
         },
         "reblogs": {
-          "median": 2144,
-          "p90": 4942
+          "median": 2177,
+          "p90": 4978
         },
         "replies": {
-          "median": 333,
+          "median": 340,
           "p90": 1717
         }
       },
       "quote": {
-        "n": 95,
+        "n": 91,
         "favourites": {
           "median": 8421,
-          "p90": 16756
+          "p90": 16053
         },
         "reblogs": {
           "median": 2273,
@@ -1600,7 +1571,7 @@
         }
       },
       "reblog": {
-        "n": 71,
+        "n": 73,
         "favourites": {
           "median": 1,
           "p90": 4
@@ -1626,9 +1597,9 @@
     }
   },
   "meta": {
-    "start": "2026-09-08",
-    "end": "2026-09-14",
-    "trailing_start": "2026-07-14",
-    "trailing_end": "2026-09-07"
+    "start": "2026-09-09",
+    "end": "2026-09-15",
+    "trailing_start": "2026-07-15",
+    "trailing_end": "2026-09-08"
   }
 }
