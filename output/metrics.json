@@ -141,30 +141,30 @@
       "original": {
         "n": 72,
         "favourites": {
-          "median": 12550,
+          "median": 12571,
           "p90": 21723
         },
         "reblogs": {
-          "median": 2978,
-          "p90": 5158
+          "median": 3020,
+          "p90": 5197
         },
         "replies": {
-          "median": 749,
-          "p90": 2652
+          "median": 788,
+          "p90": 2674
         }
       },
       "quote": {
         "n": 13,
         "favourites": {
-          "median": 12831,
-          "p90": 19614
+          "median": 12876,
+          "p90": 19874
         },
         "reblogs": {
           "median": 3410,
-          "p90": 5673
+          "p90": 5743
         },
         "replies": {
-          "median": 606,
+          "median": 607,
           "p90": 2427
         }
       }
