@@ -4,6 +4,7 @@
   "soft": [
     "present_count_drift:present=36953,api_statuses_count=36554,diff=399",
     "single_source_recent_posts:35 (e.g. 117134631536748114, 117134633473478901, 117134634331609267, 117134635572174687, 117134636703184466, 117134637894565376, 117134638780061079, 117134639829580841, 117134640697916931, 117134641491790365)",
+    "stale_newest_post:2026-09-16T02:19:13Z",
     "spike_days:2026-07-26(57), 2026-08-04(69)"
   ],
   "stats": {
@@ -71,7 +72,7 @@
       "api,cnn,trumpstruth": 20
     },
     "deletions": 98,
-    "engagement_rows": 44603,
+    "engagement_rows": 44861,
     "months_present": [
       "2022-02",
       "2022-04",
