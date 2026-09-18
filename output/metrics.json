@@ -57,11 +57,11 @@
       },
       {
         "et_date": "2026-09-18",
-        "original": 9,
+        "original": 23,
         "quote": 0,
-        "reblog": 0,
+        "reblog": 1,
         "reply": 0,
-        "total": 9,
+        "total": 24,
         "deleted": 0
       }
     ],
@@ -80,9 +80,9 @@
       5,
       3,
       5,
+      21,
+      5,
       9,
-      4,
-      7,
       1,
       11,
       6,
@@ -93,8 +93,8 @@
     ],
     "overnight_share": {
       "overnight": 4,
-      "total": 89,
-      "share": 0.0449438202247191
+      "total": 104,
+      "share": 0.038461538461538464
     },
     "bursts": [
       {
@@ -116,10 +116,11 @@
       },
       {
         "start_et": "2026-09-18T14:09:16-04:00",
-        "end_et": "2026-09-18T14:17:48-04:00",
-        "count": 5,
+        "end_et": "2026-09-18T14:35:53-04:00",
+        "count": 16,
         "kinds": {
-          "original": 5
+          "original": 15,
+          "reblog": 1
         }
       }
     ],
@@ -127,34 +128,34 @@
     "top_reblogged_accounts": [
       {
         "account": "realDonaldTrump",
-        "count": 1
+        "count": 2
       }
     ],
     "link_domains": [],
     "media_mix": {
-      "no_media": 42,
+      "no_media": 39,
       "image_only": 30,
-      "video_only": 17,
+      "video_only": 35,
       "mixed": 0,
       "media_items_by_type": {
         "image": 37,
-        "video": 17
+        "video": 35
       }
     },
     "engagement_stats": {
       "original": {
-        "n": 75,
+        "n": 94,
         "favourites": {
-          "median": 12369,
-          "p90": 22092
+          "median": 11271,
+          "p90": 21902
         },
         "reblogs": {
-          "median": 3077,
-          "p90": 5301
+          "median": 2861,
+          "p90": 4981
         },
         "replies": {
-          "median": 821,
-          "p90": 2745
+          "median": 692,
+          "p90": 2707
         }
       },
       "quote": {
@@ -173,9 +174,9 @@
         }
       },
       "reblog": {
-        "n": 1,
+        "n": 2,
         "favourites": {
-          "median": 2,
+          "median": 0,
           "p90": 2
         },
         "reblogs": {
