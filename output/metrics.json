@@ -146,12 +146,12 @@
       "original": {
         "n": 96,
         "favourites": {
-          "median": 11428,
+          "median": 11462,
           "p90": 21902
         },
         "reblogs": {
-          "median": 2915,
-          "p90": 5301
+          "median": 2951,
+          "p90": 5361
         },
         "replies": {
           "median": 737,
