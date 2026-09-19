@@ -133,24 +133,24 @@
     ],
     "link_domains": [],
     "media_mix": {
-      "no_media": 41,
+      "no_media": 40,
       "image_only": 31,
-      "video_only": 34,
+      "video_only": 35,
       "mixed": 0,
       "media_items_by_type": {
         "image": 39,
-        "video": 34
+        "video": 35
       }
     },
     "engagement_stats": {
       "original": {
-        "n": 95,
+        "n": 96,
         "favourites": {
-          "median": 11462,
+          "median": 11428,
           "p90": 21902
         },
         "reblogs": {
-          "median": 2943,
+          "median": 2915,
           "p90": 5301
         },
         "replies": {

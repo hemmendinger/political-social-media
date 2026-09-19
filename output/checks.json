@@ -65,13 +65,13 @@
       "quote": 2006
     },
     "by_source_combination": {
-      "cnn,trumpstruth": 30835,
+      "cnn,trumpstruth": 30836,
       "cnn": 5498,
-      "trumpstruth": 756,
+      "trumpstruth": 755,
       "api,cnn,trumpstruth": 20
     },
     "deletions": 98,
-    "engagement_rows": 49136,
+    "engagement_rows": 49409,
     "months_present": [
       "2022-02",
       "2022-04",
