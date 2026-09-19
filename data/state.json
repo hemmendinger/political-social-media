@@ -2,9 +2,9 @@
   "sources": {
     "api": {
       "last_ok_at": "2026-09-11T20:10:44Z",
-      "last_probe_at": "2026-09-19T14:45:27Z",
+      "last_probe_at": "2026-09-19T22:29:07Z",
       "last_probe_status": 403,
-      "last_run_at": "2026-09-19T20:33:29Z",
+      "last_run_at": "2026-09-19T22:28:31Z",
       "reachable": false,
       "statuses_count": 36554
     },
@@ -21,8 +21,8 @@
         "removed_cursor": null,
         "removed_page": 1
       },
-      "last_ok_at": "2026-09-19T20:33:24Z",
-      "last_run_at": "2026-09-19T20:33:20Z",
+      "last_ok_at": "2026-09-19T22:28:31Z",
+      "last_run_at": "2026-09-19T22:28:27Z",
       "max_trumpstruth_id": 41809,
       "other_account_ids": [
         40894,
