@@ -149,16 +149,16 @@
       "original": {
         "n": 89,
         "favourites": {
-          "median": 12919,
+          "median": 12985,
           "p90": 27636
         },
         "reblogs": {
-          "median": 3239,
-          "p90": 6596
+          "median": 3290,
+          "p90": 6660
         },
         "replies": {
           "median": 824,
-          "p90": 3739
+          "p90": 3891
         }
       },
       "quote": {
