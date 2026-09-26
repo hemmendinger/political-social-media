@@ -210,16 +210,16 @@
       "quote": {
         "n": 2,
         "favourites": {
-          "median": 3010,
+          "median": 5453,
           "p90": 9072
         },
         "reblogs": {
-          "median": 1264,
+          "median": 2181,
           "p90": 2653
         },
         "replies": {
-          "median": 438,
-          "p90": 510
+          "median": 510,
+          "p90": 707
         }
       }
     },
