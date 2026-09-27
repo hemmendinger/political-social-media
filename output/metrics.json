@@ -57,11 +57,11 @@
       },
       {
         "et_date": "2026-09-27",
-        "original": 0,
+        "original": 4,
         "quote": 0,
-        "reblog": 0,
+        "reblog": 1,
         "reply": 0,
-        "total": 0,
+        "total": 5,
         "deleted": 0
       }
     ],
@@ -74,10 +74,10 @@
       0,
       12,
       6,
-      19,
       20,
+      23,
       1,
-      3,
+      4,
       1,
       2,
       8,
@@ -93,8 +93,8 @@
     ],
     "overnight_share": {
       "overnight": 10,
-      "total": 150,
-      "share": 0.06666666666666667
+      "total": 155,
+      "share": 0.06451612903225806
     },
     "bursts": [
       {
@@ -178,7 +178,7 @@
     "top_reblogged_accounts": [
       {
         "account": "realDonaldTrump",
-        "count": 6
+        "count": 7
       },
       {
         "account": "DanScavino",
@@ -191,33 +191,33 @@
     ],
     "link_domains": [],
     "media_mix": {
-      "no_media": 68,
+      "no_media": 71,
       "image_only": 25,
-      "video_only": 57,
+      "video_only": 59,
       "mixed": 0,
       "media_items_by_type": {
         "image": 25,
-        "video": 57
+        "video": 59
       }
     },
     "engagement_stats": {
       "original": {
-        "n": 138,
+        "n": 142,
         "favourites": {
-          "median": 7905,
-          "p90": 20131
+          "median": 8338,
+          "p90": 18765
         },
         "reblogs": {
-          "median": 2000,
-          "p90": 5042
+          "median": 2068,
+          "p90": 4955
         },
         "replies": {
-          "median": 336,
-          "p90": 1892
+          "median": 323,
+          "p90": 1755
         }
       },
       "reblog": {
-        "n": 10,
+        "n": 11,
         "favourites": {
           "median": 1,
           "p90": 2
@@ -248,9 +248,9 @@
       }
     },
     "longest_silence": {
-      "gap_min": 669.4,
-      "from_et": "2026-09-24T19:09:52-04:00",
-      "to_et": "2026-09-25T06:19:16-04:00"
+      "gap_min": 669.7166666666667,
+      "from_et": "2026-09-26T20:59:56-04:00",
+      "to_et": "2026-09-27T08:09:39-04:00"
     },
     "edits": {
       "count": 0,
