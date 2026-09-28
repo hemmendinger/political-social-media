@@ -2,17 +2,17 @@
   "sources": {
     "api": {
       "last_ok_at": "2026-09-11T20:10:44Z",
-      "last_probe_at": "2026-09-27T22:59:53Z",
+      "last_probe_at": "2026-09-28T07:36:59Z",
       "last_probe_status": 403,
-      "last_run_at": "2026-09-28T01:34:47Z",
+      "last_run_at": "2026-09-28T07:36:23Z",
       "reachable": false,
       "statuses_count": 36554
     },
     "cnn": {
-      "etag": "\"05e83d8ac718effeb2ead7936003d476-3\"",
-      "last_modified": "Mon, 28 Sep 2026 01:18:16 GMT",
-      "last_ok_at": "2026-09-28T01:34:47Z",
-      "last_run_at": "2026-09-28T01:34:42Z"
+      "etag": "\"dc00a107bb4872f5278aecb85ad44d87-3\"",
+      "last_modified": "Mon, 28 Sep 2026 04:59:40 GMT",
+      "last_ok_at": "2026-09-28T07:36:23Z",
+      "last_run_at": "2026-09-28T07:36:19Z"
     },
     "trumpstruth": {
       "backfill": {
@@ -21,9 +21,9 @@
         "removed_cursor": null,
         "removed_page": 1
       },
-      "last_ok_at": "2026-09-28T01:34:42Z",
-      "last_run_at": "2026-09-28T01:34:38Z",
-      "max_trumpstruth_id": 41999,
+      "last_ok_at": "2026-09-28T07:36:19Z",
+      "last_run_at": "2026-09-28T07:36:03Z",
+      "max_trumpstruth_id": 42007,
       "other_account_ids": [
         40894,
         40917,
