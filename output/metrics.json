@@ -220,7 +220,7 @@
       "original": {
         "n": 161,
         "favourites": {
-          "median": 7200,
+          "median": 7281,
           "p90": 18607
         },
         "reblogs": {
@@ -228,7 +228,7 @@
           "p90": 4832
         },
         "replies": {
-          "median": 294,
+          "median": 301,
           "p90": 1754
         }
       },
