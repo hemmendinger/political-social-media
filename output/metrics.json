@@ -57,11 +57,11 @@
       },
       {
         "et_date": "2026-09-29",
-        "original": 1,
+        "original": 2,
         "quote": 0,
         "reblog": 0,
         "reply": 0,
-        "total": 1,
+        "total": 2,
         "deleted": 0
       }
     ],
@@ -77,7 +77,7 @@
       21,
       23,
       0,
-      3,
+      4,
       1,
       1,
       4,
@@ -93,8 +93,8 @@
     ],
     "overnight_share": {
       "overnight": 11,
-      "total": 173,
-      "share": 0.06358381502890173
+      "total": 174,
+      "share": 0.06321839080459771
     },
     "bursts": [
       {
@@ -216,28 +216,28 @@
     "link_domains": [],
     "media_mix": {
       "no_media": 62,
-      "image_only": 43,
+      "image_only": 44,
       "video_only": 68,
       "mixed": 0,
       "media_items_by_type": {
-        "image": 43,
+        "image": 44,
         "video": 68
       }
     },
     "engagement_stats": {
       "original": {
-        "n": 161,
+        "n": 162,
         "favourites": {
           "median": 8626,
           "p90": 15738
         },
         "reblogs": {
-          "median": 1964,
-          "p90": 3870
+          "median": 1948,
+          "p90": 4013
         },
         "replies": {
           "median": 279,
-          "p90": 1331
+          "p90": 1383
         }
       },
       "quote": {
