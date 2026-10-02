@@ -2,15 +2,6 @@
   "window": {
     "posts_by_day": [
       {
-        "et_date": "2026-09-25",
-        "original": 26,
-        "quote": 1,
-        "reblog": 3,
-        "reply": 0,
-        "total": 30,
-        "deleted": 1
-      },
-      {
         "et_date": "2026-09-26",
         "original": 59,
         "quote": 0,
@@ -63,48 +54,49 @@
         "reply": 0,
         "total": 18,
         "deleted": 0
+      },
+      {
+        "et_date": "2026-10-02",
+        "original": 2,
+        "quote": 0,
+        "reblog": 0,
+        "reply": 0,
+        "total": 2,
+        "deleted": 0
       }
     ],
     "hour_histogram": [
-      8,
-      0,
-      0,
-      0,
-      0,
-      0,
-      12,
       10,
-      7,
+      0,
+      0,
+      0,
+      0,
+      0,
+      11,
+      9,
+      6,
       20,
       3,
       6,
+      3,
       4,
-      5,
-      9,
+      8,
       3,
       9,
       14,
-      23,
-      7,
       22,
+      7,
+      4,
       5,
-      16,
-      8
+      15,
+      4
     ],
     "overnight_share": {
-      "overnight": 8,
-      "total": 191,
-      "share": 0.041884816753926704
+      "overnight": 10,
+      "total": 163,
+      "share": 0.06134969325153374
     },
     "bursts": [
-      {
-        "start_et": "2026-09-25T20:35:42-04:00",
-        "end_et": "2026-09-25T20:56:03-04:00",
-        "count": 18,
-        "kinds": {
-          "original": 18
-        }
-      },
       {
         "start_et": "2026-09-26T06:27:52-04:00",
         "end_et": "2026-09-26T06:32:40-04:00",
@@ -171,63 +163,45 @@
         }
       }
     ],
-    "deletions": [
-      {
-        "ts_id": "117335096216476204",
-        "created_at_et": "2026-09-25T22:58:02-04:00",
-        "kind": "reblog",
-        "lifetime_min": 84.90000016987324,
-        "deletion_window_min": 84.90000016987324,
-        "deleted_source": "trumpstruth",
-        "snippet": "A beautiful evening at last nights incredible State Dinner hosted by President @realDonaldTrump and First Lady @MelaniaT"
-      }
-    ],
+    "deletions": [],
     "top_reblogged_accounts": [
       {
         "account": "realDonaldTrump",
         "count": 7
-      },
-      {
-        "account": "DanScavino",
-        "count": 2
-      },
-      {
-        "account": "Schoenlaw",
-        "count": 1
       }
     ],
     "link_domains": [],
     "media_mix": {
-      "no_media": 70,
-      "image_only": 48,
-      "video_only": 73,
+      "no_media": 64,
+      "image_only": 42,
+      "video_only": 57,
       "mixed": 0,
       "media_items_by_type": {
-        "image": 52,
-        "video": 73
+        "image": 46,
+        "video": 57
       }
     },
     "engagement_stats": {
       "original": {
-        "n": 177,
+        "n": 154,
         "favourites": {
-          "median": 7267,
+          "median": 8205,
           "p90": 16158
         },
         "reblogs": {
-          "median": 1775,
+          "median": 1921,
           "p90": 4151
         },
         "replies": {
           "median": 275,
-          "p90": 1454
+          "p90": 1478
         }
       },
       "reblog": {
-        "n": 10,
+        "n": 7,
         "favourites": {
-          "median": 2,
-          "p90": 7
+          "median": 7,
+          "p90": 11
         },
         "reblogs": {
           "median": 0,
@@ -239,18 +213,18 @@
         }
       },
       "quote": {
-        "n": 3,
+        "n": 2,
         "favourites": {
-          "median": 8213,
-          "p90": 9222
+          "median": 3750,
+          "p90": 11371
         },
         "reblogs": {
-          "median": 3220,
-          "p90": 3340
+          "median": 1074,
+          "p90": 4096
         },
         "replies": {
-          "median": 931,
-          "p90": 1005
+          "median": 263,
+          "p90": 1136
         }
       }
     },
@@ -266,15 +240,6 @@
   },
   "trailing": {
     "posts_by_day": [
-      {
-        "et_date": "2026-07-31",
-        "original": 5,
-        "quote": 0,
-        "reblog": 1,
-        "reply": 0,
-        "total": 6,
-        "deleted": 0
-      },
       {
         "et_date": "2026-08-01",
         "original": 32,
@@ -769,6 +734,15 @@
         "reply": 0,
         "total": 25,
         "deleted": 0
+      },
+      {
+        "et_date": "2026-09-25",
+        "original": 26,
+        "quote": 1,
+        "reblog": 3,
+        "reply": 0,
+        "total": 30,
+        "deleted": 1
       }
     ],
     "hour_histogram": [
@@ -778,29 +752,29 @@
       2,
       0,
       6,
-      5,
+      6,
       42,
-      60,
+      61,
       58,
-      73,
+      72,
       117,
-      99,
-      79,
-      119,
+      100,
+      80,
+      120,
       62,
-      77,
-      77,
-      133,
+      76,
+      75,
+      134,
       102,
-      70,
-      109,
-      111,
-      24
+      88,
+      108,
+      112,
+      28
     ],
     "overnight_share": {
       "overnight": 49,
-      "total": 1466,
-      "share": 0.03342428376534789
+      "total": 1490,
+      "share": 0.032885906040268455
     },
     "bursts": [
       {
@@ -1361,6 +1335,14 @@
         "kinds": {
           "original": 6
         }
+      },
+      {
+        "start_et": "2026-09-25T20:35:42-04:00",
+        "end_et": "2026-09-25T20:56:03-04:00",
+        "count": 18,
+        "kinds": {
+          "original": 18
+        }
       }
     ],
     "deletions": [
@@ -1453,6 +1435,15 @@
         "deletion_window_min": 80.4666667431593,
         "deleted_source": "trumpstruth",
         "snippet": "The Failing New York Magazine wrote a story that I wasn’t down at the World Trade Center after the Tragedy of September "
+      },
+      {
+        "ts_id": "117335096216476204",
+        "created_at_et": "2026-09-25T22:58:02-04:00",
+        "kind": "reblog",
+        "lifetime_min": 84.90000016987324,
+        "deletion_window_min": 84.90000016987324,
+        "deleted_source": "trumpstruth",
+        "snippet": "A beautiful evening at last nights incredible State Dinner hosted by President @realDonaldTrump and First Lady @MelaniaT"
       }
     ],
     "top_reblogged_accounts": [
@@ -1462,6 +1453,10 @@
       },
       {
         "account": "Schoenlaw",
+        "count": 3
+      },
+      {
+        "account": "DanScavino",
         "count": 2
       },
       {
@@ -1470,10 +1465,6 @@
       },
       {
         "account": "MichaelCohen212",
-        "count": 1
-      },
-      {
-        "account": "RobertCahalyBREAKING",
         "count": 1
       },
       {
@@ -1499,33 +1490,48 @@
     ],
     "link_domains": [],
     "media_mix": {
-      "no_media": 741,
-      "image_only": 560,
-      "video_only": 165,
+      "no_media": 745,
+      "image_only": 565,
+      "video_only": 180,
       "mixed": 0,
       "media_items_by_type": {
-        "image": 643,
-        "video": 167
+        "image": 648,
+        "video": 182
       }
     },
     "engagement_stats": {
       "original": {
-        "n": 1274,
+        "n": 1295,
         "favourites": {
-          "median": 9824,
-          "p90": 18910
+          "median": 9767,
+          "p90": 18765
         },
         "reblogs": {
-          "median": 2212,
-          "p90": 4753
+          "median": 2184,
+          "p90": 4638
         },
         "replies": {
-          "median": 369,
-          "p90": 1785
+          "median": 368,
+          "p90": 1755
+        }
+      },
+      "quote": {
+        "n": 72,
+        "favourites": {
+          "median": 10657,
+          "p90": 16114
+        },
+        "reblogs": {
+          "median": 2995,
+          "p90": 4740
+        },
+        "replies": {
+          "median": 510,
+          "p90": 1958
         }
       },
       "reblog": {
-        "n": 70,
+        "n": 72,
         "favourites": {
           "median": 1,
           "p90": 4
@@ -1537,21 +1543,6 @@
         "replies": {
           "median": 0,
           "p90": 0
-        }
-      },
-      "quote": {
-        "n": 71,
-        "favourites": {
-          "median": 10709,
-          "p90": 16114
-        },
-        "reblogs": {
-          "median": 2995,
-          "p90": 4740
-        },
-        "replies": {
-          "median": 510,
-          "p90": 1958
         }
       }
     },
@@ -1566,9 +1557,9 @@
     }
   },
   "meta": {
-    "start": "2026-09-25",
-    "end": "2026-10-01",
-    "trailing_start": "2026-07-31",
-    "trailing_end": "2026-09-24"
+    "start": "2026-09-26",
+    "end": "2026-10-02",
+    "trailing_start": "2026-08-01",
+    "trailing_end": "2026-09-25"
   }
 }
