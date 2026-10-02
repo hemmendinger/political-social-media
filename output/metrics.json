@@ -57,11 +57,11 @@
       },
       {
         "et_date": "2026-10-02",
-        "original": 4,
-        "quote": 1,
+        "original": 6,
+        "quote": 3,
         "reblog": 0,
         "reply": 0,
-        "total": 5,
+        "total": 9,
         "deleted": 0
       }
     ],
@@ -80,10 +80,10 @@
       6,
       3,
       4,
-      8,
+      10,
       3,
       9,
-      14,
+      16,
       22,
       7,
       4,
@@ -93,8 +93,8 @@
     ],
     "overnight_share": {
       "overnight": 11,
-      "total": 166,
-      "share": 0.06626506024096386
+      "total": 170,
+      "share": 0.06470588235294118
     },
     "bursts": [
       {
@@ -172,29 +172,29 @@
     ],
     "link_domains": [],
     "media_mix": {
-      "no_media": 66,
-      "image_only": 42,
-      "video_only": 58,
+      "no_media": 67,
+      "image_only": 43,
+      "video_only": 60,
       "mixed": 0,
       "media_items_by_type": {
-        "image": 46,
-        "video": 58
+        "image": 47,
+        "video": 60
       }
     },
     "engagement_stats": {
       "original": {
-        "n": 156,
+        "n": 158,
         "favourites": {
-          "median": 8840,
-          "p90": 16647
+          "median": 8755,
+          "p90": 17010
         },
         "reblogs": {
-          "median": 2025,
-          "p90": 4251
+          "median": 2006,
+          "p90": 4416
         },
         "replies": {
-          "median": 278,
-          "p90": 1539
+          "median": 276,
+          "p90": 1541
         }
       },
       "reblog": {
@@ -213,18 +213,18 @@
         }
       },
       "quote": {
-        "n": 3,
+        "n": 5,
         "favourites": {
-          "median": 9597,
-          "p90": 13559
+          "median": 5828,
+          "p90": 13923
         },
         "reblogs": {
-          "median": 2727,
-          "p90": 4824
+          "median": 1645,
+          "p90": 4937
         },
         "replies": {
-          "median": 711,
-          "p90": 1284
+          "median": 636,
+          "p90": 1299
         }
       }
     },
