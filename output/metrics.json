@@ -57,11 +57,11 @@
       },
       {
         "et_date": "2026-10-03",
-        "original": 0,
-        "quote": 0,
+        "original": 6,
+        "quote": 5,
         "reblog": 0,
         "reply": 0,
-        "total": 0,
+        "total": 11,
         "deleted": 0
       }
     ],
@@ -73,7 +73,7 @@
       0,
       0,
       0,
-      9,
+      20,
       4,
       3,
       4,
@@ -93,8 +93,8 @@
     ],
     "overnight_share": {
       "overnight": 11,
-      "total": 126,
-      "share": 0.0873015873015873
+      "total": 137,
+      "share": 0.08029197080291971
     },
     "bursts": [
       {
@@ -145,6 +145,15 @@
         "kinds": {
           "original": 6
         }
+      },
+      {
+        "start_et": "2026-10-03T07:12:09-04:00",
+        "end_et": "2026-10-03T07:21:16-04:00",
+        "count": 9,
+        "kinds": {
+          "original": 5,
+          "quote": 4
+        }
       }
     ],
     "deletions": [],
@@ -156,28 +165,28 @@
     ],
     "link_domains": [],
     "media_mix": {
-      "no_media": 56,
-      "image_only": 35,
-      "video_only": 35,
+      "no_media": 58,
+      "image_only": 40,
+      "video_only": 39,
       "mixed": 0,
       "media_items_by_type": {
-        "image": 40,
-        "video": 35
+        "image": 45,
+        "video": 39
       }
     },
     "engagement_stats": {
       "original": {
-        "n": 113,
+        "n": 118,
         "favourites": {
-          "median": 9442,
+          "median": 9383,
           "p90": 17846
         },
         "reblogs": {
-          "median": 2177,
+          "median": 2153,
           "p90": 4540
         },
         "replies": {
-          "median": 361,
+          "median": 357,
           "p90": 1589
         }
       },
@@ -197,18 +206,18 @@
         }
       },
       "quote": {
-        "n": 7,
+        "n": 11,
         "favourites": {
-          "median": 8234,
-          "p90": 13923
+          "median": 4297,
+          "p90": 11929
         },
         "reblogs": {
-          "median": 2577,
-          "p90": 4937
+          "median": 1212,
+          "p90": 3285
         },
         "replies": {
-          "median": 787,
-          "p90": 1602
+          "median": 263,
+          "p90": 1299
         }
       }
     },
