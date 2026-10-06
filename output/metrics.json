@@ -163,16 +163,16 @@
       "original": {
         "n": 130,
         "favourites": {
-          "median": 9152,
-          "p90": 16634
+          "median": 9224,
+          "p90": 16647
         },
         "reblogs": {
-          "median": 2347,
-          "p90": 4465
+          "median": 2405,
+          "p90": 4503
         },
         "replies": {
-          "median": 375,
-          "p90": 1627
+          "median": 399,
+          "p90": 1663
         }
       },
       "reblog": {
@@ -193,15 +193,15 @@
       "quote": {
         "n": 16,
         "favourites": {
-          "median": 8399,
+          "median": 8957,
           "p90": 13923
         },
         "reblogs": {
-          "median": 2400,
-          "p90": 4268
+          "median": 2455,
+          "p90": 4338
         },
         "replies": {
-          "median": 410,
+          "median": 421,
           "p90": 1299
         }
       }
