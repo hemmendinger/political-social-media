@@ -2,15 +2,6 @@
   "window": {
     "posts_by_day": [
       {
-        "et_date": "2026-10-01",
-        "original": 16,
-        "quote": 1,
-        "reblog": 1,
-        "reply": 0,
-        "total": 18,
-        "deleted": 0
-      },
-      {
         "et_date": "2026-10-02",
         "original": 20,
         "quote": 5,
@@ -57,16 +48,25 @@
       },
       {
         "et_date": "2026-10-07",
-        "original": 9,
+        "original": 13,
         "quote": 2,
         "reblog": 0,
         "reply": 0,
-        "total": 11,
+        "total": 15,
+        "deleted": 0
+      },
+      {
+        "et_date": "2026-10-08",
+        "original": 0,
+        "quote": 0,
+        "reblog": 0,
+        "reply": 0,
+        "total": 0,
         "deleted": 0
       }
     ],
     "hour_histogram": [
-      3,
+      2,
       1,
       1,
       0,
@@ -76,25 +76,25 @@
       17,
       13,
       8,
-      9,
-      4,
-      3,
-      30,
-      10,
+      7,
+      2,
+      2,
+      27,
+      5,
       0,
       3,
+      4,
       5,
-      5,
-      2,
-      1,
+      0,
+      0,
       0,
       14,
-      8
+      12
     ],
     "overnight_share": {
-      "overnight": 5,
-      "total": 137,
-      "share": 0.0364963503649635
+      "overnight": 4,
+      "total": 123,
+      "share": 0.032520325203252036
     },
     "bursts": [
       {
@@ -142,66 +142,46 @@
       }
     ],
     "deletions": [],
-    "top_reblogged_accounts": [
-      {
-        "account": "realDonaldTrump",
-        "count": 1
-      }
-    ],
+    "top_reblogged_accounts": [],
     "link_domains": [],
     "media_mix": {
-      "no_media": 53,
-      "image_only": 50,
-      "video_only": 34,
+      "no_media": 46,
+      "image_only": 48,
+      "video_only": 29,
       "mixed": 0,
       "media_items_by_type": {
-        "image": 58,
-        "video": 34
+        "image": 55,
+        "video": 29
       }
     },
     "engagement_stats": {
       "original": {
-        "n": 119,
+        "n": 107,
         "favourites": {
-          "median": 10499,
-          "p90": 20580
+          "median": 10067,
+          "p90": 20717
         },
         "reblogs": {
-          "median": 2572,
-          "p90": 5256
+          "median": 2562,
+          "p90": 5309
         },
         "replies": {
-          "median": 484,
+          "median": 462,
           "p90": 2273
         }
       },
-      "reblog": {
-        "n": 1,
-        "favourites": {
-          "median": 11,
-          "p90": 11
-        },
-        "reblogs": {
-          "median": 0,
-          "p90": 0
-        },
-        "replies": {
-          "median": 0,
-          "p90": 0
-        }
-      },
       "quote": {
-        "n": 17,
+        "n": 16,
         "favourites": {
-          "median": 9957,
-          "p90": 14097
+          "median": 9632,
+          "p90": 15189
         },
         "reblogs": {
-          "median": 2720,
-          "p90": 4435
+          "median": 2708,
+          "p90": 4298
         },
         "replies": {
-          "median": 574,
+          "median": 428,
           "p90": 1359
         }
       }
@@ -218,15 +198,6 @@
   },
   "trailing": {
     "posts_by_day": [
-      {
-        "et_date": "2026-08-06",
-        "original": 33,
-        "quote": 0,
-        "reblog": 2,
-        "reply": 0,
-        "total": 35,
-        "deleted": 0
-      },
       {
         "et_date": "2026-08-07",
         "original": 21,
@@ -721,10 +692,19 @@
         "reply": 0,
         "total": 32,
         "deleted": 0
+      },
+      {
+        "et_date": "2026-10-01",
+        "original": 16,
+        "quote": 1,
+        "reblog": 1,
+        "reply": 0,
+        "total": 18,
+        "deleted": 0
       }
     ],
     "hour_histogram": [
-      26,
+      24,
       11,
       0,
       2,
@@ -734,53 +714,27 @@
       47,
       63,
       75,
-      45,
-      120,
-      97,
-      73,
-      91,
+      47,
+      122,
+      88,
+      76,
+      96,
       61,
-      75,
-      84,
+      72,
+      85,
       114,
-      104,
-      84,
-      102,
-      117,
+      106,
+      77,
+      100,
+      108,
       32
     ],
     "overnight_share": {
-      "overnight": 45,
-      "total": 1446,
-      "share": 0.03112033195020747
+      "overnight": 43,
+      "total": 1429,
+      "share": 0.030090972708187544
     },
     "bursts": [
-      {
-        "start_et": "2026-08-06T12:17:52-04:00",
-        "end_et": "2026-08-06T12:20:46-04:00",
-        "count": 9,
-        "kinds": {
-          "original": 9
-        }
-      },
-      {
-        "start_et": "2026-08-06T20:27:57-04:00",
-        "end_et": "2026-08-06T20:33:03-04:00",
-        "count": 8,
-        "kinds": {
-          "original": 7,
-          "reblog": 1
-        }
-      },
-      {
-        "start_et": "2026-08-06T22:16:28-04:00",
-        "end_et": "2026-08-06T22:18:01-04:00",
-        "count": 9,
-        "kinds": {
-          "original": 8,
-          "reblog": 1
-        }
-      },
       {
         "start_et": "2026-08-07T21:39:57-04:00",
         "end_et": "2026-08-07T21:41:41-04:00",
@@ -1423,7 +1377,7 @@
     "top_reblogged_accounts": [
       {
         "account": "realDonaldTrump",
-        "count": 56
+        "count": 55
       },
       {
         "account": "Schoenlaw",
@@ -1464,33 +1418,48 @@
     ],
     "link_domains": [],
     "media_mix": {
-      "no_media": 716,
-      "image_only": 512,
-      "video_only": 218,
+      "no_media": 707,
+      "image_only": 498,
+      "video_only": 224,
       "mixed": 0,
       "media_items_by_type": {
-        "image": 589,
-        "video": 220
+        "image": 576,
+        "video": 226
       }
     },
     "engagement_stats": {
       "original": {
-        "n": 1274,
+        "n": 1257,
         "favourites": {
-          "median": 9850,
-          "p90": 18607
+          "median": 9845,
+          "p90": 18732
         },
         "reblogs": {
-          "median": 2247,
-          "p90": 4638
+          "median": 2259,
+          "p90": 4669
         },
         "replies": {
-          "median": 378,
+          "median": 386,
           "p90": 1717
         }
       },
+      "quote": {
+        "n": 62,
+        "favourites": {
+          "median": 11826,
+          "p90": 17245
+        },
+        "reblogs": {
+          "median": 3182,
+          "p90": 4937
+        },
+        "replies": {
+          "median": 635,
+          "p90": 2010
+        }
+      },
       "reblog": {
-        "n": 66,
+        "n": 65,
         "favourites": {
           "median": 1,
           "p90": 5
@@ -1502,21 +1471,6 @@
         "replies": {
           "median": 0,
           "p90": 0
-        }
-      },
-      "quote": {
-        "n": 61,
-        "favourites": {
-          "median": 11826,
-          "p90": 17245
-        },
-        "reblogs": {
-          "median": 3182,
-          "p90": 4828
-        },
-        "replies": {
-          "median": 635,
-          "p90": 2010
         }
       }
     },
@@ -1531,9 +1485,9 @@
     }
   },
   "meta": {
-    "start": "2026-10-01",
-    "end": "2026-10-07",
-    "trailing_start": "2026-08-06",
-    "trailing_end": "2026-09-30"
+    "start": "2026-10-02",
+    "end": "2026-10-08",
+    "trailing_start": "2026-08-07",
+    "trailing_end": "2026-10-01"
   }
 }
