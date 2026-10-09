@@ -57,11 +57,11 @@
       },
       {
         "et_date": "2026-10-09",
-        "original": 1,
+        "original": 2,
         "quote": 0,
-        "reblog": 0,
+        "reblog": 1,
         "reply": 0,
-        "total": 1,
+        "total": 3,
         "deleted": 0
       }
     ],
@@ -75,7 +75,7 @@
       0,
       17,
       13,
-      8,
+      10,
       6,
       2,
       4,
@@ -93,8 +93,8 @@
     ],
     "overnight_share": {
       "overnight": 2,
-      "total": 110,
-      "share": 0.01818181818181818
+      "total": 112,
+      "share": 0.017857142857142856
     },
     "bursts": [
       {
@@ -134,10 +134,15 @@
       }
     ],
     "deletions": [],
-    "top_reblogged_accounts": [],
+    "top_reblogged_accounts": [
+      {
+        "account": "Schoenlaw",
+        "count": 1
+      }
+    ],
     "link_domains": [],
     "media_mix": {
-      "no_media": 45,
+      "no_media": 47,
       "image_only": 41,
       "video_only": 24,
       "mixed": 0,
@@ -148,18 +153,18 @@
     },
     "engagement_stats": {
       "original": {
-        "n": 99,
+        "n": 100,
         "favourites": {
-          "median": 11663,
-          "p90": 21103
+          "median": 12014,
+          "p90": 20717
         },
         "reblogs": {
-          "median": 2866,
+          "median": 2999,
           "p90": 5373
         },
         "replies": {
-          "median": 612,
-          "p90": 2423
+          "median": 629,
+          "p90": 2427
         }
       },
       "quote": {
@@ -175,6 +180,21 @@
         "replies": {
           "median": 428,
           "p90": 1058
+        }
+      },
+      "reblog": {
+        "n": 1,
+        "favourites": {
+          "median": 2,
+          "p90": 2
+        },
+        "reblogs": {
+          "median": 0,
+          "p90": 0
+        },
+        "replies": {
+          "median": 0,
+          "p90": 0
         }
       }
     },
