@@ -195,13 +195,13 @@
     },
     "engagement_stats": {
       "original": {
-        "n": 122,
+        "n": 128,
         "favourites": {
-          "median": 10342,
-          "p90": 17543
+          "median": 9937,
+          "p90": 17567
         },
         "reblogs": {
-          "median": 2609,
+          "median": 2509,
           "p90": 4592
         },
         "replies": {
@@ -225,13 +225,13 @@
         }
       },
       "quote": {
-        "n": 21,
+        "n": 22,
         "favourites": {
-          "median": 8078,
+          "median": 7994,
           "p90": 13630
         },
         "reblogs": {
-          "median": 2155,
+          "median": 2023,
           "p90": 3425
         },
         "replies": {
