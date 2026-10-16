@@ -57,20 +57,20 @@
       },
       {
         "et_date": "2026-10-16",
-        "original": 0,
+        "original": 3,
         "quote": 0,
-        "reblog": 0,
+        "reblog": 1,
         "reply": 0,
-        "total": 0,
+        "total": 4,
         "deleted": 0
       }
     ],
     "hour_histogram": [
-      10,
-      23,
+      11,
+      24,
       11,
       2,
-      0,
+      2,
       0,
       0,
       32,
@@ -92,9 +92,9 @@
       2
     ],
     "overnight_share": {
-      "overnight": 46,
-      "total": 160,
-      "share": 0.2875
+      "overnight": 50,
+      "total": 164,
+      "share": 0.3048780487804878
     },
     "bursts": [
       {
@@ -172,11 +172,15 @@
       {
         "account": "realDonaldTrump",
         "count": 2
+      },
+      {
+        "account": "mrddmia",
+        "count": 1
       }
     ],
     "link_domains": [],
     "media_mix": {
-      "no_media": 48,
+      "no_media": 52,
       "image_only": 54,
       "video_only": 58,
       "mixed": 0,
@@ -187,39 +191,39 @@
     },
     "engagement_stats": {
       "original": {
-        "n": 133,
+        "n": 136,
         "favourites": {
-          "median": 9946,
+          "median": 10010,
           "p90": 17360
         },
         "reblogs": {
-          "median": 2587,
+          "median": 2509,
           "p90": 4592
         },
         "replies": {
-          "median": 467,
-          "p90": 1635
+          "median": 457,
+          "p90": 1718
         }
       },
       "quote": {
         "n": 23,
         "favourites": {
           "median": 8101,
-          "p90": 15255
+          "p90": 15366
         },
         "reblogs": {
-          "median": 2442,
-          "p90": 3805
+          "median": 2476,
+          "p90": 3827
         },
         "replies": {
           "median": 252,
-          "p90": 1153
+          "p90": 1157
         }
       },
       "reblog": {
-        "n": 1,
+        "n": 2,
         "favourites": {
-          "median": 2,
+          "median": 0,
           "p90": 2
         },
         "reblogs": {
