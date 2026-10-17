@@ -192,19 +192,19 @@
           "p90": 17351
         },
         "reblogs": {
-          "median": 2498,
+          "median": 2501,
           "p90": 4693
         },
         "replies": {
-          "median": 435,
+          "median": 442,
           "p90": 1609
         }
       },
       "quote": {
         "n": 22,
         "favourites": {
-          "median": 7520,
-          "p90": 13997
+          "median": 8078,
+          "p90": 14069
         },
         "reblogs": {
           "median": 2155,
@@ -212,7 +212,7 @@
         },
         "replies": {
           "median": 326,
-          "p90": 1029
+          "p90": 1030
         }
       },
       "reblog": {
