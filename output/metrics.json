@@ -188,15 +188,15 @@
       "original": {
         "n": 130,
         "favourites": {
-          "median": 9984,
+          "median": 10320,
           "p90": 17010
         },
         "reblogs": {
-          "median": 2501,
+          "median": 2509,
           "p90": 4630
         },
         "replies": {
-          "median": 442,
+          "median": 451,
           "p90": 1609
         }
       },
@@ -204,7 +204,7 @@
         "n": 22,
         "favourites": {
           "median": 8078,
-          "p90": 14915
+          "p90": 15309
         },
         "reblogs": {
           "median": 2521,
@@ -212,7 +212,7 @@
         },
         "replies": {
           "median": 326,
-          "p90": 1037
+          "p90": 1040
         }
       },
       "reblog": {
