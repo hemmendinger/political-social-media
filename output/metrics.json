@@ -188,31 +188,31 @@
       "original": {
         "n": 123,
         "favourites": {
-          "median": 9937,
+          "median": 9946,
           "p90": 17351
         },
         "reblogs": {
-          "median": 2501,
+          "median": 2509,
           "p90": 4693
         },
         "replies": {
           "median": 442,
-          "p90": 1609
+          "p90": 1626
         }
       },
       "quote": {
         "n": 22,
         "favourites": {
           "median": 8078,
-          "p90": 14069
+          "p90": 14168
         },
         "reblogs": {
-          "median": 2155,
-          "p90": 3425
+          "median": 2521,
+          "p90": 3772
         },
         "replies": {
           "median": 326,
-          "p90": 1030
+          "p90": 1033
         }
       },
       "reblog": {
