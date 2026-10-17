@@ -57,11 +57,11 @@
       },
       {
         "et_date": "2026-10-17",
-        "original": 2,
+        "original": 3,
         "quote": 0,
         "reblog": 0,
         "reply": 0,
-        "total": 2,
+        "total": 3,
         "deleted": 0
       }
     ],
@@ -78,7 +78,7 @@
       4,
       15,
       7,
-      5,
+      6,
       0,
       1,
       12,
@@ -93,8 +93,8 @@
     ],
     "overnight_share": {
       "overnight": 40,
-      "total": 151,
-      "share": 0.26490066225165565
+      "total": 152,
+      "share": 0.2631578947368421
     },
     "bursts": [
       {
@@ -175,7 +175,7 @@
     ],
     "link_domains": [],
     "media_mix": {
-      "no_media": 44,
+      "no_media": 45,
       "image_only": 49,
       "video_only": 58,
       "mixed": 0,
@@ -188,37 +188,37 @@
       "original": {
         "n": 123,
         "favourites": {
-          "median": 9946,
+          "median": 10320,
           "p90": 17351
         },
         "reblogs": {
-          "median": 2509,
+          "median": 2597,
           "p90": 4693
         },
         "replies": {
-          "median": 442,
-          "p90": 1626
+          "median": 451,
+          "p90": 1666
         }
       },
       "quote": {
         "n": 22,
         "favourites": {
           "median": 8078,
-          "p90": 14168
+          "p90": 14282
         },
         "reblogs": {
           "median": 2521,
-          "p90": 3772
+          "p90": 3827
         },
         "replies": {
           "median": 326,
-          "p90": 1033
+          "p90": 1037
         }
       },
       "reblog": {
         "n": 3,
         "favourites": {
-          "median": 1,
+          "median": 2,
           "p90": 2
         },
         "reblogs": {
@@ -232,9 +232,9 @@
       }
     },
     "longest_silence": {
-      "gap_min": 515.7833333333333,
-      "from_et": "2026-10-12T22:45:46-04:00",
-      "to_et": "2026-10-13T07:21:33-04:00"
+      "gap_min": 740.7,
+      "from_et": "2026-10-17T00:11:12-04:00",
+      "to_et": "2026-10-17T12:31:54-04:00"
     },
     "edits": {
       "count": 0,
