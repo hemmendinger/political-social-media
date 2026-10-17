@@ -197,15 +197,15 @@
       "original": {
         "n": 141,
         "favourites": {
-          "median": 10409,
+          "median": 10487,
           "p90": 17351
         },
         "reblogs": {
-          "median": 2587,
+          "median": 2599,
           "p90": 4630
         },
         "replies": {
-          "median": 468,
+          "median": 483,
           "p90": 1635
         }
       },
