@@ -57,11 +57,11 @@
       },
       {
         "et_date": "2026-10-18",
-        "original": 3,
+        "original": 7,
         "quote": 0,
-        "reblog": 0,
+        "reblog": 1,
         "reply": 0,
-        "total": 3,
+        "total": 8,
         "deleted": 0
       }
     ],
@@ -76,8 +76,8 @@
       33,
       3,
       4,
-      13,
-      2,
+      16,
+      4,
       8,
       3,
       2,
@@ -93,8 +93,8 @@
     ],
     "overnight_share": {
       "overnight": 40,
-      "total": 144,
-      "share": 0.2777777777777778
+      "total": 149,
+      "share": 0.2684563758389262
     },
     "bursts": [
       {
@@ -153,7 +153,7 @@
     "top_reblogged_accounts": [
       {
         "account": "realDonaldTrump",
-        "count": 2
+        "count": 3
       },
       {
         "account": "DanScavino",
@@ -166,13 +166,13 @@
     ],
     "link_domains": [],
     "media_mix": {
-      "no_media": 41,
-      "image_only": 43,
-      "video_only": 60,
+      "no_media": 44,
+      "image_only": 44,
+      "video_only": 61,
       "mixed": 0,
       "media_items_by_type": {
-        "image": 49,
-        "video": 60
+        "image": 50,
+        "video": 61
       }
     },
     "engagement_stats": {
@@ -180,34 +180,34 @@
         "n": 18,
         "favourites": {
           "median": 7994,
-          "p90": 16475
+          "p90": 16965
         },
         "reblogs": {
           "median": 2155,
-          "p90": 3852
+          "p90": 3926
         },
         "replies": {
           "median": 252,
-          "p90": 1090
+          "p90": 1114
         }
       },
       "original": {
-        "n": 120,
+        "n": 124,
         "favourites": {
-          "median": 10456,
-          "p90": 16958
+          "median": 10380,
+          "p90": 17351
         },
         "reblogs": {
-          "median": 2587,
-          "p90": 4565
+          "median": 2646,
+          "p90": 4693
         },
         "replies": {
-          "median": 434,
-          "p90": 1648
+          "median": 442,
+          "p90": 1718
         }
       },
       "reblog": {
-        "n": 3,
+        "n": 4,
         "favourites": {
           "median": 2,
           "p90": 2
