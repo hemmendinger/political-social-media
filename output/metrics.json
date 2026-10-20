@@ -194,18 +194,18 @@
     },
     "engagement_stats": {
       "original": {
-        "n": 166,
+        "n": 170,
         "favourites": {
-          "median": 8354,
-          "p90": 16111
+          "median": 7620,
+          "p90": 15403
         },
         "reblogs": {
-          "median": 1968,
-          "p90": 4387
+          "median": 1937,
+          "p90": 4221
         },
         "replies": {
-          "median": 329,
-          "p90": 1505
+          "median": 319,
+          "p90": 1432
         }
       },
       "reblog": {
@@ -224,17 +224,17 @@
         }
       },
       "quote": {
-        "n": 11,
+        "n": 14,
         "favourites": {
-          "median": 11846,
+          "median": 6571,
           "p90": 17011
         },
         "reblogs": {
-          "median": 3087,
+          "median": 1779,
           "p90": 3945
         },
         "replies": {
-          "median": 1059,
+          "median": 506,
           "p90": 1157
         }
       }
