@@ -57,11 +57,11 @@
       },
       {
         "et_date": "2026-10-22",
-        "original": 3,
-        "quote": 1,
-        "reblog": 0,
+        "original": 25,
+        "quote": 16,
+        "reblog": 1,
         "reply": 0,
-        "total": 4,
+        "total": 42,
         "deleted": 0
       }
     ],
@@ -74,11 +74,11 @@
       2,
       8,
       6,
-      5,
+      13,
+      21,
+      23,
       8,
-      12,
-      3,
-      3,
+      4,
       10,
       8,
       11,
@@ -93,8 +93,8 @@
     ],
     "overnight_share": {
       "overnight": 49,
-      "total": 192,
-      "share": 0.2552083333333333
+      "total": 230,
+      "share": 0.21304347826086956
     },
     "bursts": [
       {
@@ -164,6 +164,33 @@
           "quote": 8,
           "original": 2
         }
+      },
+      {
+        "start_et": "2026-10-22T08:42:21-04:00",
+        "end_et": "2026-10-22T08:46:48-04:00",
+        "count": 8,
+        "kinds": {
+          "original": 4,
+          "quote": 4
+        }
+      },
+      {
+        "start_et": "2026-10-22T09:13:23-04:00",
+        "end_et": "2026-10-22T09:26:56-04:00",
+        "count": 12,
+        "kinds": {
+          "original": 7,
+          "quote": 5
+        }
+      },
+      {
+        "start_et": "2026-10-22T10:44:34-04:00",
+        "end_et": "2026-10-22T10:56:26-04:00",
+        "count": 9,
+        "kinds": {
+          "original": 5,
+          "quote": 4
+        }
       }
     ],
     "deletions": [],
@@ -177,41 +204,45 @@
         "count": 1
       },
       {
+        "account": "RealRogerStone",
+        "count": 1
+      },
+      {
         "account": "mrddmia",
         "count": 1
       }
     ],
     "link_domains": [],
     "media_mix": {
-      "no_media": 93,
-      "image_only": 62,
-      "video_only": 37,
+      "no_media": 105,
+      "image_only": 77,
+      "video_only": 48,
       "mixed": 0,
       "media_items_by_type": {
-        "image": 84,
-        "video": 37
+        "image": 99,
+        "video": 48
       }
     },
     "engagement_stats": {
       "original": {
-        "n": 164,
+        "n": 186,
         "favourites": {
-          "median": 7768,
-          "p90": 13833
+          "median": 7293,
+          "p90": 13431
         },
         "reblogs": {
-          "median": 1968,
-          "p90": 4040
+          "median": 1842,
+          "p90": 3955
         },
         "replies": {
-          "median": 315,
-          "p90": 1335
+          "median": 290,
+          "p90": 1262
         }
       },
       "reblog": {
-        "n": 5,
+        "n": 6,
         "favourites": {
-          "median": 2,
+          "median": 1,
           "p90": 2
         },
         "reblogs": {
@@ -224,18 +255,18 @@
         }
       },
       "quote": {
-        "n": 23,
+        "n": 38,
         "favourites": {
-          "median": 6004,
-          "p90": 14799
+          "median": 4608,
+          "p90": 12842
         },
         "reblogs": {
-          "median": 1638,
-          "p90": 3754
+          "median": 1462,
+          "p90": 3731
         },
         "replies": {
-          "median": 273,
-          "p90": 1118
+          "median": 145,
+          "p90": 1068
         }
       }
     },
