@@ -58,18 +58,18 @@
       "deleted": 100
     },
     "by_kind": {
-      "original": 30268,
+      "original": 30264,
       "reblog": 5604,
-      "quote": 2107
+      "quote": 2111
     },
     "by_source_combination": {
-      "cnn,trumpstruth": 31689,
-      "cnn": 5512,
+      "cnn,trumpstruth": 31703,
+      "cnn": 5498,
       "trumpstruth": 758,
       "api,cnn,trumpstruth": 20
     },
     "deletions": 100,
-    "engagement_rows": 89815,
+    "engagement_rows": 90281,
     "months_present": [
       "2022-02",
       "2022-04",
