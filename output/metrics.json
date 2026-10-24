@@ -234,7 +234,7 @@
         },
         "reblogs": {
           "median": 1694,
-          "p90": 3515
+          "p90": 3565
         },
         "replies": {
           "median": 231,
