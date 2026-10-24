@@ -2,15 +2,15 @@
   "ok": true,
   "hard": [],
   "soft": [
-    "present_count_drift:present=37891,api_statuses_count=36554,diff=1337",
+    "present_count_drift:present=37898,api_statuses_count=36554,diff=1344",
     "single_source_recent_posts:3 (e.g. 117427621569689120, 117427645405102306, 117437722978811146)",
     "spike_days:2026-09-26(60), 2026-10-20(59), 2026-10-22(113)"
   ],
   "stats": {
     "present_vs_api_statuses_count": {
-      "present": 37891,
+      "present": 37898,
       "api_statuses_count": 36554,
-      "diff": 1337
+      "diff": 1344
     },
     "single_source_recent_posts": {
       "count": 3,
@@ -20,7 +20,7 @@
         "117437722978811146"
       ]
     },
-    "newest_created_at_utc": "2026-10-24T12:48:10Z",
+    "newest_created_at_utc": "2026-10-24T16:46:03Z",
     "spike_days": [
       {
         "et_date": "2026-09-26",
@@ -54,22 +54,22 @@
       ]
     },
     "by_status": {
-      "present": 37891,
+      "present": 37898,
       "deleted": 100
     },
     "by_kind": {
-      "original": 30275,
-      "reblog": 5604,
-      "quote": 2112
+      "original": 30278,
+      "reblog": 5605,
+      "quote": 2115
     },
     "by_source_combination": {
-      "cnn,trumpstruth": 31715,
+      "cnn,trumpstruth": 31722,
       "cnn": 5498,
       "trumpstruth": 758,
       "api,cnn,trumpstruth": 20
     },
     "deletions": 100,
-    "engagement_rows": 93054,
+    "engagement_rows": 93515,
     "months_present": [
       "2022-02",
       "2022-04",
@@ -128,6 +128,6 @@
       "2026-09",
       "2026-10"
     ],
-    "posts": 37991
+    "posts": 37998
   }
 }
