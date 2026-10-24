@@ -57,11 +57,11 @@
       },
       {
         "et_date": "2026-10-24",
-        "original": 8,
+        "original": 11,
         "quote": 4,
-        "reblog": 1,
+        "reblog": 2,
         "reply": 0,
-        "total": 13,
+        "total": 17,
         "deleted": 0
       }
     ],
@@ -79,8 +79,8 @@
       26,
       8,
       4,
-      9,
       10,
+      13,
       7,
       6,
       14,
@@ -93,8 +93,8 @@
     ],
     "overnight_share": {
       "overnight": 44,
-      "total": 298,
-      "share": 0.1476510067114094
+      "total": 302,
+      "share": 0.1456953642384106
     },
     "bursts": [
       {
@@ -207,7 +207,7 @@
     "top_reblogged_accounts": [
       {
         "account": "realDonaldTrump",
-        "count": 5
+        "count": 6
       },
       {
         "account": "RealRogerStone",
@@ -216,33 +216,33 @@
     ],
     "link_domains": [],
     "media_mix": {
-      "no_media": 185,
-      "image_only": 74,
+      "no_media": 187,
+      "image_only": 76,
       "video_only": 39,
       "mixed": 0,
       "media_items_by_type": {
-        "image": 94,
+        "image": 96,
         "video": 39
       }
     },
     "engagement_stats": {
       "original": {
-        "n": 228,
+        "n": 231,
         "favourites": {
           "median": 6325,
-          "p90": 13445
+          "p90": 13431
         },
         "reblogs": {
           "median": 1687,
           "p90": 3656
         },
         "replies": {
-          "median": 234,
-          "p90": 1082
+          "median": 241,
+          "p90": 1010
         }
       },
       "reblog": {
-        "n": 6,
+        "n": 7,
         "favourites": {
           "median": 1,
           "p90": 3
@@ -259,16 +259,16 @@
       "quote": {
         "n": 64,
         "favourites": {
-          "median": 4565,
+          "median": 4608,
           "p90": 8302
         },
         "reblogs": {
-          "median": 1193,
+          "median": 1268,
           "p90": 2347
         },
         "replies": {
           "median": 108,
-          "p90": 512
+          "p90": 580
         }
       }
     },
