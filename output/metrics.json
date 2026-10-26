@@ -221,15 +221,15 @@
       "original": {
         "n": 190,
         "favourites": {
-          "median": 7030,
-          "p90": 13784
+          "median": 7398,
+          "p90": 14488
         },
         "reblogs": {
-          "median": 1724,
-          "p90": 3548
+          "median": 1811,
+          "p90": 3736
         },
         "replies": {
-          "median": 220,
+          "median": 223,
           "p90": 1082
         }
       },
@@ -237,11 +237,11 @@
         "n": 61,
         "favourites": {
           "median": 4608,
-          "p90": 8302
+          "p90": 8603
         },
         "reblogs": {
           "median": 1237,
-          "p90": 2273
+          "p90": 2319
         },
         "replies": {
           "median": 105,
