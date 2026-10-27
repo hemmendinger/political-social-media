@@ -57,11 +57,11 @@
       },
       {
         "et_date": "2026-10-27",
-        "original": 21,
-        "quote": 0,
+        "original": 25,
+        "quote": 8,
         "reblog": 0,
         "reply": 0,
-        "total": 21,
+        "total": 33,
         "deleted": 0
       }
     ],
@@ -78,10 +78,10 @@
       22,
       24,
       13,
-      16,
-      7,
-      7,
-      1,
+      18,
+      10,
+      9,
+      6,
       37,
       8,
       62,
@@ -93,8 +93,8 @@
     ],
     "overnight_share": {
       "overnight": 5,
-      "total": 263,
-      "share": 0.019011406844106463
+      "total": 275,
+      "share": 0.01818181818181818
     },
     "bursts": [
       {
@@ -174,7 +174,8 @@
         "end_et": "2026-10-27T12:14:59-04:00",
         "count": 15,
         "kinds": {
-          "original": 15
+          "original": 8,
+          "quote": 7
         }
       }
     ],
@@ -191,44 +192,44 @@
     ],
     "link_domains": [],
     "media_mix": {
-      "no_media": 186,
-      "image_only": 44,
-      "video_only": 33,
+      "no_media": 193,
+      "image_only": 47,
+      "video_only": 35,
       "mixed": 0,
       "media_items_by_type": {
-        "image": 48,
-        "video": 33
+        "image": 51,
+        "video": 35
       }
     },
     "engagement_stats": {
       "original": {
-        "n": 200,
+        "n": 204,
         "favourites": {
-          "median": 5891,
+          "median": 5972,
           "p90": 14920
         },
         "reblogs": {
-          "median": 1433,
+          "median": 1500,
           "p90": 3798
         },
         "replies": {
-          "median": 132,
+          "median": 174,
           "p90": 1415
         }
       },
       "quote": {
-        "n": 57,
+        "n": 65,
         "favourites": {
-          "median": 4586,
-          "p90": 7881
+          "median": 4208,
+          "p90": 7727
         },
         "reblogs": {
-          "median": 1222,
-          "p90": 2273
+          "median": 1177,
+          "p90": 2197
         },
         "replies": {
           "median": 105,
-          "p90": 408
+          "p90": 374
         }
       },
       "reblog": {
