@@ -183,12 +183,12 @@
       "original": {
         "n": 180,
         "favourites": {
-          "median": 5891,
+          "median": 6049,
           "p90": 14982
         },
         "reblogs": {
-          "median": 1418,
-          "p90": 3813
+          "median": 1483,
+          "p90": 3978
         },
         "replies": {
           "median": 139,
@@ -199,21 +199,21 @@
         "n": 55,
         "favourites": {
           "median": 3257,
-          "p90": 7496
+          "p90": 7727
         },
         "reblogs": {
           "median": 951,
-          "p90": 2081
+          "p90": 2195
         },
         "replies": {
           "median": 105,
-          "p90": 342
+          "p90": 374
         }
       },
       "reblog": {
-        "n": 4,
+        "n": 5,
         "favourites": {
-          "median": 1,
+          "median": 3,
           "p90": 3
         },
         "reblogs": {
