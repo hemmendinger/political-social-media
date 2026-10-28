@@ -2,15 +2,6 @@
   "window": {
     "posts_by_day": [
       {
-        "et_date": "2026-10-21",
-        "original": 25,
-        "quote": 10,
-        "reblog": 2,
-        "reply": 0,
-        "total": 37,
-        "deleted": 0
-      },
-      {
         "et_date": "2026-10-22",
         "original": 71,
         "quote": 40,
@@ -63,66 +54,49 @@
         "reply": 0,
         "total": 33,
         "deleted": 0
+      },
+      {
+        "et_date": "2026-10-28",
+        "original": 1,
+        "quote": 0,
+        "reblog": 1,
+        "reply": 0,
+        "total": 2,
+        "deleted": 0
       }
     ],
     "hour_histogram": [
-      2,
+      3,
       2,
       1,
       0,
       0,
       0,
-      6,
       3,
-      15,
-      22,
-      24,
+      1,
+      14,
+      17,
+      16,
       13,
       18,
-      10,
+      7,
       9,
       6,
-      37,
+      36,
       8,
       62,
       7,
       4,
       2,
-      14,
-      10
+      3,
+      8
     ],
     "overnight_share": {
-      "overnight": 5,
-      "total": 275,
-      "share": 0.01818181818181818
+      "overnight": 6,
+      "total": 240,
+      "share": 0.025
     },
     "bursts": [
-      {
-        "start_et": "2026-10-21T09:14:24-04:00",
-        "end_et": "2026-10-21T09:16:27-04:00",
-        "count": 5,
-        "kinds": {
-          "original": 5
-        }
-      },
-      {
-        "start_et": "2026-10-21T10:36:52-04:00",
-        "end_et": "2026-10-21T10:43:58-04:00",
-        "count": 8,
-        "kinds": {
-          "original": 7,
-          "quote": 1
-        }
-      },
-      {
-        "start_et": "2026-10-21T22:27:18-04:00",
-        "end_et": "2026-10-21T22:29:33-04:00",
-        "count": 10,
-        "kinds": {
-          "quote": 8,
-          "original": 2
-        }
-      },
       {
         "start_et": "2026-10-22T08:42:21-04:00",
         "end_et": "2026-10-22T08:46:48-04:00",
@@ -183,57 +157,61 @@
     "top_reblogged_accounts": [
       {
         "account": "realDonaldTrump",
-        "count": 5
+        "count": 3
       },
       {
         "account": "RealRogerStone",
+        "count": 1
+      },
+      {
+        "account": "jmclghln",
         "count": 1
       }
     ],
     "link_domains": [],
     "media_mix": {
-      "no_media": 193,
-      "image_only": 47,
-      "video_only": 35,
+      "no_media": 172,
+      "image_only": 39,
+      "video_only": 29,
       "mixed": 0,
       "media_items_by_type": {
-        "image": 51,
-        "video": 35
+        "image": 40,
+        "video": 29
       }
     },
     "engagement_stats": {
       "original": {
-        "n": 204,
+        "n": 180,
         "favourites": {
-          "median": 6106,
-          "p90": 14920
+          "median": 5891,
+          "p90": 14982
         },
         "reblogs": {
-          "median": 1524,
-          "p90": 3798
+          "median": 1418,
+          "p90": 3813
         },
         "replies": {
-          "median": 190,
-          "p90": 1415
+          "median": 139,
+          "p90": 1639
         }
       },
       "quote": {
-        "n": 65,
+        "n": 55,
         "favourites": {
-          "median": 4586,
-          "p90": 7727
+          "median": 3257,
+          "p90": 7496
         },
         "reblogs": {
-          "median": 1222,
-          "p90": 2197
+          "median": 951,
+          "p90": 2081
         },
         "replies": {
           "median": 105,
-          "p90": 374
+          "p90": 342
         }
       },
       "reblog": {
-        "n": 6,
+        "n": 4,
         "favourites": {
           "median": 1,
           "p90": 3
@@ -260,15 +238,6 @@
   },
   "trailing": {
     "posts_by_day": [
-      {
-        "et_date": "2026-08-26",
-        "original": 42,
-        "quote": 6,
-        "reblog": 1,
-        "reply": 0,
-        "total": 49,
-        "deleted": 0
-      },
       {
         "et_date": "2026-08-27",
         "original": 34,
@@ -763,59 +732,49 @@
         "reply": 0,
         "total": 59,
         "deleted": 0
+      },
+      {
+        "et_date": "2026-10-21",
+        "original": 25,
+        "quote": 10,
+        "reblog": 2,
+        "reply": 0,
+        "total": 37,
+        "deleted": 0
       }
     ],
     "hour_histogram": [
       67,
-      34,
+      35,
       12,
       4,
       2,
       5,
-      15,
-      83,
-      74,
-      64,
-      62,
-      102,
-      53,
-      62,
+      18,
+      82,
+      75,
+      69,
+      70,
+      84,
+      29,
+      65,
       99,
-      72,
-      63,
+      71,
+      64,
       56,
       78,
       40,
       75,
-      58,
-      81,
-      43
+      57,
+      90,
+      45
     ],
     "overnight_share": {
-      "overnight": 124,
-      "total": 1304,
-      "share": 0.0950920245398773
+      "overnight": 125,
+      "total": 1292,
+      "share": 0.09674922600619196
     },
     "bursts": [
-      {
-        "start_et": "2026-08-26T11:38:41-04:00",
-        "end_et": "2026-08-26T12:05:52-04:00",
-        "count": 19,
-        "kinds": {
-          "original": 17,
-          "quote": 2
-        }
-      },
-      {
-        "start_et": "2026-08-26T12:21:06-04:00",
-        "end_et": "2026-08-26T12:42:55-04:00",
-        "count": 22,
-        "kinds": {
-          "original": 19,
-          "quote": 2,
-          "reblog": 1
-        }
-      },
       {
         "start_et": "2026-08-27T16:11:54-04:00",
         "end_et": "2026-08-27T16:18:33-04:00",
@@ -1269,6 +1228,32 @@
         "kinds": {
           "original": 6
         }
+      },
+      {
+        "start_et": "2026-10-21T09:14:24-04:00",
+        "end_et": "2026-10-21T09:16:27-04:00",
+        "count": 5,
+        "kinds": {
+          "original": 5
+        }
+      },
+      {
+        "start_et": "2026-10-21T10:36:52-04:00",
+        "end_et": "2026-10-21T10:43:58-04:00",
+        "count": 8,
+        "kinds": {
+          "original": 7,
+          "quote": 1
+        }
+      },
+      {
+        "start_et": "2026-10-21T22:27:18-04:00",
+        "end_et": "2026-10-21T22:29:33-04:00",
+        "count": 10,
+        "kinds": {
+          "quote": 8,
+          "original": 2
+        }
       }
     ],
     "deletions": [
@@ -1330,7 +1315,7 @@
     "top_reblogged_accounts": [
       {
         "account": "realDonaldTrump",
-        "count": 33
+        "count": 35
       },
       {
         "account": "DanScavino",
@@ -1353,10 +1338,6 @@
         "count": 1
       },
       {
-        "account": "megforflorida",
-        "count": 1
-      },
-      {
         "account": "mrddmia",
         "count": 1
       },
@@ -1367,48 +1348,48 @@
     ],
     "link_domains": [],
     "media_mix": {
-      "no_media": 557,
-      "image_only": 442,
-      "video_only": 305,
+      "no_media": 561,
+      "image_only": 421,
+      "video_only": 310,
       "mixed": 0,
       "media_items_by_type": {
-        "image": 518,
-        "video": 307
+        "image": 483,
+        "video": 312
       }
     },
     "engagement_stats": {
       "original": {
-        "n": 1147,
+        "n": 1130,
         "favourites": {
-          "median": 10149,
+          "median": 10219,
           "p90": 19093
         },
         "reblogs": {
-          "median": 2405,
+          "median": 2424,
           "p90": 4997
         },
         "replies": {
-          "median": 441,
-          "p90": 1892
+          "median": 451,
+          "p90": 1914
         }
       },
       "quote": {
-        "n": 88,
+        "n": 92,
         "favourites": {
-          "median": 10090,
-          "p90": 16664
+          "median": 9632,
+          "p90": 16114
         },
         "reblogs": {
-          "median": 2773,
-          "p90": 4740
+          "median": 2708,
+          "p90": 4623
         },
         "replies": {
-          "median": 506,
-          "p90": 1663
+          "median": 487,
+          "p90": 1359
         }
       },
       "reblog": {
-        "n": 41,
+        "n": 42,
         "favourites": {
           "median": 1,
           "p90": 5
@@ -1434,9 +1415,9 @@
     }
   },
   "meta": {
-    "start": "2026-10-21",
-    "end": "2026-10-27",
-    "trailing_start": "2026-08-26",
-    "trailing_end": "2026-10-20"
+    "start": "2026-10-22",
+    "end": "2026-10-28",
+    "trailing_start": "2026-08-27",
+    "trailing_end": "2026-10-21"
   }
 }
