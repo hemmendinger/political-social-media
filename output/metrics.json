@@ -57,11 +57,11 @@
       },
       {
         "et_date": "2026-10-30",
-        "original": 10,
-        "quote": 5,
-        "reblog": 1,
+        "original": 69,
+        "quote": 8,
+        "reblog": 7,
         "reply": 0,
-        "total": 16,
+        "total": 84,
         "deleted": 0
       }
     ],
@@ -83,9 +83,9 @@
       11,
       19,
       41,
-      8,
-      12,
-      5,
+      18,
+      57,
+      18,
       4,
       2,
       7,
@@ -93,8 +93,8 @@
     ],
     "overnight_share": {
       "overnight": 9,
-      "total": 202,
-      "share": 0.04455445544554455
+      "total": 270,
+      "share": 0.03333333333333333
     },
     "bursts": [
       {
@@ -170,13 +170,41 @@
           "original": 6,
           "quote": 3
         }
+      },
+      {
+        "start_et": "2026-10-30T17:09:11-04:00",
+        "end_et": "2026-10-30T17:16:23-04:00",
+        "count": 7,
+        "kinds": {
+          "original": 5,
+          "quote": 2
+        }
+      },
+      {
+        "start_et": "2026-10-30T18:15:01-04:00",
+        "end_et": "2026-10-30T18:38:58-04:00",
+        "count": 34,
+        "kinds": {
+          "original": 32,
+          "quote": 1,
+          "reblog": 1
+        }
+      },
+      {
+        "start_et": "2026-10-30T18:57:18-04:00",
+        "end_et": "2026-10-30T19:02:19-04:00",
+        "count": 24,
+        "kinds": {
+          "original": 20,
+          "reblog": 4
+        }
       }
     ],
     "deletions": [],
     "top_reblogged_accounts": [
       {
         "account": "realDonaldTrump",
-        "count": 6
+        "count": 12
       },
       {
         "account": "jmclghln",
@@ -189,51 +217,51 @@
     ],
     "link_domains": [],
     "media_mix": {
-      "no_media": 127,
-      "image_only": 40,
-      "video_only": 35,
+      "no_media": 190,
+      "image_only": 43,
+      "video_only": 37,
       "mixed": 0,
       "media_items_by_type": {
-        "image": 49,
-        "video": 35
+        "image": 52,
+        "video": 37
       }
     },
     "engagement_stats": {
       "original": {
-        "n": 160,
+        "n": 215,
         "favourites": {
-          "median": 7353,
-          "p90": 14621
+          "median": 5467,
+          "p90": 13500
         },
         "reblogs": {
-          "median": 1800,
-          "p90": 3827
+          "median": 1334,
+          "p90": 3489
         },
         "replies": {
-          "median": 264,
-          "p90": 1393
+          "median": 126,
+          "p90": 1163
         }
       },
       "quote": {
-        "n": 33,
+        "n": 36,
         "favourites": {
-          "median": 6803,
-          "p90": 9601
+          "median": 4883,
+          "p90": 10396
         },
         "reblogs": {
-          "median": 1699,
-          "p90": 2886
+          "median": 1405,
+          "p90": 3112
         },
         "replies": {
-          "median": 227,
-          "p90": 790
+          "median": 191,
+          "p90": 850
         }
       },
       "reblog": {
-        "n": 9,
+        "n": 15,
         "favourites": {
           "median": 1,
-          "p90": 6
+          "p90": 3
         },
         "reblogs": {
           "median": 0,
