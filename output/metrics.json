@@ -57,11 +57,11 @@
       },
       {
         "et_date": "2026-10-30",
-        "original": 0,
-        "quote": 0,
-        "reblog": 0,
+        "original": 10,
+        "quote": 5,
+        "reblog": 1,
         "reply": 0,
-        "total": 0,
+        "total": 16,
         "deleted": 0
       }
     ],
@@ -71,9 +71,9 @@
       1,
       0,
       0,
-      0,
-      0,
-      6,
+      5,
+      1,
+      16,
       6,
       4,
       8,
@@ -92,9 +92,9 @@
       4
     ],
     "overnight_share": {
-      "overnight": 4,
-      "total": 186,
-      "share": 0.021505376344086023
+      "overnight": 9,
+      "total": 202,
+      "share": 0.04455445544554455
     },
     "bursts": [
       {
@@ -151,6 +151,25 @@
           "original": 4,
           "quote": 1
         }
+      },
+      {
+        "start_et": "2026-10-30T05:33:51-04:00",
+        "end_et": "2026-10-30T05:39:08-04:00",
+        "count": 5,
+        "kinds": {
+          "original": 2,
+          "quote": 2,
+          "reblog": 1
+        }
+      },
+      {
+        "start_et": "2026-10-30T07:24:58-04:00",
+        "end_et": "2026-10-30T07:29:14-04:00",
+        "count": 9,
+        "kinds": {
+          "original": 6,
+          "quote": 3
+        }
       }
     ],
     "deletions": [],
@@ -162,52 +181,56 @@
       {
         "account": "jmclghln",
         "count": 2
+      },
+      {
+        "account": "marklevinshow",
+        "count": 1
       }
     ],
     "link_domains": [],
     "media_mix": {
-      "no_media": 124,
-      "image_only": 31,
-      "video_only": 31,
+      "no_media": 127,
+      "image_only": 40,
+      "video_only": 35,
       "mixed": 0,
       "media_items_by_type": {
-        "image": 39,
-        "video": 31
+        "image": 49,
+        "video": 35
       }
     },
     "engagement_stats": {
       "original": {
-        "n": 150,
+        "n": 160,
         "favourites": {
-          "median": 7139,
-          "p90": 14727
+          "median": 7060,
+          "p90": 14621
         },
         "reblogs": {
-          "median": 1780,
-          "p90": 3931
+          "median": 1740,
+          "p90": 3827
         },
         "replies": {
-          "median": 264,
-          "p90": 1393
+          "median": 260,
+          "p90": 1348
         }
       },
       "quote": {
-        "n": 28,
+        "n": 33,
         "favourites": {
-          "median": 4530,
-          "p90": 9379
+          "median": 5420,
+          "p90": 9376
         },
         "reblogs": {
-          "median": 1224,
-          "p90": 2482
+          "median": 1479,
+          "p90": 2430
         },
         "replies": {
-          "median": 163,
-          "p90": 713
+          "median": 227,
+          "p90": 600
         }
       },
       "reblog": {
-        "n": 8,
+        "n": 9,
         "favourites": {
           "median": 1,
           "p90": 6
