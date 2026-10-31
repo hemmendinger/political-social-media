@@ -57,8 +57,8 @@
       },
       {
         "et_date": "2026-10-31",
-        "original": 2,
-        "quote": 0,
+        "original": 1,
+        "quote": 1,
         "reblog": 0,
         "reply": 0,
         "total": 2,
@@ -228,22 +228,22 @@
     },
     "engagement_stats": {
       "original": {
-        "n": 202,
+        "n": 201,
         "favourites": {
-          "median": 4337,
+          "median": 4842,
           "p90": 13194
         },
         "reblogs": {
-          "median": 1103,
+          "median": 1232,
           "p90": 3390
         },
         "replies": {
-          "median": 111,
+          "median": 112,
           "p90": 1163
         }
       },
       "quote": {
-        "n": 32,
+        "n": 33,
         "favourites": {
           "median": 4344,
           "p90": 9379
@@ -253,7 +253,7 @@
           "p90": 3112
         },
         "replies": {
-          "median": 163,
+          "median": 176,
           "p90": 850
         }
       },
