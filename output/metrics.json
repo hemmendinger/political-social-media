@@ -269,15 +269,15 @@
       "original": {
         "n": 285,
         "favourites": {
-          "median": 2373,
-          "p90": 9876
+          "median": 2505,
+          "p90": 10184
         },
         "reblogs": {
-          "median": 618,
+          "median": 635,
           "p90": 2745
         },
         "replies": {
-          "median": 66,
+          "median": 69,
           "p90": 739
         }
       },
