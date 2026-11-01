@@ -1,0 +1,3 @@
+{"deletions_found":0,"errors":0,"finished_at":"2026-11-01T05:53:44Z","new_posts":2,"notes":"other_account_skipped=0 max_trumpstruth_id=43093","ok":true,"requests":39,"run_id":"20261101T055246Z-c9c1","source":"trumpstruth","started_at":"2026-11-01T05:52:46Z","updated_posts":70}
+{"deletions_found":0,"errors":0,"finished_at":"2026-11-01T05:53:50Z","new_posts":0,"notes":"imported=37610","ok":true,"requests":1,"run_id":"20261101T055246Z-c9c1","source":"cnn","started_at":"2026-11-01T05:53:44Z","updated_posts":2}
+{"deletions_found":0,"errors":0,"finished_at":"2026-11-01T05:54:26Z","new_posts":0,"notes":"unreachable: 403","ok":true,"requests":4,"run_id":"20261101T055246Z-c9c1","source":"api","started_at":"2026-11-01T05:53:50Z","updated_posts":0}

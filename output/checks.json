@@ -2,15 +2,15 @@
   "ok": true,
   "hard": [],
   "soft": [
-    "present_count_drift:present=38287,api_statuses_count=36554,diff=1733",
+    "present_count_drift:present=38289,api_statuses_count=36554,diff=1735",
     "single_source_recent_posts:24 (e.g. 117427621569689120, 117427645405102306, 117437722978811146, 117532325543066835, 117532326191609947, 117532326729196016, 117532327304228179, 117532327819364688, 117532328347752802, 117532328901843473)",
-    "spike_days:2026-09-26(60), 2026-10-20(59), 2026-10-22(113), 2026-10-30(102), 2026-10-31(114)"
+    "spike_days:2026-09-26(60), 2026-10-20(59), 2026-10-22(113), 2026-10-30(102), 2026-10-31(116)"
   ],
   "stats": {
     "present_vs_api_statuses_count": {
-      "present": 38287,
+      "present": 38289,
       "api_statuses_count": 36554,
-      "diff": 1733
+      "diff": 1735
     },
     "single_source_recent_posts": {
       "count": 24,
@@ -27,7 +27,7 @@
         "117532328901843473"
       ]
     },
-    "newest_created_at_utc": "2026-10-31T22:47:41Z",
+    "newest_created_at_utc": "2026-11-01T03:31:52Z",
     "spike_days": [
       {
         "et_date": "2026-09-26",
@@ -51,7 +51,7 @@
       },
       {
         "et_date": "2026-10-31",
-        "count": 114,
+        "count": 116,
         "trailing_median": 22.0
       }
     ],
@@ -71,22 +71,22 @@
       ]
     },
     "by_status": {
-      "present": 38287,
+      "present": 38289,
       "deleted": 100
     },
     "by_kind": {
-      "original": 30608,
+      "original": 30610,
       "reblog": 5627,
       "quote": 2152
     },
     "by_source_combination": {
-      "cnn,trumpstruth": 32054,
-      "cnn": 5534,
+      "cnn,trumpstruth": 32090,
+      "cnn": 5500,
       "trumpstruth": 779,
       "api,cnn,trumpstruth": 20
     },
     "deletions": 100,
-    "engagement_rows": 110197,
+    "engagement_rows": 110865,
     "months_present": [
       "2022-02",
       "2022-04",
@@ -143,8 +143,9 @@
       "2026-07",
       "2026-08",
       "2026-09",
-      "2026-10"
+      "2026-10",
+      "2026-11"
     ],
-    "posts": 38387
+    "posts": 38389
   }
 }
