@@ -2,18 +2,18 @@
   "ok": true,
   "hard": [],
   "soft": [
-    "present_count_drift:present=38306,api_statuses_count=36554,diff=1752",
-    "single_source_recent_posts:24 (e.g. 117427621569689120, 117427645405102306, 117437722978811146, 117532325543066835, 117532326191609947, 117532326729196016, 117532327304228179, 117532327819364688, 117532328347752802, 117532328901843473)",
+    "present_count_drift:present=38349,api_statuses_count=36554,diff=1795",
+    "single_source_recent_posts:26 (e.g. 117427621569689120, 117427645405102306, 117437722978811146, 117532325543066835, 117532326191609947, 117532326729196016, 117532327304228179, 117532327819364688, 117532328347752802, 117532328901843473)",
     "spike_days:2026-09-26(60), 2026-10-20(59), 2026-10-22(113), 2026-10-30(102), 2026-10-31(116)"
   ],
   "stats": {
     "present_vs_api_statuses_count": {
-      "present": 38306,
+      "present": 38349,
       "api_statuses_count": 36554,
-      "diff": 1752
+      "diff": 1795
     },
     "single_source_recent_posts": {
-      "count": 24,
+      "count": 26,
       "sample_ids": [
         "117427621569689120",
         "117427645405102306",
@@ -27,7 +27,7 @@
         "117532328901843473"
       ]
     },
-    "newest_created_at_utc": "2026-11-01T17:32:24Z",
+    "newest_created_at_utc": "2026-11-01T19:37:33Z",
     "spike_days": [
       {
         "et_date": "2026-09-26",
@@ -71,22 +71,22 @@
       ]
     },
     "by_status": {
-      "present": 38306,
+      "present": 38349,
       "deleted": 100
     },
     "by_kind": {
-      "original": 30625,
-      "reblog": 5627,
+      "original": 30665,
+      "reblog": 5630,
       "quote": 2154
     },
     "by_source_combination": {
-      "cnn,trumpstruth": 32107,
-      "cnn": 5500,
-      "trumpstruth": 779,
+      "cnn,trumpstruth": 32144,
+      "cnn": 5502,
+      "trumpstruth": 783,
       "api,cnn,trumpstruth": 20
     },
     "deletions": 100,
-    "engagement_rows": 112204,
+    "engagement_rows": 112914,
     "months_present": [
       "2022-02",
       "2022-04",
@@ -146,6 +146,6 @@
       "2026-10",
       "2026-11"
     ],
-    "posts": 38406
+    "posts": 38449
   }
 }
