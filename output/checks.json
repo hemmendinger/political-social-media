@@ -2,15 +2,15 @@
   "ok": true,
   "hard": [],
   "soft": [
-    "present_count_drift:present=38489,api_statuses_count=36554,diff=1935",
+    "present_count_drift:present=38493,api_statuses_count=36554,diff=1939",
     "single_source_recent_posts:30 (e.g. 117427621569689120, 117427645405102306, 117437722978811146, 117532325543066835, 117532326191609947, 117532326729196016, 117532327304228179, 117532327819364688, 117532328347752802, 117532328901843473)",
-    "spike_days:2026-09-26(60), 2026-10-20(59), 2026-10-22(113), 2026-10-30(102), 2026-10-31(116), 2026-11-02(139)"
+    "spike_days:2026-09-26(60), 2026-10-20(59), 2026-10-22(113), 2026-10-30(102), 2026-10-31(116), 2026-11-02(140)"
   ],
   "stats": {
     "present_vs_api_statuses_count": {
-      "present": 38489,
+      "present": 38493,
       "api_statuses_count": 36554,
-      "diff": 1935
+      "diff": 1939
     },
     "single_source_recent_posts": {
       "count": 30,
@@ -27,7 +27,7 @@
         "117532328901843473"
       ]
     },
-    "newest_created_at_utc": "2026-11-03T01:08:48Z",
+    "newest_created_at_utc": "2026-11-03T06:12:30Z",
     "spike_days": [
       {
         "et_date": "2026-09-26",
@@ -56,12 +56,12 @@
       },
       {
         "et_date": "2026-11-02",
-        "count": 139,
+        "count": 140,
         "trailing_median": 22.0
       }
     ],
     "cnn_ambiguous_handles": {
-      "count": 1179,
+      "count": 1175,
       "sample_ids": [
         "108337439114236279",
         "108337451009243044",
@@ -76,22 +76,22 @@
       ]
     },
     "by_status": {
-      "present": 38489,
+      "present": 38493,
       "deleted": 101
     },
     "by_kind": {
-      "original": 30793,
-      "reblog": 5642,
+      "original": 30796,
+      "reblog": 5643,
       "quote": 2155
     },
     "by_source_combination": {
-      "cnn,trumpstruth": 32260,
-      "cnn": 5527,
+      "cnn,trumpstruth": 32289,
+      "cnn": 5502,
       "trumpstruth": 783,
       "api,cnn,trumpstruth": 20
     },
     "deletions": 101,
-    "engagement_rows": 115854,
+    "engagement_rows": 116615,
     "months_present": [
       "2022-02",
       "2022-04",
@@ -151,6 +151,6 @@
       "2026-10",
       "2026-11"
     ],
-    "posts": 38590
+    "posts": 38594
   }
 }
