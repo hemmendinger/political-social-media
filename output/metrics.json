@@ -296,11 +296,11 @@
         "n": 432,
         "favourites": {
           "median": 1075,
-          "p90": 8982
+          "p90": 9223
         },
         "reblogs": {
           "median": 309,
-          "p90": 2328
+          "p90": 2400
         },
         "replies": {
           "median": 25,
