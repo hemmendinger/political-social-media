@@ -57,11 +57,11 @@
       },
       {
         "et_date": "2026-11-08",
-        "original": 3,
+        "original": 4,
         "quote": 0,
         "reblog": 0,
         "reply": 0,
-        "total": 3,
+        "total": 4,
         "deleted": 0
       }
     ],
@@ -81,7 +81,7 @@
       12,
       6,
       4,
-      16,
+      17,
       28,
       20,
       34,
@@ -93,8 +93,8 @@
     ],
     "overnight_share": {
       "overnight": 6,
-      "total": 373,
-      "share": 0.0160857908847185
+      "total": 374,
+      "share": 0.016042780748663103
     },
     "bursts": [
       {
@@ -218,7 +218,7 @@
     ],
     "link_domains": [],
     "media_mix": {
-      "no_media": 274,
+      "no_media": 275,
       "image_only": 84,
       "video_only": 15,
       "mixed": 0,
@@ -229,18 +229,18 @@
     },
     "engagement_stats": {
       "original": {
-        "n": 298,
+        "n": 299,
         "favourites": {
-          "median": 1278,
-          "p90": 16436
+          "median": 1301,
+          "p90": 16979
         },
         "reblogs": {
-          "median": 353,
-          "p90": 3779
+          "median": 359,
+          "p90": 4001
         },
         "replies": {
           "median": 28,
-          "p90": 1435
+          "p90": 1499
         }
       },
       "reblog": {
@@ -261,16 +261,16 @@
       "quote": {
         "n": 9,
         "favourites": {
-          "median": 16794,
-          "p90": 24186
+          "median": 17564,
+          "p90": 25822
         },
         "reblogs": {
           "median": 4143,
-          "p90": 6116
+          "p90": 6403
         },
         "replies": {
-          "median": 1932,
-          "p90": 2562
+          "median": 2037,
+          "p90": 2637
         }
       }
     },
