@@ -261,15 +261,15 @@
       "quote": {
         "n": 9,
         "favourites": {
-          "median": 11933,
-          "p90": 19798
+          "median": 13650,
+          "p90": 20509
         },
         "reblogs": {
-          "median": 3563,
-          "p90": 5355
+          "median": 3625,
+          "p90": 5427
         },
         "replies": {
-          "median": 1295,
+          "median": 1513,
           "p90": 2333
         }
       }
