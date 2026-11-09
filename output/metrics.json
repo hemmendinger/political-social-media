@@ -2,15 +2,6 @@
   "window": {
     "posts_by_day": [
       {
-        "et_date": "2026-11-02",
-        "original": 126,
-        "quote": 1,
-        "reblog": 13,
-        "reply": 0,
-        "total": 140,
-        "deleted": 1
-      },
-      {
         "et_date": "2026-11-03",
         "original": 186,
         "quote": 1,
@@ -63,11 +54,20 @@
         "reply": 0,
         "total": 8,
         "deleted": 0
+      },
+      {
+        "et_date": "2026-11-09",
+        "original": 0,
+        "quote": 0,
+        "reblog": 0,
+        "reply": 0,
+        "total": 0,
+        "deleted": 0
       }
     ],
     "hour_histogram": [
       2,
-      3,
+      1,
       0,
       0,
       1,
@@ -76,98 +76,27 @@
       45,
       126,
       3,
-      18,
-      18,
-      12,
+      1,
+      1,
+      10,
       6,
       4,
-      17,
-      28,
-      20,
-      37,
-      17,
+      4,
       10,
+      1,
+      9,
+      4,
       0,
-      6,
+      0,
+      5,
       4
     ],
     "overnight_share": {
-      "overnight": 6,
-      "total": 378,
-      "share": 0.015873015873015872
+      "overnight": 4,
+      "total": 238,
+      "share": 0.01680672268907563
     },
     "bursts": [
-      {
-        "start_et": "2026-11-02T10:48:04-05:00",
-        "end_et": "2026-11-02T11:03:03-05:00",
-        "count": 19,
-        "kinds": {
-          "original": 18,
-          "reblog": 1
-        }
-      },
-      {
-        "start_et": "2026-11-02T11:36:46-05:00",
-        "end_et": "2026-11-02T11:40:15-05:00",
-        "count": 15,
-        "kinds": {
-          "original": 14,
-          "reblog": 1
-        }
-      },
-      {
-        "start_et": "2026-11-02T15:21:27-05:00",
-        "end_et": "2026-11-02T15:28:22-05:00",
-        "count": 11,
-        "kinds": {
-          "original": 11
-        }
-      },
-      {
-        "start_et": "2026-11-02T16:20:10-05:00",
-        "end_et": "2026-11-02T16:32:26-05:00",
-        "count": 18,
-        "kinds": {
-          "original": 17,
-          "reblog": 1
-        }
-      },
-      {
-        "start_et": "2026-11-02T17:28:34-05:00",
-        "end_et": "2026-11-02T17:31:08-05:00",
-        "count": 7,
-        "kinds": {
-          "original": 5,
-          "reblog": 2
-        }
-      },
-      {
-        "start_et": "2026-11-02T17:55:48-05:00",
-        "end_et": "2026-11-02T18:16:26-05:00",
-        "count": 40,
-        "kinds": {
-          "original": 39,
-          "reblog": 1
-        }
-      },
-      {
-        "start_et": "2026-11-02T19:08:38-05:00",
-        "end_et": "2026-11-02T19:16:14-05:00",
-        "count": 13,
-        "kinds": {
-          "original": 11,
-          "reblog": 2
-        }
-      },
-      {
-        "start_et": "2026-11-02T20:04:17-05:00",
-        "end_et": "2026-11-02T20:08:48-05:00",
-        "count": 10,
-        "kinds": {
-          "original": 6,
-          "reblog": 4
-        }
-      },
       {
         "start_et": "2026-11-03T07:11:47-05:00",
         "end_et": "2026-11-03T07:25:09-05:00",
@@ -195,58 +124,44 @@
         }
       }
     ],
-    "deletions": [
-      {
-        "ts_id": "117549213884914402",
-        "created_at_et": "2026-11-02T17:30:59-05:00",
-        "kind": "reblog",
-        "lifetime_min": 171.51666641235352,
-        "deletion_window_min": 171.51666641235352,
-        "deleted_source": "trumpstruth",
-        "snippet": "The reason nobody can find the FAKE Dan Sullivan is that the Lawyers have “scooped” him up, and are hiding him as they t"
-      }
-    ],
+    "deletions": [],
     "top_reblogged_accounts": [
       {
         "account": "realDonaldTrump",
-        "count": 15
-      },
-      {
-        "account": "WhiteHouse",
-        "count": 1
+        "count": 3
       }
     ],
     "link_domains": [],
     "media_mix": {
-      "no_media": 276,
-      "image_only": 87,
-      "video_only": 15,
+      "no_media": 161,
+      "image_only": 64,
+      "video_only": 13,
       "mixed": 0,
       "media_items_by_type": {
-        "image": 97,
-        "video": 15
+        "image": 71,
+        "video": 13
       }
     },
     "engagement_stats": {
       "original": {
-        "n": 302,
+        "n": 176,
         "favourites": {
-          "median": 1321,
-          "p90": 17601
+          "median": 833,
+          "p90": 26629
         },
         "reblogs": {
-          "median": 369,
-          "p90": 4042
+          "median": 227,
+          "p90": 5814
         },
         "replies": {
-          "median": 28,
-          "p90": 1499
+          "median": 19,
+          "p90": 3818
         }
       },
       "reblog": {
-        "n": 16,
+        "n": 3,
         "favourites": {
-          "median": 0,
+          "median": 3,
           "p90": 4
         },
         "reblogs": {
@@ -259,18 +174,18 @@
         }
       },
       "quote": {
-        "n": 10,
+        "n": 9,
         "favourites": {
-          "median": 15931,
-          "p90": 23969
+          "median": 18681,
+          "p90": 28091
         },
         "reblogs": {
-          "median": 4023,
-          "p90": 6607
+          "median": 4144,
+          "p90": 7225
         },
         "replies": {
-          "median": 1295,
-          "p90": 2352
+          "median": 2144,
+          "p90": 2747
         }
       }
     },
@@ -286,15 +201,6 @@
   },
   "trailing": {
     "posts_by_day": [
-      {
-        "et_date": "2026-09-07",
-        "original": 37,
-        "quote": 2,
-        "reblog": 0,
-        "reply": 0,
-        "total": 39,
-        "deleted": 0
-      },
       {
         "et_date": "2026-09-08",
         "original": 16,
@@ -789,11 +695,20 @@
         "reply": 0,
         "total": 62,
         "deleted": 0
+      },
+      {
+        "et_date": "2026-11-02",
+        "original": 126,
+        "quote": 1,
+        "reblog": 13,
+        "reply": 0,
+        "total": 140,
+        "deleted": 1
       }
     ],
     "hour_histogram": [
       72,
-      37,
+      39,
       13,
       2,
       2,
@@ -801,36 +716,28 @@
       21,
       90,
       80,
-      71,
-      99,
+      68,
+      95,
+      59,
+      51,
+      73,
+      140,
+      131,
+      114,
+      79,
+      215,
+      58,
+      73,
       42,
-      49,
-      74,
-      141,
-      118,
-      96,
-      65,
-      189,
-      48,
-      65,
-      43,
-      71,
+      72,
       55
     ],
     "overnight_share": {
-      "overnight": 136,
-      "total": 1553,
-      "share": 0.0875724404378622
+      "overnight": 138,
+      "total": 1654,
+      "share": 0.08343409915356712
     },
     "bursts": [
-      {
-        "start_et": "2026-09-07T10:42:23-04:00",
-        "end_et": "2026-09-07T10:46:29-04:00",
-        "count": 15,
-        "kinds": {
-          "original": 15
-        }
-      },
       {
         "start_et": "2026-09-08T20:41:25-04:00",
         "end_et": "2026-09-08T20:53:04-04:00",
@@ -1372,6 +1279,77 @@
           "original": 31,
           "reblog": 3
         }
+      },
+      {
+        "start_et": "2026-11-02T10:48:04-05:00",
+        "end_et": "2026-11-02T11:03:03-05:00",
+        "count": 19,
+        "kinds": {
+          "original": 18,
+          "reblog": 1
+        }
+      },
+      {
+        "start_et": "2026-11-02T11:36:46-05:00",
+        "end_et": "2026-11-02T11:40:15-05:00",
+        "count": 15,
+        "kinds": {
+          "original": 14,
+          "reblog": 1
+        }
+      },
+      {
+        "start_et": "2026-11-02T15:21:27-05:00",
+        "end_et": "2026-11-02T15:28:22-05:00",
+        "count": 11,
+        "kinds": {
+          "original": 11
+        }
+      },
+      {
+        "start_et": "2026-11-02T16:20:10-05:00",
+        "end_et": "2026-11-02T16:32:26-05:00",
+        "count": 18,
+        "kinds": {
+          "original": 17,
+          "reblog": 1
+        }
+      },
+      {
+        "start_et": "2026-11-02T17:28:34-05:00",
+        "end_et": "2026-11-02T17:31:08-05:00",
+        "count": 7,
+        "kinds": {
+          "original": 5,
+          "reblog": 2
+        }
+      },
+      {
+        "start_et": "2026-11-02T17:55:48-05:00",
+        "end_et": "2026-11-02T18:16:26-05:00",
+        "count": 40,
+        "kinds": {
+          "original": 39,
+          "reblog": 1
+        }
+      },
+      {
+        "start_et": "2026-11-02T19:08:38-05:00",
+        "end_et": "2026-11-02T19:16:14-05:00",
+        "count": 13,
+        "kinds": {
+          "original": 11,
+          "reblog": 2
+        }
+      },
+      {
+        "start_et": "2026-11-02T20:04:17-05:00",
+        "end_et": "2026-11-02T20:08:48-05:00",
+        "count": 10,
+        "kinds": {
+          "original": 6,
+          "reblog": 4
+        }
       }
     ],
     "deletions": [
@@ -1428,12 +1406,21 @@
         "deletion_window_min": 84.41666677594185,
         "deleted_source": "trumpstruth",
         "snippet": ""
+      },
+      {
+        "ts_id": "117549213884914402",
+        "created_at_et": "2026-11-02T17:30:59-05:00",
+        "kind": "reblog",
+        "lifetime_min": 171.51666641235352,
+        "deletion_window_min": 171.51666641235352,
+        "deleted_source": "trumpstruth",
+        "snippet": "The reason nobody can find the FAKE Dan Sullivan is that the Lawyers have “scooped” him up, and are hiding him as they t"
       }
     ],
     "top_reblogged_accounts": [
       {
         "account": "realDonaldTrump",
-        "count": 48
+        "count": 60
       },
       {
         "account": "DanScavino",
@@ -1452,6 +1439,10 @@
         "count": 1
       },
       {
+        "account": "WhiteHouse",
+        "count": 1
+      },
+      {
         "account": "katiezacharia",
         "count": 1
       },
@@ -1466,40 +1457,40 @@
     ],
     "link_domains": [],
     "media_mix": {
-      "no_media": 828,
+      "no_media": 934,
       "image_only": 388,
-      "video_only": 337,
+      "video_only": 332,
       "mixed": 0,
       "media_items_by_type": {
-        "image": 453,
-        "video": 337
+        "image": 449,
+        "video": 332
       }
     },
     "engagement_stats": {
       "original": {
-        "n": 1300,
+        "n": 1389,
         "favourites": {
-          "median": 8477,
-          "p90": 17792
+          "median": 7530,
+          "p90": 17244
         },
         "reblogs": {
-          "median": 2038,
-          "p90": 4603
+          "median": 1842,
+          "p90": 4496
         },
         "replies": {
-          "median": 304,
-          "p90": 1731
+          "median": 248,
+          "p90": 1668
         }
       },
       "quote": {
-        "n": 166,
+        "n": 165,
         "favourites": {
-          "median": 6571,
-          "p90": 13923
+          "median": 6509,
+          "p90": 13874
         },
         "reblogs": {
           "median": 1740,
-          "p90": 3827
+          "p90": 3754
         },
         "replies": {
           "median": 248,
@@ -1507,7 +1498,7 @@
         }
       },
       "reblog": {
-        "n": 56,
+        "n": 69,
         "favourites": {
           "median": 1,
           "p90": 5
@@ -1533,9 +1524,9 @@
     }
   },
   "meta": {
-    "start": "2026-11-02",
-    "end": "2026-11-08",
-    "trailing_start": "2026-09-07",
-    "trailing_end": "2026-11-01"
+    "start": "2026-11-03",
+    "end": "2026-11-09",
+    "trailing_start": "2026-09-08",
+    "trailing_end": "2026-11-02"
   }
 }
