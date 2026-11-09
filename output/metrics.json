@@ -57,11 +57,11 @@
       },
       {
         "et_date": "2026-11-09",
-        "original": 0,
+        "original": 3,
         "quote": 0,
         "reblog": 0,
         "reply": 0,
-        "total": 0,
+        "total": 3,
         "deleted": 0
       }
     ],
@@ -76,11 +76,11 @@
       45,
       126,
       3,
-      1,
+      2,
       1,
       10,
       6,
-      4,
+      6,
       4,
       10,
       1,
@@ -93,8 +93,8 @@
     ],
     "overnight_share": {
       "overnight": 4,
-      "total": 238,
-      "share": 0.01680672268907563
+      "total": 241,
+      "share": 0.016597510373443983
     },
     "bursts": [
       {
@@ -133,29 +133,29 @@
     ],
     "link_domains": [],
     "media_mix": {
-      "no_media": 161,
+      "no_media": 162,
       "image_only": 64,
-      "video_only": 13,
+      "video_only": 15,
       "mixed": 0,
       "media_items_by_type": {
         "image": 71,
-        "video": 13
+        "video": 15
       }
     },
     "engagement_stats": {
       "original": {
-        "n": 176,
+        "n": 179,
         "favourites": {
-          "median": 833,
-          "p90": 26629
+          "median": 888,
+          "p90": 27911
         },
         "reblogs": {
-          "median": 227,
-          "p90": 5814
+          "median": 240,
+          "p90": 6210
         },
         "replies": {
-          "median": 19,
-          "p90": 3818
+          "median": 23,
+          "p90": 4302
         }
       },
       "reblog": {
@@ -176,23 +176,23 @@
       "quote": {
         "n": 9,
         "favourites": {
-          "median": 18681,
-          "p90": 28091
+          "median": 19331,
+          "p90": 29552
         },
         "reblogs": {
-          "median": 4144,
-          "p90": 7225
+          "median": 4311,
+          "p90": 7743
         },
         "replies": {
           "median": 2144,
-          "p90": 2747
+          "p90": 2809
         }
       }
     },
     "longest_silence": {
-      "gap_min": 733.0,
-      "from_et": "2026-11-03T23:52:32-05:00",
-      "to_et": "2026-11-04T12:05:32-05:00"
+      "gap_min": 901.5833333333334,
+      "from_et": "2026-11-08T19:05:49-05:00",
+      "to_et": "2026-11-09T10:07:24-05:00"
     },
     "edits": {
       "count": 0,
