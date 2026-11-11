@@ -2,15 +2,6 @@
   "window": {
     "posts_by_day": [
       {
-        "et_date": "2026-11-04",
-        "original": 3,
-        "quote": 0,
-        "reblog": 0,
-        "reply": 0,
-        "total": 3,
-        "deleted": 0
-      },
-      {
         "et_date": "2026-11-05",
         "original": 6,
         "quote": 0,
@@ -63,11 +54,20 @@
         "reply": 0,
         "total": 9,
         "deleted": 0
+      },
+      {
+        "et_date": "2026-11-11",
+        "original": 2,
+        "quote": 0,
+        "reblog": 0,
+        "reply": 0,
+        "total": 2,
+        "deleted": 0
       }
     ],
     "hour_histogram": [
       0,
-      0,
+      2,
       0,
       0,
       1,
@@ -78,13 +78,13 @@
       4,
       2,
       4,
-      5,
+      3,
       6,
       5,
       5,
       8,
       1,
-      8,
+      7,
       3,
       1,
       0,
@@ -92,9 +92,9 @@
       0
     ],
     "overnight_share": {
-      "overnight": 1,
-      "total": 64,
-      "share": 0.015625
+      "overnight": 3,
+      "total": 63,
+      "share": 0.047619047619047616
     },
     "bursts": [
       {
@@ -112,28 +112,28 @@
     "link_domains": [],
     "media_mix": {
       "no_media": 32,
-      "image_only": 21,
+      "image_only": 20,
       "video_only": 11,
       "mixed": 0,
       "media_items_by_type": {
-        "image": 27,
+        "image": 24,
         "video": 11
       }
     },
     "engagement_stats": {
       "original": {
-        "n": 56,
+        "n": 53,
         "favourites": {
-          "median": 19796,
-          "p90": 33859
+          "median": 20214,
+          "p90": 32355
         },
         "reblogs": {
-          "median": 4927,
-          "p90": 8829
+          "median": 5006,
+          "p90": 8699
         },
         "replies": {
-          "median": 1950,
-          "p90": 6956
+          "median": 1983,
+          "p90": 5752
         }
       },
       "quote": {
@@ -164,15 +164,6 @@
   },
   "trailing": {
     "posts_by_day": [
-      {
-        "et_date": "2026-09-09",
-        "original": 7,
-        "quote": 0,
-        "reblog": 0,
-        "reply": 0,
-        "total": 7,
-        "deleted": 0
-      },
       {
         "et_date": "2026-09-10",
         "original": 19,
@@ -667,6 +658,15 @@
         "reply": 0,
         "total": 190,
         "deleted": 0
+      },
+      {
+        "et_date": "2026-11-04",
+        "original": 3,
+        "quote": 0,
+        "reblog": 0,
+        "reply": 0,
+        "total": 3,
+        "deleted": 0
       }
     ],
     "hour_histogram": [
@@ -678,17 +678,17 @@
       10,
       21,
       134,
-      203,
-      68,
+      202,
+      67,
       95,
       59,
-      56,
+      58,
       73,
-      141,
+      140,
       131,
-      116,
+      112,
       78,
-      219,
+      220,
       56,
       64,
       38,
@@ -697,8 +697,8 @@
     ],
     "overnight_share": {
       "overnight": 141,
-      "total": 1822,
-      "share": 0.07738748627881449
+      "total": 1818,
+      "share": 0.07755775577557755
     },
     "bursts": [
       {
@@ -1391,29 +1391,29 @@
     ],
     "link_domains": [],
     "media_mix": {
-      "no_media": 1071,
-      "image_only": 425,
-      "video_only": 326,
+      "no_media": 1072,
+      "image_only": 426,
+      "video_only": 320,
       "mixed": 0,
       "media_items_by_type": {
-        "image": 487,
-        "video": 326
+        "image": 490,
+        "video": 320
       }
     },
     "engagement_stats": {
       "original": {
-        "n": 1509,
+        "n": 1505,
         "favourites": {
-          "median": 6896,
-          "p90": 17010
+          "median": 6883,
+          "p90": 17210
         },
         "reblogs": {
-          "median": 1700,
-          "p90": 4416
+          "median": 1696,
+          "p90": 4442
         },
         "replies": {
-          "median": 210,
-          "p90": 1651
+          "median": 209,
+          "p90": 1661
         }
       },
       "quote": {
@@ -1458,9 +1458,9 @@
     }
   },
   "meta": {
-    "start": "2026-11-04",
-    "end": "2026-11-10",
-    "trailing_start": "2026-09-09",
-    "trailing_end": "2026-11-03"
+    "start": "2026-11-05",
+    "end": "2026-11-11",
+    "trailing_start": "2026-09-10",
+    "trailing_end": "2026-11-04"
   }
 }
