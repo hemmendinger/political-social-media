@@ -57,11 +57,11 @@
       },
       {
         "et_date": "2026-11-14",
-        "original": 1,
-        "quote": 0,
+        "original": 5,
+        "quote": 6,
         "reblog": 0,
         "reply": 0,
-        "total": 1,
+        "total": 11,
         "deleted": 0
       }
     ],
@@ -78,9 +78,9 @@
       3,
       4,
       4,
-      3,
+      6,
       2,
-      2,
+      9,
       2,
       1,
       3,
@@ -93,51 +93,61 @@
     ],
     "overnight_share": {
       "overnight": 3,
-      "total": 46,
-      "share": 0.06521739130434782
+      "total": 56,
+      "share": 0.05357142857142857
     },
-    "bursts": [],
+    "bursts": [
+      {
+        "start_et": "2026-11-14T14:27:12-05:00",
+        "end_et": "2026-11-14T14:35:21-05:00",
+        "count": 7,
+        "kinds": {
+          "original": 1,
+          "quote": 6
+        }
+      }
+    ],
     "deletions": [],
     "top_reblogged_accounts": [],
     "link_domains": [],
     "media_mix": {
-      "no_media": 34,
-      "image_only": 6,
+      "no_media": 37,
+      "image_only": 13,
       "video_only": 6,
       "mixed": 0,
       "media_items_by_type": {
-        "image": 10,
+        "image": 34,
         "video": 6
       }
     },
     "engagement_stats": {
       "original": {
-        "n": 45,
+        "n": 49,
         "favourites": {
-          "median": 24824,
+          "median": 24746,
           "p90": 33084
         },
         "reblogs": {
-          "median": 6013,
+          "median": 5980,
           "p90": 8601
         },
         "replies": {
-          "median": 2518,
-          "p90": 4802
+          "median": 2125,
+          "p90": 4867
         }
       },
       "quote": {
-        "n": 1,
+        "n": 7,
         "favourites": {
-          "median": 20469,
+          "median": 1600,
           "p90": 20469
         },
         "reblogs": {
-          "median": 4023,
+          "median": 435,
           "p90": 4023
         },
         "replies": {
-          "median": 1105,
+          "median": 82,
           "p90": 1105
         }
       }
