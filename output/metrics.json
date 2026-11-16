@@ -124,31 +124,31 @@
       "original": {
         "n": 54,
         "favourites": {
-          "median": 19995,
+          "median": 20043,
           "p90": 31889
         },
         "reblogs": {
-          "median": 5211,
+          "median": 5307,
           "p90": 8168
         },
         "replies": {
-          "median": 1959,
+          "median": 2043,
           "p90": 4534
         }
       },
       "quote": {
         "n": 7,
         "favourites": {
-          "median": 8270,
-          "p90": 17046
+          "median": 8526,
+          "p90": 17458
         },
         "reblogs": {
-          "median": 1933,
-          "p90": 4494
+          "median": 1978,
+          "p90": 4575
         },
         "replies": {
-          "median": 231,
-          "p90": 2870
+          "median": 237,
+          "p90": 2931
         }
       }
     },
